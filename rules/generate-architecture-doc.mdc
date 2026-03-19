@@ -1,0 +1,87 @@
+---
+description: Generate an architecture HTML document for a Cramim ROS2 package. Use when asked to create architecture docs, explain a package, or document a node's behavior.
+globs: 
+alwaysApply: false
+---
+
+# Generate Architecture HTML Document
+
+When asked to create an architecture document for a Cramim package, produce a self-contained HTML file in `architecture_docs/` following this process.
+
+## 1. Research the Package
+
+Before writing anything, thoroughly investigate the target package:
+
+- Read all `.hpp` and `.cpp` files in the package
+- Read `package.xml` and `CMakeLists.txt` for dependencies
+- Read any config/YAML files referenced by launch files
+- Grep for `create_publisher`, `create_subscription`, `create_service`, `create_client` to find all ROS interfaces
+- Grep for state definitions (`State::createStateSharedPtr`, enums, or equivalent patterns)
+- Trace the full data flow from inputs to outputs
+- Identify all inter-node communication patterns
+- Read launch files to understand how the node is started and configured
+
+## 2. Required Content Sections
+
+Every architecture doc must include:
+
+1. **Executive summary** — what the component does, 2-3 sentences, with role badges for related components
+2. **Table of contents** with anchor links
+3. **Architecture diagram** — where this component fits in the overall Cramim system (Mermaid flowchart)
+4. **State machine** (if applicable) — Mermaid `stateDiagram-v2` with all states and transitions
+5. **State details** — `on_enter`, `in_state`, `on_exit` callbacks for each state (table per state)
+6. **Transition table** — every transition with From, To, Condition, Side Effect columns
+7. **End-to-end flow** — Mermaid `sequenceDiagram` showing the main operational flow
+8. **Topics & services** — tables for published topics, subscribed topics, provided services, called services (columns: name, type, description)
+9. **Interactions with other nodes** — summary cards showing who talks to whom
+10. **Key design decisions** — bullet list of architectural choices and why
+11. **File structure** — annotated directory tree in a `<pre>` block
+
+## 3. Visual Style
+
+Use the exact dark-theme style from the reference file `architecture_docs/dc_behavior_tree_workplan.html`:
+
+- **Mermaid**: CDN `mermaid@10.6.1`, dark theme with custom `themeVariables`
+- **Font**: `JetBrains Mono`, `Fira Code`, `Consolas`, monospace
+- **Background**: `#0a0e14` → `#151d28` gradient
+- **CSS variables**: `--accent-cyan: #39c5cf`, `--accent-green: #7fdb57`, `--accent-yellow: #ffcc66`, `--accent-orange: #ff8f40`, `--accent-red: #ff6b6b`, `--accent-purple: #c792ea`, `--accent-blue: #82aaff`
+- **Cards**: `.description` boxes with `.highlight-{color}` left borders
+- **Grids**: `.summary-grid` / `.summary-card` for card layouts
+- **Flows**: `.flow-box` with numbered circles for sequential steps
+- **Tables**: gradient header (`cyan → purple`), hover highlight, uppercase headers
+- **Section headers**: centered `h2` with emoji prefix
+- **Responsive**: `@media (max-width: 768px)` breakpoint
+
+## 4. Mermaid Configuration
+
+Always include this exact mermaid init block at the bottom of the HTML:
+
+```javascript
+mermaid.initialize({
+    startOnLoad: true,
+    theme: 'dark',
+    themeVariables: {
+        primaryColor: '#39c5cf',
+        primaryTextColor: '#e6edf3',
+        primaryBorderColor: '#39c5cf',
+        lineColor: '#82aaff',
+        secondaryColor: '#2d3a4a',
+        tertiaryColor: '#1a2433',
+        background: '#1a2433',
+        mainBkg: '#1a2433',
+        nodeBorder: '#2d3a4a',
+        clusterBkg: '#151d28',
+        clusterBorder: '#2d3a4a',
+        titleColor: '#39c5cf',
+        edgeLabelBackground: '#1a2433'
+    },
+    flowchart: { useMaxWidth: true, htmlLabels: true, curve: 'basis', padding: 15 },
+    sequence: { useMaxWidth: true, mirrorActors: false, bottomMarginAdj: 1 }
+});
+```
+
+## 5. Output
+
+- Save to `architecture_docs/{package_name}_architecture.html`
+- File must be fully self-contained (no external CSS, only CDN JS for mermaid)
+- Open in any browser without a server

@@ -122,6 +122,7 @@ KNOWLEDGE_POINTER_PATH="$TARGET_PROJECT/agent-knowledge"
 POINTER_DISPLAY="./agent-knowledge"
 AGENT_PROJECT_FILE="$TARGET_PROJECT/.agent-project.yaml"
 AGENTS_FILE="$TARGET_PROJECT/AGENTS.md"
+IGNORE_FILE="$TARGET_PROJECT/.agentknowledgeignore"
 CURSOR_DIR="$TARGET_PROJECT/.cursor"
 CURSOR_HOOKS_FILE="$CURSOR_DIR/hooks.json"
 
@@ -190,6 +191,17 @@ if [ ! -f "$TARGET_PROJECT/.gitignore" ]; then
     esac
 else
     kc_log "  note: existing .gitignore left unchanged"
+fi
+
+if [ ! -f "$IGNORE_FILE" ] || [ "$FORCE" -eq 1 ]; then
+    kc_copy_file "$PROJECT_TEMPLATE_DIR/.agentknowledgeignore" "$IGNORE_FILE" ".agentknowledgeignore"
+    case "$KC_LAST_ACTION" in
+        created|updated|would-create|would-update)
+            CHANGES+=(".agentknowledgeignore")
+            ;;
+    esac
+else
+    kc_log "  exists: .agentknowledgeignore (left unchanged)"
 fi
 
 if [ "$INSTALL_HOOKS" -eq 1 ]; then

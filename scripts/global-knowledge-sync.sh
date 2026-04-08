@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Build or update a project-local tooling knowledge base from safe allowlisted sources.
+# Build or update a project-scoped tooling knowledge base from safe allowlisted sources.
 #
 
 set -euo pipefail
@@ -22,7 +22,9 @@ POSITIONAL=()
 SCANNED=()
 SKIPPED=()
 UPDATED=()
+CACHED=()
 WARNINGS=()
+GENERATED_AT="$(kc_now_utc)"
 
 while [ "$#" -gt 0 ]; do
     if kc_parse_common_flag "$@" ; then
@@ -65,6 +67,7 @@ TOOLING_INDEX="$TOOLING_MEMORY_DIR/INDEX.md"
 
 kc_ensure_dir "$TOOLING_EVIDENCE_DIR" "agent-knowledge/Evidence/tooling"
 kc_ensure_dir "$TOOLING_MEMORY_DIR" "agent-knowledge/Memory/tooling"
+kc_ensure_dir "$EVIDENCE_CACHE_DIR" "agent-knowledge/Evidence/.cache"
 
 is_allowlisted_tool_file() {
     local path="$1"
@@ -105,27 +108,54 @@ redact_tool_file() {
         "$src"
 }
 
-write_tooling_evidence() {
+capture_tooling_evidence() {
     local src="$1"
     local family="$2"
     local name="$3"
     local dst="$TOOLING_EVIDENCE_DIR/$name"
-    local tmp_file
+    local meta_dst="$dst.meta.json"
+    local signature=""
+    local tmp_file=""
+    local changed=0
+
+    signature="$(kc_signature_from_paths "$src")"
+    if kc_cache_is_current "global-tooling" "$name" "$signature" "$dst" "$meta_dst"; then
+        CACHED+=("agent-knowledge/Evidence/tooling/$name")
+        SCANNED+=("$src")
+        TOOLING_FAMILIES="${TOOLING_FAMILIES}${family}"$'\n'
+        TOOLING_FILES="${TOOLING_FILES}${family}|$name|$src"$'\n'
+        return 0
+    fi
 
     tmp_file="$(mktemp)"
     {
         printf '# Tooling Evidence\n'
         printf '# Source: %s\n' "$src"
-        printf '# Extracted: %s\n\n' "$(kc_today)"
+        printf '# Kind: tooling-import\n'
+        printf '# Confidence: EXTRACTED\n'
+        printf '# Generated: %s\n\n' "$GENERATED_AT"
         redact_tool_file "$src"
     } > "$tmp_file"
 
     kc_apply_temp_file "$tmp_file" "$dst" "agent-knowledge/Evidence/tooling/$name"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
-            UPDATED+=("agent-knowledge/Evidence/tooling/$name")
+            changed=1
             ;;
     esac
+
+    kc_write_metadata_json "$meta_dst" "agent-knowledge/Evidence/tooling/$name.meta.json" "$src" "tooling-import" "EXTRACTED" "$GENERATED_AT" "$src" "Redacted allowlisted tooling surface captured for project-scoped reference."
+    case "$KC_LAST_ACTION" in
+        created|updated|would-create|would-update)
+            changed=1
+            ;;
+    esac
+
+    kc_cache_store "global-tooling" "$name" "$signature"
+
+    if [ "$changed" -eq 1 ]; then
+        UPDATED+=("agent-knowledge/Evidence/tooling/$name")
+    fi
     SCANNED+=("$src")
     TOOLING_FAMILIES="${TOOLING_FAMILIES}${family}"$'\n'
     TOOLING_FILES="${TOOLING_FILES}${family}|$name|$src"$'\n'
@@ -138,7 +168,8 @@ write_tooling_note() {
     local file_name="$TOOLING_MEMORY_DIR/$family.md"
     local entries=""
     local line=""
-    local tmp_file
+    local signature=""
+    local tmp_file=""
 
     while IFS= read -r line; do
         [ -n "$line" ] || continue
@@ -154,6 +185,11 @@ $TOOLING_FILES
 EOF
 
     [ -n "$entries" ] || entries="- No allowlisted sources were captured."
+    signature="$(kc_signature_from_lines "$(printf '%s\n---\n%s\n---\n%s\n' "$family" "$title" "$entries")")"
+    if kc_cache_is_current "global-tooling-note" "$family" "$signature" "$file_name"; then
+        CACHED+=("agent-knowledge/Memory/tooling/$family.md")
+        return 0
+    fi
 
     tmp_file="$(mktemp)"
     {
@@ -180,13 +216,15 @@ EOF
             UPDATED+=("agent-knowledge/Memory/tooling/$family.md")
             ;;
     esac
+    kc_cache_store "global-tooling-note" "$family" "$signature"
 }
 
 write_tooling_index() {
     local families=""
     local family=""
     local bullets=""
-    local tmp_file
+    local signature=""
+    local tmp_file=""
 
     families="$(printf '%s\n' "$TOOLING_FAMILIES" | awk 'NF && !seen[$0]++ { print $0 }')"
     while IFS= read -r family; do
@@ -197,6 +235,11 @@ $families
 EOF
 
     [ -n "$bullets" ] || bullets="- No allowlisted tooling sources were found."
+    signature="$(kc_signature_from_lines "$bullets")"
+    if kc_cache_is_current "global-tooling-note" "index" "$signature" "$TOOLING_INDEX"; then
+        CACHED+=("agent-knowledge/Memory/tooling/INDEX.md")
+        return 0
+    fi
 
     tmp_file="$(mktemp)"
     {
@@ -221,7 +264,7 @@ EOF
             UPDATED+=("agent-knowledge/Memory/tooling/INDEX.md")
             ;;
     esac
-
+    kc_cache_store "global-tooling-note" "index" "$signature"
     kc_append_unique_bullet "$MEMORY_ROOT" "Subtopics" "- [Tooling](tooling/INDEX.md) - Redacted local tooling setup relevant to this project." "agent-knowledge/Memory/MEMORY.md"
 }
 
@@ -237,13 +280,13 @@ for path in \
         if is_safe_tool_file "$path"; then
             case "$path" in
                 "$HOME/.claude/"*)
-                    write_tooling_evidence "$path" "claude" "$(basename "$path" | tr '[:upper:]' '[:lower:]')"
+                    capture_tooling_evidence "$path" "claude" "$(basename "$path" | tr '[:upper:]' '[:lower:]')"
                     ;;
                 "$HOME/.codex/"*)
-                    write_tooling_evidence "$path" "codex" "$(basename "$path" | tr '[:upper:]' '[:lower:]')"
+                    capture_tooling_evidence "$path" "codex" "$(basename "$path" | tr '[:upper:]' '[:lower:]')"
                     ;;
                 "$HOME/.cursor/"*)
-                    write_tooling_evidence "$path" "cursor" "$(basename "$path" | tr '[:upper:]' '[:lower:]')"
+                    capture_tooling_evidence "$path" "cursor" "$(basename "$path" | tr '[:upper:]' '[:lower:]')"
                     ;;
             esac
         else
@@ -265,10 +308,10 @@ for dir in "$HOME/.claude/agents" "$HOME/.cursor/rules" "$HOME/.cursor/snippets"
         fi
         case "$dir" in
             "$HOME/.claude/agents")
-                write_tooling_evidence "$path" "claude" "agents-$(basename "$path")"
+                capture_tooling_evidence "$path" "claude" "agents-$(basename "$path")"
                 ;;
             "$HOME/.cursor/"*)
-                write_tooling_evidence "$path" "cursor" "$(basename "$dir")-$(basename "$path")"
+                capture_tooling_evidence "$path" "cursor" "$(basename "$dir")-$(basename "$path")"
                 ;;
         esac
     done <<EOF
@@ -279,9 +322,15 @@ done
 if [ -z "$TOOLING_FILES" ]; then
     WARNINGS+=("No allowlisted local tooling sources were found.")
 else
-    write_tooling_note "claude" "Claude Tooling" "Redacted Claude settings and prompt surfaces that may affect project work."
-    write_tooling_note "codex" "Codex Tooling" "Redacted Codex configuration surfaces that may affect project work."
-    write_tooling_note "cursor" "Cursor Tooling" "Redacted Cursor customization surfaces that may affect project work."
+    if printf '%s\n' "$TOOLING_FAMILIES" | grep -q '^claude$'; then
+        write_tooling_note "claude" "Claude Tooling" "Redacted Claude settings and prompt surfaces that may affect project work."
+    fi
+    if printf '%s\n' "$TOOLING_FAMILIES" | grep -q '^codex$'; then
+        write_tooling_note "codex" "Codex Tooling" "Redacted Codex configuration surfaces that may affect project work."
+    fi
+    if printf '%s\n' "$TOOLING_FAMILIES" | grep -q '^cursor$'; then
+        write_tooling_note "cursor" "Cursor Tooling" "Redacted Cursor customization surfaces that may affect project work."
+    fi
     write_tooling_index
 fi
 
@@ -299,6 +348,7 @@ json_summary="$json_summary\"dry_run\":$(kc_json_bool "$DRY_RUN"),"
 json_summary="$json_summary\"scanned\":$(kc_json_array "${SCANNED[@]+"${SCANNED[@]}"}"),"
 json_summary="$json_summary\"skipped\":$(kc_json_array "${SKIPPED[@]+"${SKIPPED[@]}"}"),"
 json_summary="$json_summary\"updated\":$(kc_json_array "${UPDATED[@]+"${UPDATED[@]}"}"),"
+json_summary="$json_summary\"cached\":$(kc_json_array "${CACHED[@]+"${CACHED[@]}"}"),"
 json_summary="$json_summary\"warnings\":$(kc_json_array "${WARNINGS[@]+"${WARNINGS[@]}"}")"
 json_summary="$json_summary}"
 kc_write_json_output "$json_summary"
@@ -308,6 +358,11 @@ if [ "$JSON_MODE" -ne 1 ]; then
     if [ ${#SCANNED[@]} -gt 0 ]; then
         kc_log "Scanned:"
         printf '  %s\n' "${SCANNED[@]+"${SCANNED[@]}"}"
+    fi
+    if [ ${#CACHED[@]} -gt 0 ]; then
+        kc_log ""
+        kc_log "Cached:"
+        printf '  %s\n' "${CACHED[@]+"${CACHED[@]}"}"
     fi
     if [ ${#SKIPPED[@]} -gt 0 ]; then
         kc_log ""

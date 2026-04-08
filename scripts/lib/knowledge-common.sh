@@ -104,7 +104,7 @@ kc_json_array_from_lines() {
 $text
 EOF
 
-    kc_json_array "${items[@]}"
+    kc_json_array "${items[@]+"${items[@]}"}"
 }
 
 kc_write_json_output() {
@@ -373,6 +373,21 @@ kc_load_project_context() {
     LOCAL_TEMPLATES_DIR="$KNOWLEDGE_DIR/Templates"
     OBSIDIAN_DIR="$KNOWLEDGE_DIR/.obsidian"
     STATUS_FILE="$KNOWLEDGE_DIR/STATUS.md"
+    KNOWLEDGE_CACHE_DIR="$KNOWLEDGE_DIR/.cache"
+    EVIDENCE_CACHE_DIR="$EVIDENCE_DIR/.cache"
+    IGNORE_FILE="$TARGET_PROJECT/.agentknowledgeignore"
+    KC_IGNORE_PATTERNS=()
+    if [ -f "$IGNORE_FILE" ]; then
+        while IFS= read -r pattern; do
+            pattern="${pattern%$'\r'}"
+            case "$pattern" in
+                ""|\#*)
+                    continue
+                    ;;
+            esac
+            KC_IGNORE_PATTERNS+=("$pattern")
+        done < "$IGNORE_FILE"
+    fi
 }
 
 kc_is_windows_like() {
@@ -407,6 +422,214 @@ kc_rel_knowledge_path() {
             printf '%s\n' "$path"
             ;;
     esac
+}
+
+kc_normalize_relative_path() {
+    local path="${1:-}"
+    path="${path#./}"
+    path="${path#/}"
+    printf '%s\n' "$path"
+}
+
+kc_path_is_ignored() {
+    local path=""
+    local pattern=""
+    local normalized_pattern=""
+    local base=""
+
+    path="$(kc_normalize_relative_path "${1:-}")"
+    [ -n "$path" ] || return 1
+
+    for pattern in "${KC_IGNORE_PATTERNS[@]+"${KC_IGNORE_PATTERNS[@]}"}"; do
+        normalized_pattern="$(kc_normalize_relative_path "$pattern")"
+        [ -n "$normalized_pattern" ] || continue
+        case "$normalized_pattern" in
+            */)
+                base="${normalized_pattern%/}"
+                case "$path" in
+                    $base|$base/*)
+                        return 0
+                        ;;
+                esac
+                ;;
+            *)
+                case "$path" in
+                    $normalized_pattern|$normalized_pattern/*)
+                        return 0
+                        ;;
+                esac
+                ;;
+        esac
+    done
+    return 1
+}
+
+kc_filter_relative_lines() {
+    local line=""
+    local normalized=""
+
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        normalized="$(kc_normalize_relative_path "$line")"
+        if kc_path_is_ignored "$normalized"; then
+            continue
+        fi
+        printf '%s\n' "$normalized"
+    done
+}
+
+kc_hash_text() {
+    if command -v shasum >/dev/null 2>&1; then
+        shasum -a 256 | awk '{print $1}'
+    else
+        openssl dgst -sha256 | awk '{print $NF}'
+    fi
+}
+
+kc_stat_signature_line() {
+    local path="$1"
+    local label="${2:-$1}"
+    local meta=""
+
+    if stat -f '%m|%z' "$path" >/dev/null 2>&1; then
+        meta="$(stat -f '%m|%z' "$path" 2>/dev/null)"
+    else
+        meta="$(stat -c '%Y|%s' "$path" 2>/dev/null)"
+    fi
+    printf '%s|%s\n' "$label" "$meta"
+}
+
+kc_signature_from_lines() {
+    local text="${1:-}"
+    printf '%s' "$text" | kc_hash_text
+}
+
+kc_signature_from_paths() {
+    local line=""
+    local text=""
+
+    for line in "$@"; do
+        [ -n "$line" ] || continue
+        if [ -e "$line" ]; then
+            text="${text}$(kc_stat_signature_line "$line")"$'\n'
+        else
+            text="${text}missing|$line"$'\n'
+        fi
+    done
+
+    kc_signature_from_lines "$text"
+}
+
+kc_signature_from_project_relative_lines() {
+    local relpaths_text="${1:-}"
+    local line=""
+    local abs=""
+    local text=""
+
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        abs="$TARGET_PROJECT/$(kc_normalize_relative_path "$line")"
+        if [ -e "$abs" ]; then
+            text="${text}$(kc_stat_signature_line "$abs" "$line")"$'\n'
+        else
+            text="${text}missing|$line"$'\n'
+        fi
+    done <<EOF
+$relpaths_text
+EOF
+
+    if [ -f "$IGNORE_FILE" ]; then
+        text="${text}$(kc_stat_signature_line "$IGNORE_FILE" ".agentknowledgeignore")"$'\n'
+    fi
+
+    kc_signature_from_lines "$text"
+}
+
+kc_cache_key_name() {
+    printf '%s' "$1" | sed 's/[^A-Za-z0-9._-]/_/g'
+}
+
+kc_cache_signature_path() {
+    local namespace="$1"
+    local key="$2"
+    printf '%s/%s/%s.sig\n' "$KNOWLEDGE_CACHE_DIR" "$(kc_cache_key_name "$namespace")" "$(kc_cache_key_name "$key")"
+}
+
+kc_cache_is_current() {
+    local namespace="$1"
+    local key="$2"
+    local signature="$3"
+    local cache_path=""
+    local current=""
+    shift 3
+
+    cache_path="$(kc_cache_signature_path "$namespace" "$key")"
+    [ -f "$cache_path" ] || return 1
+    current="$(cat "$cache_path" 2>/dev/null || true)"
+    [ "$current" = "$signature" ] || return 1
+
+    for current in "$@"; do
+        [ -e "$current" ] || return 1
+    done
+    return 0
+}
+
+kc_cache_store() {
+    local namespace="$1"
+    local key="$2"
+    local signature="$3"
+    local dst
+
+    dst="$(kc_cache_signature_path "$namespace" "$key")"
+    kc_write_text_file "$dst" ".cache/$(kc_cache_key_name "$namespace")/$(kc_cache_key_name "$key").sig" <<EOF
+$signature
+EOF
+}
+
+kc_write_metadata_json() {
+    local dst="$1"
+    local label="$2"
+    local source="$3"
+    local kind="$4"
+    local confidence="$5"
+    local generated_at="$6"
+    local related_paths_text="${7:-}"
+    local notes_text="${8:-}"
+    local tmp_file
+
+    tmp_file="$(mktemp)"
+    {
+        printf '{'
+        printf '"source":"%s",' "$(kc_json_escape "$source")"
+        printf '"kind":"%s",' "$(kc_json_escape "$kind")"
+        printf '"confidence":"%s",' "$(kc_json_escape "$confidence")"
+        printf '"generated_at":"%s",' "$(kc_json_escape "$generated_at")"
+        printf '"related_paths":%s,' "$(kc_json_array_from_lines "$related_paths_text")"
+        printf '"notes":%s' "$(kc_json_array_from_lines "$notes_text")"
+        printf '}\n'
+    } > "$tmp_file"
+
+    kc_apply_temp_file "$tmp_file" "$dst" "$label"
+}
+
+kc_yaml_list() {
+    local text="${1:-}"
+    local indent="${2:-2}"
+    local line=""
+    local prefix=""
+    local i=0
+
+    while [ "$i" -lt "$indent" ]; do
+        prefix="${prefix} "
+        i=$((i + 1))
+    done
+
+    while IFS= read -r line; do
+        [ -n "$line" ] || continue
+        printf '%s- %s\n' "$prefix" "$line"
+    done <<EOF
+$text
+EOF
 }
 
 kc_require_project_metadata() {
@@ -503,6 +726,7 @@ kc_status_load() {
     STATUS_LAST_IMPORT=""
     STATUS_LAST_PROJECT_SYNC=""
     STATUS_LAST_GLOBAL_SYNC=""
+    STATUS_LAST_GRAPH_SYNC=""
     STATUS_LAST_COMPACTION=""
     STATUS_LAST_VALIDATION=""
     STATUS_LAST_VALIDATION_RESULT="unknown"
@@ -522,6 +746,7 @@ kc_status_load() {
     STATUS_LAST_IMPORT="$(kc_yaml_leaf_value "$STATUS_FILE" "last_backfill_import" || true)"
     STATUS_LAST_PROJECT_SYNC="$(kc_yaml_leaf_value "$STATUS_FILE" "last_project_sync" || true)"
     STATUS_LAST_GLOBAL_SYNC="$(kc_yaml_leaf_value "$STATUS_FILE" "last_global_sync" || true)"
+    STATUS_LAST_GRAPH_SYNC="$(kc_yaml_leaf_value "$STATUS_FILE" "last_graph_sync" || true)"
     STATUS_LAST_COMPACTION="$(kc_yaml_leaf_value "$STATUS_FILE" "last_compaction" || true)"
     STATUS_LAST_VALIDATION="$(kc_yaml_leaf_value "$STATUS_FILE" "last_validation" || true)"
     STATUS_LAST_VALIDATION_RESULT="$(kc_yaml_leaf_value "$STATUS_FILE" "last_validation_result" || printf 'unknown')"
@@ -553,6 +778,7 @@ kc_status_write() {
         printf 'last_backfill_import: %s\n' "$STATUS_LAST_IMPORT"
         printf 'last_project_sync: %s\n' "$STATUS_LAST_PROJECT_SYNC"
         printf 'last_global_sync: %s\n' "$STATUS_LAST_GLOBAL_SYNC"
+        printf 'last_graph_sync: %s\n' "$STATUS_LAST_GRAPH_SYNC"
         printf 'last_compaction: %s\n' "$STATUS_LAST_COMPACTION"
         printf 'last_validation: %s\n' "$STATUS_LAST_VALIDATION"
         printf 'last_validation_result: %s\n' "$STATUS_LAST_VALIDATION_RESULT"
@@ -569,6 +795,7 @@ kc_status_write() {
         printf -- '- Last backfill/import: `%s`\n' "${STATUS_LAST_IMPORT:-not-yet}"
         printf -- '- Last project sync: `%s`\n' "${STATUS_LAST_PROJECT_SYNC:-not-yet}"
         printf -- '- Last global sync: `%s`\n' "${STATUS_LAST_GLOBAL_SYNC:-not-yet}"
+        printf -- '- Last graph sync: `%s`\n' "${STATUS_LAST_GRAPH_SYNC:-not-yet}"
         printf -- '- Last compaction: `%s`\n' "${STATUS_LAST_COMPACTION:-not-yet}"
         printf -- '- Last validation: `%s` (`%s`)\n' "${STATUS_LAST_VALIDATION:-not-yet}" "${STATUS_LAST_VALIDATION_RESULT:-unknown}"
         printf -- '- Last doctor: `%s` (`%s`)\n\n' "${STATUS_LAST_DOCTOR:-not-yet}" "${STATUS_LAST_DOCTOR_RESULT:-unknown}"

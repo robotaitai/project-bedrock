@@ -30,9 +30,11 @@ agent-knowledge/
   Evidence/
     raw/
     imports/
+      graphify/
     tooling/
   Sessions/
   Outputs/
+    graphify/
   Dashboards/
   Templates/
   .obsidian/
@@ -44,7 +46,14 @@ Rules of thumb:
 - `Evidence/` is raw or imported input, not canonical truth.
 - `Sessions/` is temporary state.
 - `Outputs/` stays in the external knowledge folder. It is not a repo export or snapshot channel.
+- Machine-generated structural summaries, inferred relationships, and graph reports belong in `Evidence/` or `Outputs/` first, not in `Memory/`.
 - `STATUS.md` is the lightweight operational state note for bootstrap, sync, compaction, validation, and doctor.
+
+Confidence labels used across evidence and generated discovery notes:
+
+- `EXTRACTED`: directly copied or listed from a source
+- `INFERRED`: derived summary or architecture guess that still needs review
+- `AMBIGUOUS`: incomplete, stale, or uncertain source material such as sessions or traces
 
 ## Install And Link
 
@@ -66,6 +75,7 @@ The linking flow creates or verifies:
 - external knowledge folder
 - local `./agent-knowledge` pointer
 - `.agent-project.yaml`
+- `.agentknowledgeignore`
 - `AGENTS.md`
 - optional `.cursor/hooks.json`
 
@@ -110,6 +120,21 @@ This is different from project knowledge sync:
 
 - project sync is about repo changes and project memory
 - global tooling sync is about safe user-level tool configuration that can affect work across projects
+
+### Optional Graph Sync
+
+```bash
+scripts/graphify-sync.sh --project /path/to/repo
+```
+
+What it does:
+
+- looks for optional graph/discovery export artifacts such as `graphify` outputs
+- imports them under `Evidence/imports/graphify/`
+- generates non-canonical summaries under `Outputs/graphify/`
+- keeps graph structure as evidence first instead of promoting it into `Memory/`
+
+This flow is optional. Missing graph tooling does not fail the knowledge system.
 
 ### Ship
 
@@ -156,6 +181,7 @@ Operational scripts are designed to be safe and reviewable:
 - file writes go through compare-before-replace helpers
 - scripts fail fast on broken setup instead of mutating partial state
 - canonical mode requires `./agent-knowledge` to resolve to the external knowledge folder
+- import-oriented scripts use lightweight cache signatures where practical so unchanged evidence sources can be skipped
 
 Current write-oriented scripts with `--dry-run` support:
 
@@ -164,8 +190,17 @@ Current write-oriented scripts with `--dry-run` support:
 - `scripts/import-agent-history.sh`
 - `scripts/update-knowledge.sh`
 - `scripts/global-knowledge-sync.sh`
+- `scripts/graphify-sync.sh`
 - `scripts/compact-memory.sh`
 - `scripts/ship.sh`
+
+## Ignore Controls
+
+Use `.agentknowledgeignore` in the project repo to exclude noisy paths from evidence and structural discovery imports.
+
+- history import respects it for repo structure, docs, config files, task files, traces, and similar project-local sources
+- graph sync respects it for project-local graph/discovery artifact paths
+- global tooling sync does not use it because those sources come from an explicit allowlist outside the repo
 
 ## Hooks
 
@@ -195,6 +230,7 @@ Keep hooks lightweight, inspectable, and easy to disable.
 - `scripts/install-project-links.sh`: connect a repo to the external knowledge folder and optional hooks
 - `scripts/bootstrap-memory-tree.sh`: initialize or repair the knowledge tree scaffold
 - `scripts/import-agent-history.sh`: refresh raw and imported evidence only
+- `scripts/graphify-sync.sh`: optional graph/discovery import into evidence and outputs
 - `scripts/update-knowledge.sh`: main project knowledge sync primitive
 - `scripts/global-knowledge-sync.sh`: safe tooling sync into project-local tooling memory/evidence
 - `scripts/compact-memory.sh`: compact noisy recent-change sections

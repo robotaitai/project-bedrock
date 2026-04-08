@@ -42,6 +42,7 @@ Inspect:
 - config files
 - test directories
 - workflow files
+- any structural evidence already present under `Evidence/imports/` or `Outputs/`
 
 Infer the profile from the strongest verified signals:
 
@@ -108,11 +109,13 @@ The bootstrap pass should seed the tree from verified signals only:
 - **Conventions**: look for config files and style/tooling signals
 - **Gotchas**: only record verified warnings or operational constraints
 - **Profile-specific branches**: seed from the strongest matching directories and docs
+- **Structural evidence outputs**: use `Outputs/architecture-summary.md` or `Outputs/structural-map.md` only as orientation, not canonical truth
 
 For each fact you write:
 - Use **Current State** section for what is true now
 - Keep it concise and verified
 - Do not invent facts — write only what you can verify from the repo
+- If the best source is machine-generated structure, treat it as evidence and verify against the repo before promoting it into memory
 
 ---
 
@@ -139,6 +142,12 @@ Bootstrap creates structure only. To fill it with real project history:
 
 ```bash
 scripts/import-agent-history.sh /path/to/project
+```
+
+Optional structural graph imports can be added with:
+
+```bash
+scripts/graphify-sync.sh /path/to/project
 ```
 
 Then follow the `history-backfill` skill to distill evidence into memory.

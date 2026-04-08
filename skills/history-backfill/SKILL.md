@@ -17,7 +17,8 @@ Use this after `project-ontology-bootstrap` when the project has existing histor
 | Location | What goes here | Who edits it |
 |----------|----------------|--------------|
 | `agent-knowledge/Evidence/raw/` | Direct snapshots from the current repo state | Only the import script |
-| `agent-knowledge/Evidence/imports/` | Imported docs, tasks, sessions, and traces | Only the import script |
+| `agent-knowledge/Evidence/imports/` | Imported docs, tasks, sessions, traces, graph exports, and structural notes | Only the import script |
+| `agent-knowledge/Outputs/` | Generated discovery summaries and structural maps | Only scripts or agents treating them as non-canonical outputs |
 | `agent-knowledge/Memory/` | Curated, stable, distilled facts | Only the agent, via writeback rule |
 
 Never write raw evidence into memory. Never treat evidence as authoritative — it is input for judgment, not truth.
@@ -47,6 +48,10 @@ This creates:
 - `Evidence/imports/session-files.txt`
 - `Evidence/imports/cursor-sessions.txt`
 - `Evidence/imports/trace-index.txt`
+- `Evidence/imports/structural-summary.md`
+- `Outputs/architecture-summary.md`
+- `Outputs/structural-map.md`
+- `Evidence/imports/graphify/` and `Outputs/graphify/` when optional graph imports exist
 
 ---
 
@@ -63,7 +68,13 @@ Read these files in order. Each source has different signal quality:
 7. **`raw/git-log-detail.txt`** and **`raw/git-log.txt`** — what changed and why.
 8. **`imports/trace-index.txt`** — supplemental traces only; never canonical truth.
 
-For agent traces (Cursor transcripts): treat as evidence with low confidence — the agent may have been wrong. Extract patterns, not individual claims.
+Read confidence labels before trusting a source:
+
+- `EXTRACTED` means direct structural evidence
+- `INFERRED` means a derived summary that still needs review
+- `AMBIGUOUS` means the source may be stale, partial, or wrong
+
+For agent traces (Cursor transcripts) and graph summaries: treat them as evidence with lower confidence than direct repo scans. Extract patterns, not individual claims.
 
 ---
 
@@ -95,6 +106,7 @@ Do not write:
 - Speculative interpretations of code intent
 - Facts already in project docs that agents can read directly
 - Anything marked as in-progress or planned (goes in session file until confirmed)
+- Machine-generated relationship graphs or architecture summaries unless they have been verified against the repo
 
 ---
 

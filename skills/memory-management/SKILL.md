@@ -36,6 +36,8 @@ agent-knowledge/
 
 Evidence (`agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/`) is separate from curated memory (`agent-knowledge/Memory/`).
 Never copy raw evidence into memory. Distill only stable, verified facts.
+Generated structural outputs, relationship graphs, and inferred summaries belong in `Evidence/` or `Outputs/` first.
+Only curated notes under `Memory/` are durable project knowledge.
 
 ---
 
@@ -72,6 +74,12 @@ Branch notes use these sections:
 
 Use markdown links for portability. Avoid wiki-links and tool-specific metadata.
 
+Evidence and generated discovery notes should carry confidence labels when practical:
+
+- `EXTRACTED` for direct listings, copied docs, manifests, and path indexes
+- `INFERRED` for machine-generated summaries or architecture guesses
+- `AMBIGUOUS` for sessions, traces, or uncertain imports that may be stale or wrong
+
 ---
 
 ## Reading the tree
@@ -80,6 +88,7 @@ Use markdown links for portability. Avoid wiki-links and tool-specific metadata.
 2. Identify which branch notes the task touches from the root note.
 3. Read only those area files — keep context lean.
 4. Follow subtopic links only if the specific detail is needed.
+5. For existing projects, scan `Outputs/architecture-summary.md`, `Outputs/structural-map.md`, or optional `Outputs/graphify/` summaries before grepping raw files.
 
 ---
 
@@ -114,6 +123,7 @@ Do NOT write:
 - Speculative plans → wait until confirmed
 - Facts already in git history that are easily re-discoverable
 - Raw evidence → keep it in `Evidence/`
+- Machine-generated structure or graph summaries → keep them in `Evidence/` or `Outputs/` until curated
 
 ---
 

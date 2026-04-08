@@ -22,3 +22,8 @@ Expected files include:
 - `session-files.txt`
 - `cursor-sessions.txt`
 - `trace-index.txt`
+- `structural-summary.md`
+- `graphify/` (optional)
+
+Imported or generated evidence may include adjacent `.meta.json` files with source,
+kind, confidence, generated_at, related_paths, and notes.

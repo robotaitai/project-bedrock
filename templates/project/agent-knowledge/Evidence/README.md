@@ -26,3 +26,9 @@ Imported docs, tasks, sessions, traces, and other supplemental artifacts.
 
 Optional redacted tooling imports created by the global tooling sync flow.
 → `tooling/`
+
+## Confidence Labels
+
+- `EXTRACTED` means directly copied or listed from a source.
+- `INFERRED` means derived summary output that still requires review.
+- `AMBIGUOUS` means the source may be stale, incomplete, or unreliable.

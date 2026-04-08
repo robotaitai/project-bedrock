@@ -131,6 +131,13 @@ validate_durable_note() {
                 fi
             done
             ;;
+        structural-evidence|generated-output)
+            for heading in "## Purpose"; do
+                if ! grep -q "^$heading\$" "$file"; then
+                    ERRORS+=("$rel is missing required section: $heading")
+                fi
+            done
+            ;;
         decision)
             for heading in "## What" "## Why" "## Alternatives Considered" "## Consequences"; do
                 if ! grep -q "^$heading\$" "$file"; then
@@ -185,6 +192,7 @@ for path in \
     "$AGENTS_RULES_DIR/scripts/update-knowledge.sh" \
     "$AGENTS_RULES_DIR/scripts/ship.sh" \
     "$AGENTS_RULES_DIR/scripts/global-knowledge-sync.sh" \
+    "$AGENTS_RULES_DIR/scripts/graphify-sync.sh" \
     "$AGENTS_RULES_DIR/scripts/bootstrap-memory-tree.sh" \
     "$AGENTS_RULES_DIR/scripts/import-agent-history.sh" \
     "$AGENTS_RULES_DIR/scripts/compact-memory.sh" \
@@ -193,6 +201,7 @@ for path in \
     "$AGENTS_RULES_DIR/commands/knowledge-sync.md" \
     "$AGENTS_RULES_DIR/commands/ship.md" \
     "$AGENTS_RULES_DIR/commands/global-knowledge-sync.md" \
+    "$AGENTS_RULES_DIR/commands/graphify-sync.md" \
     "$AGENTS_RULES_DIR/commands/doctor.md" \
     "$AGENTS_RULES_DIR/rules/memory-bootstrap.mdc" \
     "$AGENTS_RULES_DIR/rules/memory-writeback.mdc" \

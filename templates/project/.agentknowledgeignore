@@ -1,0 +1,10 @@
+# Paths here are excluded from evidence and structural discovery imports.
+# Patterns are matched relative to the project root.
+# Blank lines and lines starting with # are ignored.
+
+# Examples:
+# vendor/
+# generated/
+# tmp/
+# *.snap
+# logs/

@@ -36,7 +36,7 @@ Ephemeral in-progress session state.
 
 ## Outputs
 
-Generated summaries, handoff notes, and exports that are useful to keep nearby.
+Generated summaries, structural maps, and handoff notes that are useful to keep nearby.
 → [Outputs/README.md](Outputs/README.md)
 
 ## Dashboards

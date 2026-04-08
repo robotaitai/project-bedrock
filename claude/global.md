@@ -37,7 +37,7 @@ Think deeply, act decisively, speak briefly.
 ## Memory
 
 - Save stable patterns, preferences, and architectural decisions to memory files
-- Keep the MEMORY.md index concise (truncated after ~200 lines); put detail in topic files
+- Keep the Memory/MEMORY.md note concise (truncated after ~200 lines); put detail in branch files
 - Update or remove memories that turn out to be wrong or outdated
 - Never save session-specific, in-progress, or speculative information
 - When the user asks to remember something: save it immediately

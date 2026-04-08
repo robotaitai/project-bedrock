@@ -5,15 +5,15 @@ alwaysApply: true
 
 # Memory Writeback
 
-After completing any task, evaluate whether durable knowledge was produced.
-If yes, write it to memory before the session ends.
-If no, state that explicitly so the rule is visibly satisfied.
+After any meaningful project change, evaluate whether durable project understanding changed.
+If yes, update the correct memory branch before ending the session.
+If no, say so explicitly.
 
 ---
 
 ## Evaluation — ask after every meaningful task
 
-> "Did this session produce a fact that future agents will need and cannot easily re-derive?"
+> "Did this session change what future sessions should understand about this project?"
 
 Write to memory if the answer is yes for any of:
 - An architectural decision was made or reversed
@@ -28,6 +28,7 @@ Skip writeback if:
 - The change is already captured in git or inline documentation
 - The fact is session-specific and won't matter in a future session
 - The fact is speculative and not yet confirmed
+- The work changed code but not project understanding
 
 When skipping, state it: **Memory writeback: none needed.**
 
@@ -37,10 +38,10 @@ When skipping, state it: **Memory writeback: none needed.**
 
 | Fact type | Target |
 |-----------|--------|
-| Architectural decision | `decisions/YYYY-MM-DD-slug.md` + link from area file |
-| New pattern / convention | `conventions.md` → Current State |
-| Gotcha or constraint | `gotchas.md` → Current State |
-| Stack change | `stack.md` → Current State + Recent Changes |
+| Architectural decision | `agent-knowledge/Memory/decisions/YYYY-MM-DD-slug.md` + link from the relevant branch |
+| New pattern / convention | `agent-knowledge/Memory/conventions.md` → Current State |
+| Gotcha or constraint | `agent-knowledge/Memory/gotchas.md` → Current State |
+| Stack change | `agent-knowledge/Memory/stack.md` → Current State + Recent Changes |
 | Completed feature area | relevant area file → Current State |
 | Lesson from a mistake | relevant area file → Current State, with **Why:** and **How to apply:** |
 
@@ -50,12 +51,13 @@ When skipping, state it: **Memory writeback: none needed.**
 
 1. Identify the target area file.
 2. Read its current content.
-3. Add or update the fact in the correct section.
+3. Preserve YAML frontmatter and add or update the fact in the correct section.
    - **Current State**: what is true now (replace stale entries, don't append duplicates)
    - **Recent Changes**: YYYY-MM-DD — what changed (prune entries older than ~4 weeks)
    - **Decisions**: link to decision file
-4. If the area file now exceeds ~150 lines, follow the `memory-compaction` skill.
-5. Update MEMORY.md one-line description if the area's scope changed.
+   - **Open Questions**: add unresolved items only if they remain open after verification
+4. If the branch now exceeds ~150 lines, follow the `memory-compaction` skill.
+5. If branch summaries changed, update `agent-knowledge/Memory/MEMORY.md`.
 
 For architectural decisions, use the `decision-recording` skill — do not inline them.
 

@@ -16,7 +16,7 @@ Apply this rule once per project. It is not needed on every session.
 
 Apply after `memory-bootstrap` when the project:
 - Has a git history with more than ~10 commits
-- Has existing documentation (README, CLAUDE.md, AGENTS.md, agent-docs/)
+- Has existing documentation (README, CLAUDE.md, AGENTS.md, `.agent-project.yaml`, `agent-knowledge/`)
 - Has existing task files (`tasks/todo.md`, `tasks/lessons.md`)
 - Was previously worked on by another agent or developer
 
@@ -28,30 +28,31 @@ Do NOT apply on every session — only when onboarding or when memory is newly e
 
 1. Read the `history-backfill` skill.
 2. Run `scripts/import-agent-history.sh .` to collect raw evidence.
-3. Read evidence files in priority order (existing-docs first, then manifests, structure, git).
+3. Read evidence files in priority order (docs first, then manifests/configs/tests/workflows, then git and sessions).
 4. Distill stable facts into memory area files (Current State section).
 5. Record any architectural decisions found in `decisions/`.
-6. Update MEMORY.md one-line descriptions to reflect real content.
+6. Update `Memory/MEMORY.md` branch summaries to reflect real content.
 7. Leave Open Questions for anything evidence hints at but doesn't resolve.
 
 ---
 
 ## Evidence sources (priority order)
 
-1. `agent-docs/evidence/existing-docs.txt` — README, CLAUDE.md, AGENTS.md (highest signal)
-2. `agent-docs/evidence/manifests.txt` — authoritative for stack
-3. `agent-docs/evidence/structure.txt` — actual architecture
-4. `agent-docs/evidence/tasks.txt` — active work areas and lessons
-5. `agent-docs/evidence/git-log-detail.txt` — why things changed
-6. `agent-docs/evidence/git-log.txt` — what changed over time
-7. `agent-docs/evidence/ci-workflows.txt` — build and deploy requirements
+1. `agent-knowledge/Evidence/imports/existing-docs.txt` — README, CLAUDE.md, AGENTS.md, `.agent-project.yaml`
+2. `agent-knowledge/Evidence/raw/manifests.txt` — authoritative for stack
+3. `agent-knowledge/Evidence/raw/config-files.txt` — strong signal for conventions
+4. `agent-knowledge/Evidence/raw/tests.txt` and `raw/ci-workflows.txt` — verification and deploy signal
+5. `agent-knowledge/Evidence/raw/structure.txt` — actual architecture shape
+6. `agent-knowledge/Evidence/imports/tasks.txt` and `imports/session-files.txt` — context and recurring work areas
+7. `agent-knowledge/Evidence/raw/git-log-detail.txt` and `raw/git-log.txt` — why and what changed over time
+8. `agent-knowledge/Evidence/imports/trace-index.txt` — supporting traces only, never canonical truth
 
 ---
 
 ## Separation principle
 
-Evidence (`agent-docs/evidence/`) is raw input — overwritten on each script run.
-Memory (`agent-docs/memory/`) is curated output — maintained by the writeback rule.
+Evidence (`agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/`) is input — overwritten or refreshed on each import run.
+Memory (`agent-knowledge/Memory/`) is curated output — maintained by the writeback rule.
 
 Never write evidence files into memory. Never treat a single evidence source as truth
 without corroboration.

@@ -68,8 +68,8 @@ Session lifecycle includes memory at start and end:
 
 ```
 session start
-  ├─ check memory-bootstrap rule (bootstrap if MEMORY.md missing or generic)
-  ├─ read MEMORY.md and relevant area files
+  ├─ check memory-bootstrap rule (bootstrap if Memory/MEMORY.md missing or generic)
+  ├─ read agent-knowledge/Memory/MEMORY.md and relevant branch notes
   └─ read session-management skill
 
 plan → execute → verify
@@ -77,7 +77,7 @@ plan → execute → verify
 
 session end
   ├─ evaluate writeback: did this session produce durable knowledge?
-  ├─ if yes: apply memory-writeback rule (area files + decisions/ as needed)
+  ├─ if yes: apply memory-writeback rule (branch notes + decisions/ as needed)
   └─ if no: state "Memory writeback: none needed."
 ```
 
@@ -85,3 +85,9 @@ For new or inherited projects, insert **history backfill** after bootstrap:
 ```
 bootstrap → import-agent-history.sh → history-backfill skill → steady-state
 ```
+
+The required loop is:
+1. Plan the work.
+2. Execute the change.
+3. Verify behavior.
+4. Write back durable project understanding when needed.

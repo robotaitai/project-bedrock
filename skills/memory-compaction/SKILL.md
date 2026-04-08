@@ -1,6 +1,6 @@
 ---
 name: memory-compaction
-description: Compact and prune the memory tree when it grows large or stale. Use when MEMORY.md approaches 200 lines, area files exceed 150 lines, or when explicitly asked to clean up memory.
+description: Compact and prune the memory tree when it grows large or stale. Use when Memory/MEMORY.md grows noisy, area files exceed 150 lines, or when explicitly asked to clean up memory.
 ---
 
 # Memory Compaction
@@ -14,9 +14,9 @@ Run this when `compact-memory.sh` reports warnings, or proactively after dense w
 ## Invariants — never violate
 
 - Every durable fact must survive compaction (move or merge, never delete)
-- MEMORY.md must end at or below 200 lines
-- Every area file must be linked from MEMORY.md
-- Evidence files (`agent-docs/evidence/`) are never touched during compaction
+- `Memory/MEMORY.md` must stay short and scannable
+- Every branch file must be linked from `Memory/MEMORY.md`
+- Evidence files are never touched during compaction
 
 ---
 
@@ -55,14 +55,14 @@ Do not prune:
 If an area file exceeds ~150 lines:
 
 1. Identify the dominant sub-topic that makes it large
-2. Create `agent-docs/memory/<area>/<subtopic>.md` using `area.template.md`
+2. Create `agent-knowledge/Memory/<area>/<subtopic>.md` using `area.template.md`
 3. Move the sub-topic content there
 4. Replace the moved section in the area file with:
    ```markdown
    ## Subtopics
    → [subtopic.md](<area>/subtopic.md) — one-line description
    ```
-5. Update MEMORY.md if the area entry needs adjusting
+5. Update `Memory/MEMORY.md` if the branch summary needs adjusting
 
 ---
 
@@ -73,22 +73,21 @@ If two area files cover the same ground and together are under ~100 lines:
 1. Choose the name that better describes the combined scope
 2. Merge content, resolving any contradictions (newer wins)
 3. Delete the merged file
-4. Update MEMORY.md index to remove the deleted entry and update the surviving one
+4. Update `Memory/MEMORY.md` to remove the deleted entry and update the surviving one
 
 ---
 
-## Step 5 — Compact MEMORY.md
+## Step 5 — Compact Memory/MEMORY.md
 
-The root index must be scannable at a glance. Each area block must be:
+The root note must be scannable at a glance. Keep:
 
 ```markdown
-## <Area>
-<one-line description of current state — no inline detail>
-→ [<area>.md](<area>.md)
+- one short summary per branch
+- markdown links to the branch notes
+- only the most useful open questions
 ```
 
 Remove:
-- Placeholder descriptions that still contain `<placeholder:...>`
 - Areas with empty files that will not be populated
 - Duplicate entries
 
@@ -108,8 +107,7 @@ Mark superseded decisions with `~~strikethrough~~` or `[reversed]` in the index.
 ## Output checklist
 
 - [ ] `compact-memory.sh` shows no CRITICAL or WARNING flags
-- [ ] MEMORY.md is under 200 lines
+- [ ] `Memory/MEMORY.md` is short and readable
 - [ ] No area file exceeds 150 lines
-- [ ] All area files are linked from MEMORY.md
-- [ ] No placeholder text (`<placeholder:...>`) remains in MEMORY.md
+- [ ] All area files are linked from `Memory/MEMORY.md`
 - [ ] `decisions/INDEX.md` is current

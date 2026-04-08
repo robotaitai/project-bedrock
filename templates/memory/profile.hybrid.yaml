@@ -1,8 +1,6 @@
-# Profile: hybrid
-# Detected by: multiple language manifests, packages/ or services/ or apps/ subdirs, or workspace file
-# Covers: monorepos, multi-service systems, projects spanning multiple technical domains
-
 profile: hybrid
+title: Hybrid
+description: Monorepos and multi-service systems spanning multiple technical domains.
 areas: [stack, architecture, conventions, gotchas, deployments]
 
 area_hints:
@@ -11,3 +9,15 @@ area_hints:
   conventions: "Cross-package naming, shared lint/test config, monorepo-specific import rules"
   gotchas: "Build order dependencies, shared env vars, cross-service integration quirks, workspace resolution"
   deployments: "Per-service deployment targets, CI/CD pipeline structure, environment promotion flow"
+
+bootstrap_checks:
+  - workspace files
+  - packages or services directories
+  - multiple manifests
+  - workflow files
+
+backfill_focus:
+  - package and service boundaries
+  - shared contracts
+  - build graph
+  - deployment topology

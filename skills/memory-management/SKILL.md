@@ -1,35 +1,40 @@
 ---
 name: memory-management
-description: Read on session start. Manages persistent memory files across conversations. Use when recording learnings, updating MEMORY.md, creating topic files, or when the session-start hook injects memory context.
+description: Read on session start. Manages adaptive durable memory across conversations. Use when reading or writing curated memory under agent-knowledge/Memory/.
 ---
 
 # Memory Management
 
-Manages the project memory tree. Read this skill at session start.
+Manages the adaptive project memory tree. Read this skill at session start.
 
 The memory directory path is provided by the session-start hook
 (e.g., `~/.cursor/projects/<project-id>/memory/MEMORY.md`).
-For project-shared memory, the canonical location is `agent-docs/memory/MEMORY.md` in the repo,
-symlinked to the Cursor memory path.
+For project-shared memory, the canonical repo entrypoint is `./agent-knowledge`.
+Durable curated memory lives at `agent-knowledge/Memory/MEMORY.md`.
 
 ---
 
 ## Tree structure
 
-```
-agent-docs/memory/
-  MEMORY.md              ← root index — always loaded, max ~200 lines
-  <area>.md              ← one file per functional area
-  <area>/<subtopic>.md   ← sub-file when an area file exceeds ~150 lines
-  decisions/
-    INDEX.md             ← decision index, newest first
-    YYYY-MM-DD-slug.md   ← one decision record per choice
-agent-docs/evidence/
-  git-log.txt            ← raw evidence — never edit, re-collect with import script
-  ...
+```text
+agent-knowledge/
+  INDEX.md
+  Memory/
+    MEMORY.md           ← root memory note — always loaded, keep it short
+    <area>.md           ← one durable branch per functional area
+    <area>/<subtopic>.md
+    decisions/
+      INDEX.md          ← decision index, newest first
+      YYYY-MM-DD-slug.md
+  Evidence/
+    raw/
+    imports/
+  Sessions/             ← milestone-oriented temporary state
+  Outputs/
+  Dashboards/
 ```
 
-Evidence (`agent-docs/evidence/`) is separate from curated memory (`agent-docs/memory/`).
+Evidence (`agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/`) is separate from curated memory (`agent-knowledge/Memory/`).
 Never copy raw evidence into memory. Distill only stable, verified facts.
 
 ---
@@ -45,14 +50,16 @@ The areas in the memory tree depend on the project profile detected at bootstrap
 | ml-platform | stack, architecture, conventions, gotchas, datasets, models |
 | hybrid | stack, architecture, conventions, gotchas, deployments |
 
-The profile is recorded in MEMORY.md's header comment.
+The profile is recorded in `Memory/MEMORY.md` frontmatter.
 Add or remove area files as the project grows or shrinks.
 
 ---
 
-## Required sections per area node
+## Durable note requirements
 
-Every area file uses these sections (from `area.template.md`):
+Every durable memory note must have YAML frontmatter.
+
+Branch notes use these sections:
 
 | Section | Content | Updated when |
 |---------|---------|--------------|
@@ -63,12 +70,14 @@ Every area file uses these sections (from `area.template.md`):
 | **Open Questions** | Unresolved items for future sessions | When a question is identified; removed when resolved |
 | **Subtopics** | Links to sub-files | When the area is split |
 
+Use markdown links for portability. Avoid wiki-links and tool-specific metadata.
+
 ---
 
 ## Reading the tree
 
-1. `MEMORY.md` loads automatically — it is the index only.
-2. Identify which area(s) your task touches from the index.
+1. `Memory/MEMORY.md` loads automatically first.
+2. Identify which branch notes the task touches from the root note.
 3. Read only those area files — keep context lean.
 4. Follow subtopic links only if the specific detail is needed.
 
@@ -76,8 +85,8 @@ Every area file uses these sections (from `area.template.md`):
 
 ## Writing to the tree
 
-- **MEMORY.md**: one-line description per area + link. No inline detail.
-- **Area file**: all facts for that area, organized by section.
+- **Memory/MEMORY.md**: short branch summaries + links. No dense detail.
+- **Area file**: all durable facts for that area, organized by section.
 - **Decision file**: one file per architectural decision, linked from the area.
 
 Format for facts: lead with the fact. For lessons: add **Why:** and **How to apply:**.
@@ -86,7 +95,7 @@ Format for facts: lead with the fact. For lessons: add **Why:** and **How to app
 
 ## Bootstrap
 
-If `agent-docs/memory/MEMORY.md` is missing or empty:
+If `agent-knowledge/Memory/MEMORY.md` is missing or empty:
 → Read and follow the `project-ontology-bootstrap` skill before any other work.
 
 ---
@@ -104,12 +113,13 @@ Do NOT write:
 - In-progress task state → session file only
 - Speculative plans → wait until confirmed
 - Facts already in git history that are easily re-discoverable
+- Raw evidence → keep it in `Evidence/`
 
 ---
 
 ## Compaction
 
-When MEMORY.md approaches 200 lines or an area file exceeds ~150 lines:
+When `Memory/MEMORY.md` grows noisy or an area file exceeds ~150 lines:
 → Read and follow the `memory-compaction` skill.
 
 ---

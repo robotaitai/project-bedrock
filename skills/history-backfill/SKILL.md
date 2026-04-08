@@ -16,8 +16,9 @@ Use this after `project-ontology-bootstrap` when the project has existing histor
 
 | Location | What goes here | Who edits it |
 |----------|----------------|--------------|
-| `agent-docs/evidence/` | Raw extracted artifacts — git log, manifests, docs, session lists | Only the import script (overwritten on each run) |
-| `agent-docs/memory/` | Curated, stable, distilled facts | Only the agent, via writeback rule |
+| `agent-knowledge/Evidence/raw/` | Direct snapshots from the current repo state | Only the import script |
+| `agent-knowledge/Evidence/imports/` | Imported docs, tasks, sessions, and traces | Only the import script |
+| `agent-knowledge/Memory/` | Curated, stable, distilled facts | Only the agent, via writeback rule |
 
 Never write raw evidence into memory. Never treat evidence as authoritative — it is input for judgment, not truth.
 
@@ -31,17 +32,21 @@ Run the import script:
 scripts/import-agent-history.sh /path/to/project
 ```
 
-This creates `agent-docs/evidence/`:
-- `git-log.txt` — last 300 commits (oneline)
-- `git-log-detail.txt` — last 50 commits with body
-- `git-authors.txt` — contributor list
-- `structure.txt` — directory tree depth 3
-- `manifests.txt` — package/dependency files
-- `existing-docs.txt` — README, CLAUDE.md, AGENTS.md content
-- `doc-index.txt` — all markdown paths
-- `tasks.txt` — tasks/todo.md, tasks/lessons.md if present
-- `sessions.txt` — session file listing (no content)
-- `ci-workflows.txt` — CI pipeline definitions
+This creates:
+- `Evidence/raw/git-log.txt`
+- `Evidence/raw/git-log-detail.txt`
+- `Evidence/raw/git-authors.txt`
+- `Evidence/raw/structure.txt`
+- `Evidence/raw/manifests.txt`
+- `Evidence/raw/config-files.txt`
+- `Evidence/raw/tests.txt`
+- `Evidence/raw/ci-workflows.txt`
+- `Evidence/imports/existing-docs.txt`
+- `Evidence/imports/doc-index.txt`
+- `Evidence/imports/tasks.txt`
+- `Evidence/imports/session-files.txt`
+- `Evidence/imports/cursor-sessions.txt`
+- `Evidence/imports/trace-index.txt`
 
 ---
 
@@ -49,14 +54,14 @@ This creates `agent-docs/evidence/`:
 
 Read these files in order. Each source has different signal quality:
 
-1. **`existing-docs.txt`** — highest signal. README, CLAUDE.md, AGENTS.md contain curated human intent.
-2. **`manifests.txt`** — authoritative for stack and dependencies.
-3. **`structure.txt`** — reveals actual architecture (dirs, packages, test structure).
-4. **`tasks.txt`** — reveals active work areas and lessons learned.
-5. **`git-log-detail.txt`** — reveals what has been changing and why.
-6. **`git-log.txt`** — reveals patterns of activity (hotspots, refactors, releases).
-7. **`ci-workflows.txt`** — reveals build requirements and deployment targets.
-8. **`sessions.txt`** — listing only; do not read session content (ephemeral).
+1. **`imports/existing-docs.txt`** — highest signal. README, CLAUDE.md, AGENTS.md, and project metadata contain curated intent.
+2. **`raw/manifests.txt`** — authoritative for stack and dependency boundaries.
+3. **`raw/config-files.txt`** — strongest signal for conventions and tooling.
+4. **`raw/tests.txt`** and **`raw/ci-workflows.txt`** — how the project proves and ships behavior.
+5. **`raw/structure.txt`** — actual architecture shape.
+6. **`imports/tasks.txt`** and **`imports/session-files.txt`** — recurring work areas and unresolved questions.
+7. **`raw/git-log-detail.txt`** and **`raw/git-log.txt`** — what changed and why.
+8. **`imports/trace-index.txt`** — supplemental traces only; never canonical truth.
 
 For agent traces (Cursor transcripts): treat as evidence with low confidence — the agent may have been wrong. Extract patterns, not individual claims.
 
@@ -93,12 +98,12 @@ Do not write:
 
 ---
 
-## Step 5 — Update MEMORY.md
+## Step 5 — Update Memory/MEMORY.md
 
-After updating area files, check that MEMORY.md reflects the new content:
-- Update the one-line description for any area that changed significantly
-- Add new area entries if backfill reveals areas not in the initial profile
-- Remove placeholder entries (`<placeholder:...>`) that now have real content
+After updating branch notes, check that `Memory/MEMORY.md` reflects the new content:
+- Keep the root note short
+- Update branch summaries if their durable state changed
+- Add branch links if backfill reveals a needed new branch
 
 ---
 
@@ -108,5 +113,5 @@ After updating area files, check that MEMORY.md reflects the new content:
 - [ ] Any patterns from git log are captured in **conventions** or **gotchas**
 - [ ] Active decisions found in docs are recorded in `decisions/`
 - [ ] Open questions are listed for anything evidence hints at but doesn't resolve
-- [ ] MEMORY.md descriptions are updated to match real content
+- [ ] `Memory/MEMORY.md` reflects the real branch state
 - [ ] No evidence content was written directly into memory files

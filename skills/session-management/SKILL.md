@@ -10,6 +10,7 @@ resume quickly from prior work.
 
 The session file path is provided by the session-start hook
 (e.g., `~/.cursor/projects/<project-id>/sessions/`).
+For project-shared session notes, use `agent-knowledge/Sessions/`.
 
 ---
 
@@ -18,7 +19,7 @@ The session file path is provided by the session-start hook
 | Session file | Memory tree |
 |-------------|------------|
 | Ephemeral — deleted or archived when no longer active | Durable — persists across all sessions |
-| Tracks current task progress | Tracks stable project knowledge |
+| Tracks current task progress | Tracks stable project understanding |
 | Milestone-oriented log entries | Fact-oriented structured files |
 | Private to one conversation thread | Shared across all agents and conversations |
 | Write freely, prune aggressively | Write carefully, never speculate |
@@ -82,16 +83,22 @@ Filename: `YYYY-MM-DD-<title-slug>-<UUID>.tmp`
 
 Before ending a session with meaningful output, check:
 
-**Does this session contain durable knowledge that future sessions will need?**
+**Did this session change durable project understanding?**
 
 If yes — follow the `memory-writeback` rule:
 1. Identify the durable fact (decision, pattern, gotcha, lesson)
-2. Write it to the relevant `agent-docs/memory/<area>.md`
+2. Write it to the relevant `agent-knowledge/Memory/<area>.md`
 3. For architectural decisions: use the `decision-recording` skill
 4. Once written to memory, remove or summarize it in the session file (avoid duplication)
 
-If no meaningful new knowledge was produced — no writeback needed. State this explicitly:
+If no meaningful new project understanding was produced — no writeback needed. State this explicitly:
 > Memory writeback: none needed (no new durable facts this session).
+
+Examples that should NOT trigger writeback:
+- Progress within one task but no stable new conclusion
+- Temporary debugging state
+- Notes that only matter to the current conversation
+- Evidence review that did not change curated understanding
 
 ---
 

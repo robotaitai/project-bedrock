@@ -6,33 +6,34 @@ alwaysApply: true
 # Memory Bootstrap
 
 Check for a valid memory tree at the start of any session that involves real project work.
-If missing or empty, bootstrap it first.
+If missing, overly generic, or obviously stale, bootstrap it first.
 
 ---
 
 ## Check condition
 
-Look for `agent-docs/memory/MEMORY.md` in the project root.
+Look for `agent-knowledge/Memory/MEMORY.md` in the project root.
+The local `./agent-knowledge` path is the project entrypoint and should point to the real dedicated knowledge folder.
 
 | State | Action |
 |-------|--------|
 | File exists and has real content (not just template placeholders) | Skip — proceed with the task |
-| File exists but contains only `<placeholder:...>` entries | Re-bootstrap: read `project-ontology-bootstrap` skill |
-| File is missing or empty | Bootstrap: read `project-ontology-bootstrap` skill |
+| File exists but contains only bootstrap placeholders or generic "no verified facts yet" text | Re-bootstrap or backfill: read `project-ontology-bootstrap` skill |
+| File is missing, empty, or the `agent-knowledge` pointer is broken | Bootstrap: read `project-ontology-bootstrap` skill |
 
-"Real content" means at least one area has a **Current State** entry that isn't a TODO marker.
+"Real content" means the memory root has frontmatter and at least one branch note contains verified facts in **Current State**.
 
 ---
 
 ## Bootstrap steps (summary — full detail in skill)
 
 1. Read the `project-ontology-bootstrap` skill.
-2. Detect project type from repo structure and manifests.
-3. Select the matching profile from `templates/memory/profile.<type>.yaml`.
-4. Run `scripts/bootstrap-memory-tree.sh .` (or follow the skill manually).
-5. Populate what you can immediately from reading the repo.
-6. Collect evidence: `scripts/import-agent-history.sh .`
-7. Follow `history-backfill` skill to populate from evidence.
+2. Ensure the local `./agent-knowledge` pointer exists and resolves to the external knowledge folder. If it does not, run `scripts/install-project-links.sh` first.
+3. Inspect repo structure, manifests, docs, configs, tests, and workflows.
+4. Select the matching profile from `templates/memory/profile.<type>.yaml`.
+5. Run `scripts/bootstrap-memory-tree.sh .` (or follow the skill manually).
+6. Collect evidence with `scripts/import-agent-history.sh .`
+7. If the project already has history, apply `history-backfill`.
 8. Confirm the tree is in place before proceeding with the user's task.
 
 ---

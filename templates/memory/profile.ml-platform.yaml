@@ -1,8 +1,6 @@
-# Profile: ml-platform
-# Detected by: pyproject.toml or requirements.txt with ML libs + notebooks/ or models/ or data/ dirs
-# Covers: ML pipelines, model training/serving, data engineering, experiment tracking
-
 profile: ml-platform
+title: ML Platform
+description: Model training, data pipelines, serving, and experiment tracking systems.
 areas: [stack, architecture, conventions, gotchas, datasets, models]
 
 area_hints:
@@ -12,3 +10,16 @@ area_hints:
   gotchas: "GPU/env setup, data versioning, non-determinism sources, scale limits, dependency conflicts"
   datasets: "Data sources, schema, version lineage, known quality issues, access patterns"
   models: "Active models in production, evaluation baselines, versioning scheme, rollback procedure"
+
+bootstrap_checks:
+  - pyproject.toml or requirements.txt
+  - notebooks
+  - models
+  - data
+  - workflow files
+
+backfill_focus:
+  - data lineage
+  - model registry and rollout
+  - experiment tracking
+  - serving paths

@@ -5,28 +5,36 @@ alwaysApply: true
 
 # Shared Memory
 
-This project stores persistent memory at `agent-docs/memory/MEMORY.md` (in the repo).
-The Cursor project memory (`~/.cursor/projects/<project-id>/memory/`) is symlinked to that directory — all agents (Cursor, Claude Code, etc.) read and write the same files.
+This project stores persistent memory at `agent-knowledge/Memory/MEMORY.md`.
+The repo-local `./agent-knowledge` path is the working entrypoint and should point to the real dedicated knowledge folder.
+If Cursor project memory is used, `~/.cursor/projects/<project-id>/memory/` should point to `./agent-knowledge/Memory/` so all agents read and write the same curated files.
 
 When the symlink is missing or broken, create it:
 ```bash
-ln -s <workspace>/agent-docs/memory ~/.cursor/projects/<project-id>/memory
+ln -s <workspace>/agent-knowledge/Memory ~/.cursor/projects/<project-id>/memory
 ```
 
 ## Tree structure
 
 Memory is organized as a **tree**. Agents load only the branches relevant to their current task.
 
-```
-agent-docs/memory/
-  MEMORY.md              ← root index — always loaded, max ~200 lines
-  <area>.md              ← one file per functional area (branch node)
-  <area>/<subtopic>.md   ← deep detail for a sub-area (leaf node)
+```text
+agent-knowledge/
+  INDEX.md
+  Memory/
+    MEMORY.md           ← root curated-memory index — always loaded, max ~200 lines
+    <area>.md           ← one file per functional area (branch node)
+    <area>/<subtopic>.md
+    decisions/
+  Evidence/
+    raw/
+    imports/
+  Sessions/
 ```
 
 ### Reading the tree
 
-1. `MEMORY.md` is always loaded automatically. It is a concise index only — no deep detail.
+1. `Memory/MEMORY.md` is always loaded automatically. It is a concise index only — no deep detail.
 2. At session start, identify which area(s) your task touches from the index entries.
 3. Read the relevant area file(s) before starting work.
 4. If the area file links to a sub-topic file needed for your task, read that too.
@@ -34,12 +42,12 @@ agent-docs/memory/
 
 ### Writing to the tree
 
-- **MEMORY.md**: one-line entry per area, with a relative link to the area file. Keep it under 200 lines.
+- **Memory/MEMORY.md**: short branch summaries with relative links. Keep it under 200 lines.
 - **Area file** (`<area>.md`): all stable facts, decisions, gotchas, and patterns for that area.
 - **Sub-topic file** (`<area>/<subtopic>.md`): created only when an area file grows beyond ~150 lines or a sub-topic needs isolated detail.
 - When adding a sub-topic file, replace the inline detail in the area file with a one-line link.
 
-### Example index entry in MEMORY.md
+### Example branch link in Memory/MEMORY.md
 
 ```markdown
 ## OCR Pipeline
@@ -79,9 +87,9 @@ Lead with the fact. For feedback/lessons: add a **Why:** line and a **How to app
 
 ## v2 extensions
 
-- **Bootstrap**: if `agent-docs/memory/MEMORY.md` is missing, apply the `memory-bootstrap` rule before any other work.
+- **Bootstrap**: if `agent-knowledge/Memory/MEMORY.md` is missing, apply the `memory-bootstrap` rule before any other work.
 - **Writeback**: after meaningful state changes, apply the `memory-writeback` rule.
 - **Backfill**: when memory is sparse and the repo has history, apply the `history-backfill` rule.
 - **Decisions**: record architecture decisions with the `decision-recording` skill.
 - **Compaction**: when files grow large, apply the `memory-compaction` skill.
-- **Evidence**: raw evidence lives in `agent-docs/evidence/` — never mix with curated memory.
+- **Evidence**: evidence lives in `agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/` — never mix with curated memory.

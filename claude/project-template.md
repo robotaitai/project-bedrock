@@ -32,14 +32,15 @@
 
 - Search the codebase first. Reuse existing patterns.
 - Ask before creating new packages or major abstractions.
-- Read docs in `docs/` or `agent-docs/` before implementing.
+- Read docs in `docs/` or `agent-knowledge/` before implementing.
 
 ## Shared Memory
 
-Persistent project memory lives at `agent-docs/memory/MEMORY.md`.
+Persistent project memory lives at `agent-knowledge/Memory/MEMORY.md`.
+The local `agent-knowledge/` path should point to the real dedicated knowledge folder.
 Read it at the start of each session. Write back after meaningful changes.
 
-- If `agent-docs/memory/MEMORY.md` is missing: run `scripts/bootstrap-memory-tree.sh .`
+- If `agent-knowledge/Memory/MEMORY.md` is missing: run `scripts/bootstrap-memory-tree.sh .`
 - After any architectural decision: use the `decision-recording` skill
 - After any meaningful state change: follow the `memory-writeback` rule
 - To backfill from git/docs history: run `scripts/import-agent-history.sh .`

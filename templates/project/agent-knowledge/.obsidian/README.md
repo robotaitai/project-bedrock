@@ -1,0 +1,16 @@
+---
+note_type: obsidian-index
+project: <project-name>
+status: active
+last_updated: <date>
+tags:
+  - agent-knowledge
+  - obsidian
+---
+
+# .obsidian
+
+This starter setup keeps the vault markdown-first and portable.
+
+Keep this lightweight in shared repos.
+Avoid committing machine-specific workspace noise unless the team explicitly wants it.

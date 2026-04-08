@@ -1,118 +1,191 @@
 #!/bin/bash
 #
-# Report memory tree health and flag compaction candidates.
-#
-# Usage:
-#   ./compact-memory.sh [project-dir]
-#   ./compact-memory.sh .
-#
-# Output: line counts, health flags, and a recommended action for each file.
-#
-# This script ONLY reports — it does not edit files.
-# Actual compaction is done by the agent following the memory-compaction skill.
+# Compact and clean memory notes conservatively.
 #
 
 set -euo pipefail
 
-TARGET_PROJECT="${1:-.}"
-TARGET_PROJECT="$(cd "$TARGET_PROJECT" && pwd)"
-MEMORY_DIR="$TARGET_PROJECT/agent-docs/memory"
-EVIDENCE_DIR="$TARGET_PROJECT/agent-docs/evidence"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+# shellcheck source=/dev/null
+. "$SCRIPT_DIR/lib/knowledge-common.sh"
 
-if [ ! -d "$MEMORY_DIR" ]; then
-    echo "No memory tree at: $MEMORY_DIR"
-    echo "Run: scripts/bootstrap-memory-tree.sh $TARGET_PROJECT"
-    exit 1
-fi
+usage() {
+    cat <<'EOF'
+Usage:
+  scripts/compact-memory.sh [project-dir]
+  scripts/compact-memory.sh --project <dir> [--dry-run] [--json] [--summary-file <file>]
+EOF
+}
 
-WARN=0
+TARGET_PROJECT_ARG="."
+POSITIONAL=()
+COMPACTED=()
+WARNINGS=()
 
-check_file() {
-    local f="$1"
-    local lines
-    lines=$(wc -l < "$f" 2>/dev/null || echo 0)
-    local rel="${f#$MEMORY_DIR/}"
-    local action=""
-
-    if [ "$lines" -gt 200 ]; then
-        action="CRITICAL: split immediately"
-        WARN=1
-    elif [ "$lines" -gt 150 ]; then
-        action="WARNING: split candidate"
-        WARN=1
-    elif [ "$lines" -lt 5 ]; then
-        action="note: stub or empty — populate or remove"
+while [ "$#" -gt 0 ]; do
+    if kc_parse_common_flag "$@" ; then
+        shift
+        continue
+    fi
+    flag_status=$?
+    if [ "$flag_status" -eq 2 ]; then
+        shift 2
+        continue
     fi
 
-    if [ -n "$action" ]; then
-        printf "  %-45s %4d lines  [%s]\n" "$rel" "$lines" "$action"
-    else
-        printf "  %-45s %4d lines\n" "$rel" "$lines"
+    case "$1" in
+        --project)
+            TARGET_PROJECT_ARG="${2:-.}"
+            shift 2
+            ;;
+        *)
+            POSITIONAL+=("$1")
+            shift
+            ;;
+    esac
+done
+
+if [ "$SHOW_HELP" -eq 1 ]; then
+    usage
+    exit 0
+fi
+
+if [ ${#POSITIONAL[@]} -ge 1 ]; then
+    TARGET_PROJECT_ARG="${POSITIONAL[0]}"
+fi
+
+kc_load_project_context "$TARGET_PROJECT_ARG"
+[ -d "$MEMORY_DIR" ] || kc_fail "No memory tree at: $MEMORY_DIR"
+
+compact_recent_changes() {
+    local file="$1"
+    local limit="$2"
+    local label="$3"
+    local tmp_file
+
+    tmp_file="$(mktemp)"
+    awk -v limit="$limit" '
+        BEGIN {
+            in_recent = 0
+            count = 0
+        }
+        {
+            if ($0 == "## Recent Changes") {
+                in_recent = 1
+                delete seen
+                print
+                next
+            }
+
+            if (in_recent && /^## /) {
+                in_recent = 0
+            }
+
+            if (in_recent) {
+                if ($0 ~ /^- /) {
+                    if (!($0 in seen) && count < limit) {
+                        seen[$0] = 1
+                        kept[++count] = $0
+                    }
+                    next
+                }
+                if ($0 ~ /^[[:space:]]*$/) {
+                    next
+                }
+            }
+
+            print
+
+            if (!in_recent) {
+                next
+            }
+        }
+        END {
+            if (count > 0) {
+                for (i = 1; i <= count; i++) {
+                    print kept[i]
+                }
+            }
+        }
+    ' "$file" > "$tmp_file"
+
+    kc_apply_temp_file "$tmp_file" "$file" "$label"
+    case "$KC_LAST_ACTION" in
+        updated|would-update)
+            COMPACTED+=("$label")
+            ;;
+    esac
+}
+
+health_check_note() {
+    local file="$1"
+    local rel="$2"
+    local lines
+
+    lines="$(wc -l < "$file" 2>/dev/null || echo 0)"
+    if [ "$lines" -gt 220 ]; then
+        WARNINGS+=("$rel is still over 220 lines after compaction")
+    elif [ "$lines" -gt 180 ]; then
+        WARNINGS+=("$rel is still over 180 lines after compaction")
     fi
 }
 
-# ---------------------------------------------------------------------------
-echo "Memory tree: $MEMORY_DIR"
-echo ""
+kc_log "Compacting memory: $MEMORY_DIR"
 
-# Root
-ROOT="$MEMORY_DIR/MEMORY.md"
-ROOT_LINES=$(wc -l < "$ROOT" 2>/dev/null || echo 0)
-printf "MEMORY.md: %d lines" "$ROOT_LINES"
-if [ "$ROOT_LINES" -gt 180 ]; then
-    echo "  [CRITICAL: over 180 — compact immediately]"
-    WARN=1
-elif [ "$ROOT_LINES" -gt 150 ]; then
-    echo "  [WARNING: approaching 200-line limit]"
-    WARN=1
-else
-    echo "  [ok]"
+memory_files="$(find "$MEMORY_DIR" -name "*.md" | sort)"
+while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    rel="$(kc_rel_knowledge_path "$file")"
+    limit=12
+    case "$file" in
+        "$MEMORY_ROOT")
+            limit=8
+            ;;
+        */decisions/*)
+            limit=8
+            ;;
+    esac
+    compact_recent_changes "$file" "$limit" "$rel"
+done <<EOF
+$memory_files
+EOF
+
+while IFS= read -r file; do
+    [ -n "$file" ] || continue
+    rel="$(kc_rel_knowledge_path "$file")"
+    health_check_note "$file" "$rel"
+done <<EOF
+$memory_files
+EOF
+
+kc_status_load
+if [ "${DRY_RUN:-0}" -eq 0 ] && [ ${#COMPACTED[@]} -gt 0 ]; then
+    STATUS_LAST_COMPACTION="$(kc_now_utc)"
 fi
-echo ""
+STATUS_WARNING_LINES="$(printf '%s\n' "${WARNINGS[@]+"${WARNINGS[@]}"}")"
+kc_status_write "$STATUS_WARNING_LINES"
 
-# Area files
-echo "Area files:"
-find "$MEMORY_DIR" -maxdepth 1 -name "*.md" -not -name "MEMORY.md" | sort | while read -r f; do
-    check_file "$f"
-done
+json_summary="{"
+json_summary="$json_summary\"script\":\"compact-memory\","
+json_summary="$json_summary\"project_root\":\"$(kc_json_escape "$TARGET_PROJECT")\","
+json_summary="$json_summary\"dry_run\":$(kc_json_bool "$DRY_RUN"),"
+json_summary="$json_summary\"compacted\":$(kc_json_array "${COMPACTED[@]+"${COMPACTED[@]}"}"),"
+json_summary="$json_summary\"warnings\":$(kc_json_array "${WARNINGS[@]+"${WARNINGS[@]}"}")"
+json_summary="$json_summary}"
+kc_write_json_output "$json_summary"
 
-# Sub-files
-SUB_COUNT=$(find "$MEMORY_DIR" -mindepth 2 -name "*.md" | wc -l | tr -d ' ')
-if [ "$SUB_COUNT" -gt 0 ]; then
-    echo ""
-    echo "Sub-topic files:"
-    find "$MEMORY_DIR" -mindepth 2 -name "*.md" | sort | while read -r f; do
-        check_file "$f"
-    done
-fi
+if [ "$JSON_MODE" -ne 1 ]; then
+    kc_log ""
+    if [ ${#COMPACTED[@]} -gt 0 ]; then
+        kc_log "Compacted notes:"
+        printf '  %s\n' "${COMPACTED[@]+"${COMPACTED[@]}"}"
+    else
+        kc_log "No compaction changes were needed."
+    fi
 
-# Decisions
-DEC_COUNT=$(find "$MEMORY_DIR/decisions" -name "*.md" -not -name "INDEX.md" 2>/dev/null | wc -l | tr -d ' ')
-echo ""
-echo "Decisions: $DEC_COUNT recorded"
-if [ "$DEC_COUNT" -gt 0 ]; then
-    find "$MEMORY_DIR/decisions" -name "*.md" -not -name "INDEX.md" 2>/dev/null | sort | while read -r f; do
-        printf "  %s\n" "$(basename "$f")"
-    done
-fi
-
-# Evidence
-echo ""
-echo "Evidence (agent-docs/evidence/):"
-if [ -d "$EVIDENCE_DIR" ]; then
-    find "$EVIDENCE_DIR" -name "*.txt" 2>/dev/null | sort | while read -r f; do
-        lines=$(wc -l < "$f" 2>/dev/null || echo 0)
-        rel="${f#$TARGET_PROJECT/}"
-        printf "  %-45s %4d lines\n" "$rel" "$lines"
-    done
-else
-    echo "  (none — run scripts/import-agent-history.sh to collect)"
-fi
-
-# Summary
-echo ""
-if [ "$WARN" -eq 1 ]; then
-    echo "Action needed: ask the agent to read the memory-compaction skill and compact."
-else
-    echo "Memory tree looks healthy."
+    if [ ${#WARNINGS[@]} -gt 0 ]; then
+        kc_log ""
+        kc_log "Warnings:"
+        printf '  %s\n' "${WARNINGS[@]+"${WARNINGS[@]}"}"
+    fi
 fi

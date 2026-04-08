@@ -1,6 +1,6 @@
 ---
 name: decision-recording
-description: Record architectural and design decisions as lightweight ADRs in agent-docs/memory/decisions/. Use when an important decision is made, reversed, or when the user asks to preserve rationale.
+description: Record architectural and design decisions as lightweight ADRs in agent-knowledge/Memory/decisions/. Use when an important decision is made, reversed, or when the user asks to preserve rationale.
 ---
 
 # Decision Recording
@@ -31,10 +31,11 @@ Do NOT record:
 # In the project directory:
 SLUG="<short-hyphenated-title>"
 DATE=$(date +%Y-%m-%d)
-FILE="agent-docs/memory/decisions/${DATE}-${SLUG}.md"
+FILE="agent-knowledge/Memory/decisions/${DATE}-${SLUG}.md"
 ```
 
 Copy from `templates/memory/decision.template.md` (in the agents-rules repo).
+Preserve YAML frontmatter.
 
 ---
 
@@ -56,7 +57,7 @@ Optional:
 
 ## Step 3 — Link from the relevant area file
 
-In `agent-docs/memory/<area>.md`, add or update the **Decisions** section:
+In `agent-knowledge/Memory/<area>.md`, add or update the **Decisions** section:
 
 ```markdown
 ## Decisions
@@ -69,7 +70,7 @@ One line per decision. Keep descriptions under 10 words.
 
 ## Step 4 — Update decisions/INDEX.md
 
-Prepend a line in `agent-docs/memory/decisions/INDEX.md`:
+Prepend a line in `agent-knowledge/Memory/decisions/INDEX.md`:
 
 ```markdown
 - [2025-01-15-use-raw-sql.md](2025-01-15-use-raw-sql.md) — chose raw SQL over ORM
@@ -79,15 +80,9 @@ Newest first. If the decision reverses an earlier one, add `[reverses YYYY-MM-DD
 
 ---
 
-## Step 5 — Update MEMORY.md (only if Decisions area is new)
+## Step 5 — Update Memory/MEMORY.md if the root summary changed
 
-If `decisions/INDEX.md` didn't exist before, add to MEMORY.md:
-
-```markdown
-## Decisions
-Architecture and design choices with rationale.
-→ [decisions/INDEX.md](decisions/INDEX.md)
-```
+Keep the root note short. Only update it if the project-level decision summary changed.
 
 ---
 
@@ -104,10 +99,13 @@ Architecture and design choices with rationale.
 ## Format reference
 
 ```markdown
-# Decision: use-raw-sql
+---
+note_type: decision
+status: active
+date: 2025-01-15
+---
 
-Date: 2025-01-15
-Status: active
+# Decision: use-raw-sql
 
 ## What
 Use raw parameterized SQL instead of an ORM for all database access.

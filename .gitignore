@@ -2,3 +2,8 @@
 *.swo
 *~
 .DS_Store
+__pycache__/
+*.pyc
+
+# Local testing for a repo-root connected-project knowledge pointer.
+/agent-knowledge/

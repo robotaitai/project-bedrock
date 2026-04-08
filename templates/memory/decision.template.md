@@ -1,29 +1,33 @@
-# Decision: <short-title>
+---
+note_type: decision
+project: <project-name>
+profile: <profile-type>
+decision: <decision-slug>
+status: active
+date: <date>
+tags:
+  - agent-knowledge
+  - decision
+---
 
-Date: YYYY-MM-DD
-Status: active | superseded | reversed
+# Decision: <short-title>
 
 ## What
 
-<!-- One-line statement of what was decided. -->
+<what-lines>
 
 ## Why
 
-<!-- Primary driver: constraint, trade-off, user preference, or measured need. -->
+<why-lines>
 
-## Alternatives considered
+## Alternatives Considered
 
-<!-- What was not chosen and the disqualifying reason. -->
-- **<Alternative A>**: <reason rejected>
-- **<Alternative B>**: <reason rejected>
+<alternatives-lines>
 
 ## Consequences
 
-<!-- What this decision locks in or rules out going forward. -->
--
--
+<consequences-lines>
 
-## Superseded by
+## Superseded By
 
-<!-- If this decision was reversed or replaced, link to the new one. -->
-<!-- → [YYYY-MM-DD-new-slug.md](YYYY-MM-DD-new-slug.md) -->
+<superseded-lines>

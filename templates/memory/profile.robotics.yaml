@@ -1,8 +1,6 @@
-# Profile: robotics
-# Detected by: CMakeLists.txt + package.xml, or ROS-specific directories (src/, launch/, urdf/)
-# Covers: ROS/ROS2 systems, embedded firmware, hardware-software stacks
-
 profile: robotics
+title: Robotics
+description: ROS, ROS2, simulation, hardware-software, and embedded robotics systems.
 areas: [stack, architecture, conventions, gotchas, hardware, simulation]
 
 area_hints:
@@ -12,3 +10,16 @@ area_hints:
   gotchas: "Workspace sourcing, build order dependencies, hardware-specific constraints, timing issues"
   hardware: "Sensors, actuators, calibration state, known hardware-specific limitations"
   simulation: "Sim environment (Gazebo/Isaac/etc), world files, test scenarios, sim vs real gaps"
+
+bootstrap_checks:
+  - package.xml
+  - CMakeLists.txt
+  - launch directories
+  - urdf or meshes
+  - workflow files
+
+backfill_focus:
+  - workspace layout
+  - node graph and launch flows
+  - hardware dependencies
+  - simulation-vs-real differences

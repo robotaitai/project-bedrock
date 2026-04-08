@@ -1,325 +1,219 @@
 # agents-rules
 
-Personal collection of AI agent rules and skills for Cursor and Claude Code. Install them into any project for consistent, high-quality AI assistance.
+Framework repo for agent rules, skills, templates, and operational scripts around adaptive project knowledge.
 
-## Quick Start
+## Model
+
+The v2 system uses three layers:
+
+1. Global framework repo
+   This repo. It owns shared commands, rules, skills, templates, and operational scripts.
+2. Dedicated project knowledge folder
+   The real source of truth for a project's memory. This should live outside the app repo.
+3. Local project pointer
+   `./agent-knowledge` inside the app repo. Tools inside the repo still read and write through this path, but it should resolve to the dedicated external folder.
+
+All scripts, commands, hooks, and agent workflows operate through `./agent-knowledge` as the local handle. The external folder remains the source of truth, and this repo does not redesign the system into repo-local storage.
+
+That means the project repo stays clean while agents still get a stable in-repo entrypoint.
+
+## Knowledge Layout
+
+```text
+agent-knowledge/
+  INDEX.md
+  STATUS.md
+  Memory/
+    MEMORY.md
+    decisions/
+    tooling/
+  Evidence/
+    raw/
+    imports/
+    tooling/
+  Sessions/
+  Outputs/
+  Dashboards/
+  Templates/
+  .obsidian/
+```
+
+Rules of thumb:
+
+- `Memory/` is curated durable knowledge.
+- `Evidence/` is raw or imported input, not canonical truth.
+- `Sessions/` is temporary state.
+- `Outputs/` stays in the external knowledge folder. It is not a repo export or snapshot channel.
+- `STATUS.md` is the lightweight operational state note for bootstrap, sync, compaction, validation, and doctor.
+
+## Install And Link
+
+Connect a project to an external knowledge folder:
 
 ```bash
-# Clone
-git clone <repo-url> ~/agents-rules
-
-# --- Cursor ---
-# Symlink global rules into ~/.cursor/rules/
-~/agents-rules/scripts/install-global.sh
-
-# Symlink project rules into a project
-~/agents-rules/scripts/install.sh /path/to/project
-
-# --- Claude Code ---
-# Install global rules into ~/.claude/CLAUDE.md
-~/agents-rules/claude/scripts/install.sh
-
-# Install global rules + scaffold CLAUDE.md in a project
-~/agents-rules/claude/scripts/install.sh /path/to/project
+scripts/install-project-links.sh --slug my-project --repo /path/to/repo
 ```
 
-## Structure
+Optional flags:
 
-```
-agents-rules/
-  rules/                    # On-demand Cursor rules (.mdc) — symlinked per project
-  rules-global/             # Always-on Cursor rules (.mdc) — symlinked into ~/.cursor/rules/
-  skills/                   # Shared skills (memory, sessions, bootstrap, backfill)
-  skills-cursor/            # Cursor-specific built-in skills
-  templates/memory/         # Memory tree templates and project profiles
-  scripts/                  # Install, memory bootstrap, evidence import, compact
-  claude/
-    global.md               # Source of truth for global Claude Code rules
-    project-template.md     # Starter CLAUDE.md for new projects
-    scripts/
-      install.sh            # Installs global.md into ~/.claude/CLAUDE.md
-```
+- `--knowledge-home <dir>` changes the default external root. Default: `~/agent-os/projects`
+- `--real-path <dir>` uses an explicit knowledge folder instead of `<knowledge-home>/<slug>`
+- `--install-hooks` installs a repo-local `.cursor/hooks.json` from the template
+- `--dry-run` previews the setup without mutating files
 
----
+The linking flow creates or verifies:
 
-## Cursor
+- external knowledge folder
+- local `./agent-knowledge` pointer
+- `.agent-project.yaml`
+- `AGENTS.md`
+- optional `.cursor/hooks.json`
 
-### How it works
+The linking flow does not copy knowledge back into the repo and does not create a repo-local fallback vault.
 
-Rules are **symlinked** into each project's `.cursor/rules/` directory. Edit the source file once — all projects get the update instantly.
+## Core Commands
 
-### Rules
-
-| File | Always On | Description |
-|------|-----------|-------------|
-| `rules-global/action-first.mdc` | Yes | Think deeply, act decisively, speak briefly |
-| `rules-global/no-icons-emojis.mdc` | Yes | No emojis or icons anywhere |
-| `rules-global/no-unsolicited-docs.mdc` | Yes | Never create docs unless asked |
-| `rules/workflow-orchestration.mdc` | Yes | Plan-first, subagents, verification, memory flow |
-| `rules/memory-writeback.mdc` | Yes | Write durable facts to memory after meaningful changes |
-| `rules/memory-bootstrap.mdc` | Yes | Bootstrap memory tree if missing or generic |
-| `rules/history-backfill.mdc` | No | Backfill memory from repo evidence when onboarding |
-| `rules/generate-architecture-doc.mdc` | No | Generate rich HTML architecture docs |
-
-### Skills
-
-| Directory | Description |
-|-----------|-------------|
-| `skills/memory-management/` | Memory tree read/write mechanics, sections, bootstrap/compaction triggers |
-| `skills/session-management/` | Milestone tracking, writeback gate, session vs memory boundary |
-| `skills/project-ontology-bootstrap/` | Detect project type, pick profile, create memory tree |
-| `skills/history-backfill/` | Read evidence, distill stable facts into memory areas |
-| `skills/memory-compaction/` | Prune, split, and merge memory files when they grow |
-| `skills/decision-recording/` | Record architectural decisions as lightweight ADRs |
-| `skills-cursor/create-rule/` | Create new Cursor rules |
-| `skills-cursor/create-skill/` | Create new skills |
-| `skills-cursor/create-subagent/` | Create custom subagents |
-| `skills-cursor/migrate-to-skills/` | Migrate rules/commands to skills format |
-| `skills-cursor/shell/` | Run shell commands via /shell |
-| `skills-cursor/update-cursor-settings/` | Edit Cursor/VSCode settings.json |
-
-### Cursor Scripts
-
-| Script | Usage | Description |
-|--------|-------|-------------|
-| `scripts/install.sh` | `./install.sh /path/to/project [rule.mdc]` | Symlink rules into a project |
-| `scripts/uninstall.sh` | `./uninstall.sh /path/to/project` | Remove symlinked rules |
-| `scripts/list.sh` | `./list.sh` | List available rules |
-| `scripts/bootstrap-memory-tree.sh` | `./bootstrap-memory-tree.sh [dir] [profile]` | Create memory tree from profile |
-| `scripts/import-agent-history.sh` | `./import-agent-history.sh [dir]` | Collect raw evidence into evidence/ |
-| `scripts/compact-memory.sh` | `./compact-memory.sh [dir]` | Report memory health and flag large files |
-
-### Adding a Cursor Rule
-
-Create a `.mdc` file in `rules/` or `rules-global/`:
-
-```markdown
----
-description: Short description shown in Cursor's rule picker
-globs:           # Optional: **/*.ts
-alwaysApply: false  # true = always active
----
-
-# Rule Title
-
-Your instructions here...
-```
-
----
-
-## Claude Code
-
-### How it works
-
-Claude Code reads two CLAUDE.md files on every session:
-
-- `~/.claude/CLAUDE.md` — global rules, loaded for all projects
-- `<project>/CLAUDE.md` — project-specific rules, loaded for that project only
-
-The install script writes global rules into `~/.claude/CLAUDE.md` inside a managed marker section, so re-running is safe.
-
-### Install global rules
+### Project Knowledge Sync
 
 ```bash
-~/agents-rules/claude/scripts/install.sh
+scripts/update-knowledge.sh --project /path/to/repo
 ```
 
-### Scaffold a new project
+What it does:
+
+- bootstraps the memory tree if missing
+- inspects changed repo files
+- classifies touched knowledge branches
+- appends durable recent-change entries when needed
+- refreshes evidence imports
+- updates `agent-knowledge/STATUS.md`
+
+It always writes through `./agent-knowledge`, which should resolve to the external source-of-truth folder.
+
+### Global Tooling Sync
 
 ```bash
-~/agents-rules/claude/scripts/install.sh /path/to/project
-# Creates /path/to/project/CLAUDE.md from project-template.md
-# Also installs/updates global rules in ~/.claude/CLAUDE.md
+scripts/global-knowledge-sync.sh --project /path/to/repo
 ```
 
-Then edit `CLAUDE.md` in the project root with your project-specific stack, conventions, and constraints.
+What it does:
 
-### What global.md contains
+- scans safe allowlisted local tool surfaces
+- redacts sensitive lines before writing evidence
+- writes tooling evidence under `Evidence/tooling/`
+- writes curated tooling summaries under `Memory/tooling/`
+- skips session/auth/cache surfaces
 
-- Communication style: action-first, brief, no filler
-- Prohibitions: no emojis, no unsolicited docs
-- Workflow: plan-first, subagents, verification, elegance, autonomous bug fixing
-- Code quality: simplicity, minimal impact, no unnecessary dependencies
-- Memory: when and what to save/forget
+It writes into the same external knowledge vault through the local `./agent-knowledge` handle.
 
----
+This is different from project knowledge sync:
 
-## Shell Aliases (Optional)
+- project sync is about repo changes and project memory
+- global tooling sync is about safe user-level tool configuration that can affect work across projects
+
+### Ship
 
 ```bash
-alias ari='~/agents-rules/scripts/install.sh'
-alias arl='~/agents-rules/scripts/list.sh'
-alias aru='~/agents-rules/scripts/uninstall.sh'
-alias arci='~/agents-rules/claude/scripts/install.sh'
-alias arbm='~/agents-rules/scripts/bootstrap-memory-tree.sh'
-alias arih='~/agents-rules/scripts/import-agent-history.sh'
-alias arcm='~/agents-rules/scripts/compact-memory.sh'
+scripts/ship.sh --project /path/to/repo
 ```
 
----
+What it does:
 
-## v2: Adaptive Project Memory
+- checks git state
+- runs detected repo validations
+- runs knowledge sync and compaction
+- stages repo-local changes
+- commits and pushes when possible
+- optionally opens a PR
 
-v2 adds a structured memory lifecycle on top of v1's rules and skills.
-Memory is adaptive (profile-driven), backfilled (from real history), and enforced (via writeback rule).
+If the real knowledge vault lives outside the repo, ship reports that explicitly instead of pretending those external files were committed.
+It does not snapshot the external knowledge vault back into the repo.
 
-### Three-layer separation
-
-```mermaid
-graph LR
-    A[Agent] -->|writes via writeback rule| B[(agent-docs/memory/\ncurated facts)]
-    C[import script] -->|overwrites on each run| D[(agent-docs/evidence/\nraw evidence)]
-    A -->|writes during session| E[(~/.cursor/.../sessions/\nephemeral state)]
-    D -->|read once at backfill| A
-    B -->|read every session| A
-    E -->|read same session only| A
-```
-
-### Session lifecycle
-
-```mermaid
-flowchart TD
-    S([session start]) --> BC{MEMORY.md\nexists?}
-    BC -->|no / generic| BOOT[project-ontology-bootstrap skill\nbootstrap-memory-tree.sh]
-    BC -->|yes| RM[read MEMORY.md\n+ relevant area files]
-    BOOT --> BF{has existing\nhistory?}
-    BF -->|yes| IMP[import-agent-history.sh\nhistory-backfill skill]
-    BF -->|no| RM
-    IMP --> RM
-    RM --> WORK[plan → execute → verify\nupdate session file at milestones]
-    WORK --> WBQ{durable knowledge\nproduced?}
-    WBQ -->|yes| WB[memory-writeback rule\nupdate area files + decisions/]
-    WBQ -->|no| NWB[state: no writeback needed]
-    WB --> E([session end])
-    NWB --> E
-```
-
-### Memory tree structure
-
-```mermaid
-graph TD
-    ROOT["MEMORY.md (root index, max 200 lines)"]
-    ROOT --> STACK[stack.md]
-    ROOT --> ARCH[architecture.md]
-    ROOT --> CONV[conventions.md]
-    ROOT --> GOTCHA[gotchas.md]
-    ROOT --> AREA["... (profile areas)"]
-    ROOT --> DEC["decisions/INDEX.md"]
-    DEC --> D1[YYYY-MM-DD-slug.md]
-    DEC --> D2[YYYY-MM-DD-slug.md]
-    GOTCHA --> SUB["gotchas/build.md\n(split when >150 lines)"]
-
-    style ROOT fill:#f5f5f5,stroke:#999
-    style DEC fill:#f5f5f5,stroke:#999
-```
-
-### Project profiles
-
-```mermaid
-graph LR
-    DETECT{detect\nproject type} -->|package.json + React/Next/Vue| WA[web-app\nstack, architecture,\nconventions, gotchas,\nintegrations]
-    DETECT -->|CMakeLists + package.xml| RO[robotics\nstack, architecture,\nconventions, gotchas,\nhardware, simulation]
-    DETECT -->|pyproject + notebooks/models| ML[ml-platform\nstack, architecture,\nconventions, gotchas,\ndatasets, models]
-    DETECT -->|monorepo signals| HY[hybrid\nstack, architecture,\nconventions, gotchas,\ndeployments]
-```
-
-### Area node sections
-
-Every area file (`stack.md`, `gotchas.md`, etc.) has these required sections:
-
-| Section | Content | Updated when |
-|---------|---------|--------------|
-| **Purpose** | One sentence: what this area covers | At creation |
-| **Current State** | Verified facts, true right now | Every writeback |
-| **Recent Changes** | Rolling log, pruned after ~4 weeks | After meaningful changes |
-| **Decisions** | Links to `decisions/YYYY-MM-DD-slug.md` | When a decision is recorded |
-| **Open Questions** | Unresolved items for future sessions | As discovered; removed when resolved |
-| **Subtopics** | Links to sub-files if area grows large | When split |
-
----
-
-### Example A — New project
+### Validation And Doctor
 
 ```bash
-cd /path/to/new-project
-
-# Create memory tree (auto-detects project type)
-~/agents-rules/scripts/bootstrap-memory-tree.sh .
-# Auto-detected profile: web-app
-# created: agent-docs/memory/MEMORY.md
-# created: agent-docs/memory/stack.md
-# created: agent-docs/memory/architecture.md
-# created: agent-docs/memory/conventions.md
-# created: agent-docs/memory/gotchas.md
-# created: agent-docs/memory/integrations.md
-# created: agent-docs/memory/decisions/INDEX.md
-
-# Agent reads project-ontology-bootstrap skill, reads the repo,
-# fills in Current State in each area file.
-
-# Optional: Cursor symlink
-ln -sf "$(pwd)/agent-docs/memory" ~/.cursor/projects/<project-id>/memory
+scripts/validate-knowledge.sh --project /path/to/repo
+scripts/doctor.sh --project /path/to/repo
 ```
 
-### Example B — Existing project backfill
+`validate-knowledge.sh` checks:
 
-```bash
-cd /path/to/existing-project
+- required folders and files
+- durable note frontmatter and required sections
+- obvious broken relative links
+- `.agent-project.yaml` presence and key fields
+- pointer resolution
+- required scripts, commands, and rules
 
-# 1. Bootstrap structure
-~/agents-rules/scripts/bootstrap-memory-tree.sh .
+`doctor.sh` is the short troubleshooting entrypoint. It runs validation and surfaces setup warnings such as hook installation or pointer-mode drift.
 
-# 2. Collect evidence from git history, docs, manifests, CI
-~/agents-rules/scripts/import-agent-history.sh .
-# collected: git-log.txt, git-log-detail.txt, manifests.txt,
-#            existing-docs.txt, structure.txt, tasks.txt, ci-workflows.txt
+## Dry-Run And Idempotency
 
-# 3. Agent reads history-backfill skill, distills stable facts into area files
+Operational scripts are designed to be safe and reviewable:
+
+- write-oriented scripts support `--dry-run`
+- reruns are intended to be idempotent
+- file writes go through compare-before-replace helpers
+- scripts fail fast on broken setup instead of mutating partial state
+- canonical mode requires `./agent-knowledge` to resolve to the external knowledge folder
+
+Current write-oriented scripts with `--dry-run` support:
+
+- `scripts/install-project-links.sh`
+- `scripts/bootstrap-memory-tree.sh`
+- `scripts/import-agent-history.sh`
+- `scripts/update-knowledge.sh`
+- `scripts/global-knowledge-sync.sh`
+- `scripts/compact-memory.sh`
+- `scripts/ship.sh`
+
+## Hooks
+
+Hook support is template-driven.
+
+- template: `templates/hooks/hooks.json.template`
+- optional install path: `.cursor/hooks.json`
+
+The hook should call the shared project sync primitive, not reimplement logic:
+
+```json
+{
+  "hooks": [
+    {
+      "name": "project-knowledge-sync",
+      "event": "post-write",
+      "command": "/path/to/agents-rules/scripts/update-knowledge.sh --summary-file /path/to/repo/.cursor/knowledge-sync.last.json /path/to/repo"
+    }
+  ]
+}
 ```
 
-### Example C — Ongoing writeback
+Keep hooks lightweight, inspectable, and easy to disable.
 
-No scripts needed. The `memory-writeback` rule is always active.
+## Scripts
 
-After each task the agent evaluates and writes — or explicitly skips:
+- `scripts/install-project-links.sh`: connect a repo to the external knowledge folder and optional hooks
+- `scripts/bootstrap-memory-tree.sh`: initialize or repair the knowledge tree scaffold
+- `scripts/import-agent-history.sh`: refresh raw and imported evidence only
+- `scripts/update-knowledge.sh`: main project knowledge sync primitive
+- `scripts/global-knowledge-sync.sh`: safe tooling sync into project-local tooling memory/evidence
+- `scripts/compact-memory.sh`: compact noisy recent-change sections
+- `scripts/validate-knowledge.sh`: structural validator for the knowledge system
+- `scripts/doctor.sh`: quick troubleshooting summary
+- `scripts/ship.sh`: validate, sync, commit, push, optional PR
+- `scripts/measure-token-savings.py`: placeholder analysis helper
 
-```
-Memory writeback:
-- gotchas.md → added: "yarn not in PATH; use node .yarn/releases/yarn-4.x.cjs"
-- decisions/ → created 2026-04-06-use-graphql-codegen.md (linked from stack.md)
-- architecture.md — no new facts this session.
-```
+## OS Caveats
 
-### Example D — Compaction
+- macOS may resolve `/tmp` to `/private/tmp`; the scripts normalize real knowledge paths to avoid false pointer mismatches.
+- Windows-style environments may require Developer Mode or elevated permissions for symlinks. The install script reports this caveat, and a junction may be needed if symlink creation is blocked.
 
-```bash
-~/agents-rules/scripts/compact-memory.sh .
-# MEMORY.md: 87 lines  [ok]
-# stack.md:  45 lines
-# gotchas.md: 163 lines  [WARNING: split candidate]
-# architecture.md: 12 lines
-#
-# Action needed: ask the agent to read the memory-compaction skill and compact.
-```
+## Philosophy
 
-### Memory lifecycle
+The repo still keeps the original philosophy:
 
-```mermaid
-flowchart LR
-    subgraph NEW[New project]
-        N1[bootstrap-memory-tree.sh] --> N2[agent populates\nfrom repo]
-    end
-    subgraph EXIST[Existing project]
-        E1[bootstrap-memory-tree.sh] --> E2[import-agent-history.sh]
-        E2 --> E3[history-backfill skill\ndistill evidence]
-    end
-    N2 --> SS
-    E3 --> SS
-    subgraph SS[Steady state]
-        W1[memory-writeback rule] --> W2[decision-recording skill]
-        W2 --> W3{files growing?}
-        W3 -->|yes| W4[compact-memory.sh\nmemory-compaction skill]
-        W4 --> W1
-        W3 -->|no| W1
-    end
-```
+- file-based, not database-backed
+- explicit evidence versus memory separation
+- durable notes stay readable in plain markdown
+- Obsidian-compatible by default
+- operational scripts stay small and shared logic stays centralized

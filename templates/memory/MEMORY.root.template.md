@@ -1,28 +1,38 @@
+---
+note_type: durable-memory-root
+project: <project-name>
+profile: <profile-type>
+status: active
+last_updated: <date>
+tags:
+  - agent-knowledge
+  - memory
+  - <profile-type>
+---
+
 # Memory: <project-name>
 
-<!-- Root index — always loaded. Keep under 200 lines. -->
-<!-- Profile: <profile-type> | Bootstrapped: <date> -->
-<!-- One entry per area: one-line description + link. No inline detail. -->
+## Purpose
 
-## Stack
-<placeholder: runtime, framework, database, key libraries>
-→ [stack.md](stack.md)
+Landing page for curated project memory. Keep this file short and use it to route into
+the right branch notes.
 
-## Architecture
-<placeholder: component boundaries, data flow, deployment shape>
-→ [architecture.md](architecture.md)
+## Current State
 
-## Conventions
-<placeholder: naming rules, patterns to follow, patterns to avoid>
-→ [conventions.md](conventions.md)
+<current-state-lines>
 
-## Gotchas
-<placeholder: build quirks, env constraints, non-obvious traps>
-→ [gotchas.md](gotchas.md)
+## Recent Changes
+
+<recent-change-lines>
 
 ## Decisions
-Architecture and design choices with rationale.
-→ [decisions/INDEX.md](decisions/INDEX.md)
 
-<!-- Additional areas are added here as the project grows. -->
-<!-- Remove any area that stays empty after backfill. -->
+<decision-lines>
+
+## Open Questions
+
+<open-question-lines>
+
+## Subtopics
+
+<subtopic-lines>

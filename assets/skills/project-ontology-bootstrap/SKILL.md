@@ -80,29 +80,45 @@ own terminology, not generic template names.
 
 ## Step 3 -- Create initial branch notes
 
-Create a small set of initial branches (2-4 is typical). Use the same-name convention:
+Create one branch per functional domain in the project. Use the same-name convention:
 
 - Small topic with no subtopics: `Memory/<topic>.md`
 - Bigger topic with subtopics: `Memory/<topic>/<topic>.md`
+
+Each branch note must stay under ~150 lines. If a topic is too big for one note,
+split it into a folder with subtopic notes.
+
+Do NOT put the whole system description in a single file. Split by functional domain.
 
 Example for a robotics project:
 ```text
 Memory/
   MEMORY.md
-  stack.md
+  stack.md                        # build system, deps, hardware platform
   perception/
-    perception.md
+    perception.md                 # vision pipeline overview
+    object-detection.md           # YOLO, TensorRT, tracking
+    lane-detection.md             # lane following
   navigation/
-    navigation.md
+    navigation.md                 # path planning, row driving
+    path-following.md             # pure pursuit, drive controller
+  localization/
+    localization.md               # EKF, IMU, GNSS, LiDAR odometry
+  cloud-interface.md              # STOMP, fleet management
+  vehicle-interface.md            # CAN, LLC, hardware abstraction
+  safety.md                       # obstacle detection, fault monitoring
   decisions/
     decisions.md
 ```
 
 Rules:
-- Use the project's own decomposition, not generic templates
-- Start with 2-4 branches; grow only when justified
+- Use the project's own decomposition and terminology, not generic templates
+- Each branch = one focused functional domain. Do NOT use generic names like
+  "architecture" or "conventions" to lump unrelated subsystems together.
+- Keep each note under ~150 lines. Split if bigger.
+- Link related notes to each other with relative markdown links
+  (e.g., `See [localization](localization/localization.md) for sensor fusion`)
 - Do not create empty placeholder branches
-- Do not force categories like "conventions" or "gotchas" unless they clearly apply
 - Each branch entry note should have frontmatter, Purpose, Current State, Recent Changes,
   Decisions, and Open Questions sections
 

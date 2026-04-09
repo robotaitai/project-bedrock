@@ -46,9 +46,12 @@ agent-knowledge/
 ### Writing to the tree
 
 - **Memory/MEMORY.md**: short branch summaries with relative links. Keep it under 200 lines.
-- **Branch entry note** (`<topic>.md` or `<topic>/<topic>.md`): all stable facts for that area.
+- **Branch entry note** (`<topic>.md` or `<topic>/<topic>.md`): stable facts for one focused domain.
 - **Subtopic note** (`<topic>/<subtopic>.md`): created only when a branch note grows beyond ~150 lines.
 - When adding a subtopic, replace the inline detail in the entry note with a link.
+- **Each note must stay under ~150 lines.** Split if bigger.
+- **Link related notes** with relative markdown links (e.g., `See [perception](perception/perception.md)`).
+- **One branch = one functional domain.** Do NOT lump unrelated subsystems into one file.
 
 ### Example branch link in Memory/MEMORY.md
 

@@ -38,12 +38,16 @@ agent-knowledge/
 
 ### Branch convention
 
+- **One branch = one functional domain**. Do not lump unrelated subsystems together.
 - **Folder name = ontology node**. The folder is the topic.
 - **Same-name entry note** (`<topic>/<topic>.md`) = summary and routing for the branch.
 - **Flat note** (`<topic>.md`) when there are no subtopics yet.
 - **Promote to folder** only when the topic grows subtopics.
-- **Do not create deep trees** automatically. Start flat. Grow only when justified.
+- **Keep each note under ~150 lines**. Split if bigger.
+- **Link related notes** to each other with relative markdown links.
 - **Use the project's own terminology** for branch names, not generic templates.
+- **Do not use generic names** like "architecture" or "conventions" to group unrelated content.
+  Instead, use the project's own domain names (e.g., perception, navigation, localization).
 
 Evidence (`agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/`) is separate from curated memory (`agent-knowledge/Memory/`).
 Never copy raw evidence into memory. Distill only stable, verified facts.

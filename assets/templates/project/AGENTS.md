@@ -11,10 +11,14 @@ Check `./agent-knowledge/STATUS.md`. If `onboarding: pending`:
 2. Inspect project-local tool config: `.cursor/`, `.claude/`, `.codex/` if present
 3. Review recent git history (last ~50 commits, key branches)
 4. Import findings into `Evidence/raw/` using `agent-knowledge import`
-5. Infer the project ontology from the actual repo structure and terminology
-6. Create a small set of initial branch notes in `Memory/` (2-4 branches)
-7. Update `Memory/MEMORY.md` with links to the new branches
-8. Update `./agent-knowledge/STATUS.md`: set `onboarding: complete`
+5. Infer the project ontology from the actual repo -- use the project's own
+   functional domains as branch names (e.g., perception, navigation, localization),
+   not generic categories (e.g., architecture, conventions)
+6. Create one branch note per functional domain. Each note should be focused
+   and under ~150 lines. Do NOT put the whole system description in one file.
+7. Link related notes to each other with relative markdown links
+8. Update `Memory/MEMORY.md` with links to all new branches
+9. Update `./agent-knowledge/STATUS.md`: set `onboarding: complete`
 
 ## Branch Convention
 
@@ -27,17 +31,28 @@ Memory/
   perception/
     perception.md              # entry note = same name as folder
     fusion.md                  # subtopic note
+    lane-detection.md
+  navigation/
+    navigation.md
+    path-following.md
+  localization/
+    localization.md
   decisions/
     decisions.md               # decision log
     2025-01-15-use-raw-sql.md  # individual decision
 ```
 
 Rules:
+- Each branch = one focused functional domain from the project
+- Use the project's own terminology, not generic templates
+- Each note stays under ~150 lines. If a topic is too big, split it.
+- Link between related notes with relative markdown links (e.g.,
+  `See [perception](perception/perception.md) for sensor details`)
 - Small topic with no subtopics: one flat note (`stack.md`)
 - Bigger topic: folder + same-name entry note (`perception/perception.md`)
 - Do not create deep trees automatically -- grow only when justified
-- Use the project's own terminology for branch names, not generic templates
-- Do not force a generic architecture template onto the project
+- Do NOT lump unrelated subsystems into a single "architecture" note.
+  Split by functional domain instead.
 
 ## Onboarding Rules
 

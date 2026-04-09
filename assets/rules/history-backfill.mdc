@@ -29,7 +29,7 @@ Do NOT apply on every session — only when onboarding or when memory is newly e
 1. Read the `history-backfill` skill.
 2. Run `scripts/import-agent-history.sh .` to collect raw evidence.
 3. Read evidence files in priority order (docs first, then manifests/configs/tests/workflows, then git and sessions).
-4. Distill stable facts into memory area files (Current State section).
+4. Distill stable facts into memory branch notes (Current State section).
 5. Record any architectural decisions found in `decisions/`.
 6. Update `Memory/MEMORY.md` branch summaries to reflect real content.
 7. Leave Open Questions for anything evidence hints at but doesn't resolve.

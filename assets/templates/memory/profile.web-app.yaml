@@ -1,23 +1,16 @@
 profile: web-app
 title: Web App
 description: SPA, SSR, and API-backed web applications.
-areas: [stack, architecture, conventions, gotchas, integrations]
-
-area_hints:
-  stack: "Frontend framework, backend runtime, database, auth provider, hosting platform"
-  architecture: "Routing, component model, API design, SSR/CSR boundary, state management"
-  conventions: "File naming, component structure, API naming, test patterns, import style"
-  gotchas: "Build quirks, env var handling, CORS, auth edge cases, deploy pitfalls"
-  integrations: "Third-party APIs, webhooks, payment, analytics, email, storage"
-
-bootstrap_checks:
-  - package.json
+signals:
+  - package.json with frontend framework deps
   - frontend dependencies
   - test directories
   - workflow files
-
-backfill_focus:
-  - manifests
-  - routing structure
-  - env handling
-  - third-party service clients
+candidate_areas:
+  - stack
+  - architecture
+  - integrations
+area_hints:
+  stack: "Frontend framework, backend runtime, database, auth provider, hosting platform"
+  architecture: "Routing, component model, API design, SSR/CSR boundary, state management"
+  integrations: "Third-party APIs, webhooks, payment, analytics, email, storage"

@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "agent-knowledge"
-version = "0.1.1"
+dynamic = ["version"]
 description = "Adaptive, file-based project knowledge for AI coding agents"
 readme = "README.md"
 requires-python = ">=3.9"
@@ -51,3 +51,6 @@ include = [
     "LICENSE",
     "README.md",
 ]
+
+[tool.hatch.version]
+path = "src/agent_knowledge/__init__.py"

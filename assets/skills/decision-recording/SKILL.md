@@ -25,62 +25,61 @@ Do NOT record:
 
 ---
 
-## Step 1 — Create the decision file
+## Step 1 -- Create the decision file
 
 ```bash
-# In the project directory:
 SLUG="<short-hyphenated-title>"
 DATE=$(date +%Y-%m-%d)
 FILE="agent-knowledge/Memory/decisions/${DATE}-${SLUG}.md"
 ```
 
-Copy from `templates/memory/decision.template.md` (in the agents-rules repo).
+Copy from `templates/memory/decision.template.md`.
 Preserve YAML frontmatter.
 
 ---
 
-## Step 2 — Fill in the template
+## Step 2 -- Fill in the template
 
-Required fields — keep each one short:
+Required fields -- keep each one short:
 
 | Field | Content |
 |-------|---------|
 | **What** | One sentence: what was decided |
 | **Why** | Primary driver: constraint, measurement, user preference |
-| **Alternatives considered** | 1–3 bullets: what was rejected and why |
-| **Consequences** | 1–3 bullets: what this locks in or rules out |
+| **Alternatives considered** | 1-3 bullets: what was rejected and why |
+| **Consequences** | 1-3 bullets: what this locks in or rules out |
 
 Optional:
 - **Superseded by**: link to the reversal decision if this one is no longer active
 
 ---
 
-## Step 3 — Link from the relevant area file
+## Step 3 -- Link from the relevant branch note
 
-In `agent-knowledge/Memory/<area>.md`, add or update the **Decisions** section:
+In the relevant branch note under `Memory/`, add or update the **Decisions** section:
 
 ```markdown
 ## Decisions
-→ [2025-01-15-use-raw-sql.md](decisions/2025-01-15-use-raw-sql.md) — chose raw SQL over ORM for control and performance
+- [2025-01-15-use-raw-sql.md](decisions/2025-01-15-use-raw-sql.md) -- chose raw SQL over ORM
 ```
 
 One line per decision. Keep descriptions under 10 words.
 
 ---
 
-## Step 4 — Update decisions/INDEX.md
+## Step 4 -- Update decisions/decisions.md
 
-Prepend a line in `agent-knowledge/Memory/decisions/INDEX.md`:
+Prepend a line in `agent-knowledge/Memory/decisions/decisions.md`:
 
 ```markdown
-- [2025-01-15-use-raw-sql.md](2025-01-15-use-raw-sql.md) — chose raw SQL over ORM
+- [2025-01-15-use-raw-sql.md](2025-01-15-use-raw-sql.md) -- chose raw SQL over ORM
 ```
 
 Newest first. If the decision reverses an earlier one, add `[reverses YYYY-MM-DD-slug]`.
 
 ---
 
-## Step 5 — Update Memory/MEMORY.md if the root summary changed
+## Step 5 -- Update Memory/MEMORY.md if the root summary changed
 
 Keep the root note short. Only update it if the project-level decision summary changed.
 
@@ -89,10 +88,10 @@ Keep the root note short. Only update it if the project-level decision summary c
 ## Reversing a decision
 
 1. Add `Status: reversed` to the original decision file
-2. Add `Superseded by: → [new-decision.md](new-decision.md)` to the original
+2. Add `Superseded by: [new-decision.md](new-decision.md)` to the original
 3. Create a new decision file for the replacement
-4. Update `decisions/INDEX.md`: mark the old entry as `~~reversed~~`
-5. Update the area file's Decisions section to link the new one
+4. Update `decisions/decisions.md`: mark the old entry as `~~reversed~~`
+5. Update the branch note's Decisions section to link the new one
 
 ---
 
@@ -115,8 +114,8 @@ Need full control over query shape; ORM abstraction adds complexity without bene
 given the team's SQL proficiency.
 
 ## Alternatives considered
-- **Prisma**: rejected — too much magic, migration model doesn't fit our schema strategy
-- **Drizzle**: rejected — adds a dependency and type layer we don't need yet
+- **Prisma**: rejected -- too much magic, migration model doesn't fit
+- **Drizzle**: rejected -- adds a dependency and type layer we don't need yet
 
 ## Consequences
 - All DB access goes through raw SQL + pgtyped-generated types

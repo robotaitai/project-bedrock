@@ -1,13 +1,11 @@
 ---
 note_type: durable-memory-root
 project: <project-name>
-profile: <profile-type>
 status: active
 last_updated: <date>
 tags:
   - agent-knowledge
   - memory
-  - <profile-type>
 ---
 
 # Memory: <project-name>
@@ -33,6 +31,6 @@ the right branch notes.
 
 <open-question-lines>
 
-## Subtopics
+## Branches
 
-<subtopic-lines>
+<branch-lines>

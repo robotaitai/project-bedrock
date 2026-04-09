@@ -23,11 +23,12 @@ Core design patterns: path resolution, project config, template system, integrat
 - Old root-level directories (scripts/, commands/, rules/, templates/, etc.) were deleted after moving into `assets/`.
 
 ### Project config (.agent-project.yaml)
-- Version 4 (bumped from 3).
+- Version 4, ontology_model 2.
 - No `framework.repo` field. Scripts find assets via SCRIPT_DIR.
+- `profile_hint` (was `profile`): weak hint for the agent, not a required schema.
 - Added `onboarding: status: pending` field to track first-time setup state.
 - `hooks.project_sync_command` and `hooks.graph_sync_command` reference CLI commands (`agent-knowledge update --project .`).
-- `validate-knowledge.sh` no longer requires `repo` in its required-keys check.
+- No `root_index` key -- INDEX.md files have been removed in favor of STATUS.md + MEMORY.md as entry points.
 
 ### Integration system (runtime/integrations.py)
 - `detect(repo_path)` checks for `.cursor/`, `.claude/`, `.codex/` directories to identify which tools are present. Always returns True for Cursor (should always be installed).
@@ -54,12 +55,13 @@ Core design patterns: path resolution, project config, template system, integrat
 
 ## Recent Changes
 
-- 2026-04-08: Removed `framework.repo` from `.agent-project.yaml` template (v2 -> v3 -> v4).
+- 2026-04-09: Ontology model v2: replaced profile-defined INDEX.md tree with agent-inferred same-name branch convention.
+- 2026-04-09: Deleted all INDEX.md templates; renamed `area.template.md` to `branch.template.md`.
+- 2026-04-09: Profiles weakened to hints (`candidate_areas` + `signals`), no longer drive file creation.
+- 2026-04-09: Bootstrap creates minimal scaffold only; agent infers branches from repo.
+- 2026-04-09: STATUS.md now uses `profile_hint` and `ontology_model: 2`.
 - 2026-04-08: Consolidated all asset directories under `assets/`.
 - 2026-04-08: Created `runtime/integrations.py` for multi-tool detection and bridge file installation.
-- 2026-04-08: Added onboarding state tracking to STATUS.md and knowledge-common.sh.
-- 2026-04-08: Deleted root `install.sh`, replaced with `agent-knowledge setup` command.
-- 2026-04-08: Inlined Cursor rule content in Python to work around pip `.mdc` extraction bug.
 
 ## Gotchas
 

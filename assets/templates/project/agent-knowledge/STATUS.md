@@ -1,7 +1,8 @@
 ---
 note_type: knowledge-status
 project: <project-name>
-profile: <profile-type>
+profile_hint: <profile-type>
+ontology_model: 2
 real_knowledge_path: <absolute-path-to-dedicated-knowledge-folder>
 local_pointer_path: ./agent-knowledge
 last_bootstrap:
@@ -21,7 +22,7 @@ last_doctor_result: unknown
 
 ## Current State
 
-- Profile: `<profile-type>`
+- Profile hint: `<profile-type>`
 - Real knowledge path: `<absolute-path-to-dedicated-knowledge-folder>`
 - Local pointer path: `./agent-knowledge`
 - Onboarding: `pending`

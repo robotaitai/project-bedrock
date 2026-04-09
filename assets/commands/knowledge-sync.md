@@ -5,7 +5,7 @@ Knowledge sync is the connected-project maintenance flow for the adaptive memory
 ## Behavior
 
 - inspect current repo changes
-- classify touched areas into the right `agent-knowledge/Memory/*.md` branches
+- classify touched files into the relevant `agent-knowledge/Memory/` branch notes
 - append durable recent-change entries when knowledge meaningfully changed
 - optionally record a decision note when explicitly requested
 - refresh raw and imported evidence without treating it as curated truth

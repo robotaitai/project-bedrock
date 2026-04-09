@@ -125,7 +125,7 @@ EOF
 
 classify_path() {
     local path="$1"
-    local areas=""
+    local candidates=""
     local existing=""
 
     case "$path" in
@@ -133,42 +133,29 @@ classify_path() {
             return 0
             ;;
         .github/workflows/*|deploy/*|deployment/*|infra/*)
-            areas="deployments"$'\n'"architecture"
+            candidates="deployments architecture"
             ;;
         package.json|package-lock.json|pnpm-lock.yaml|yarn.lock|pnpm-workspace.yaml|nx.json|turbo.json|pyproject.toml|requirements.txt|Cargo.toml|go.mod|CMakeLists.txt|package.xml|Makefile)
-            areas="stack"
+            candidates="stack"
             ;;
         *.eslintrc|*.eslintrc.js|*.eslintrc.cjs|eslint.config.js|eslint.config.mjs|eslint.config.cjs|.editorconfig|.prettierrc|.prettierrc.json|.prettierrc.yaml|tsconfig.json|tsconfig.base.json|pytest.ini|mypy.ini|ruff.toml|.clang-format|.clang-tidy|.pre-commit-config.yaml)
-            areas="conventions"
+            candidates="conventions"
             ;;
         README.md|README.rst|AGENTS.md|CLAUDE.md|docs/*|src/*|app/*|apps/*|services/*|packages/*)
-            areas="architecture"
-            ;;
-        urdf/*|meshes/*|hardware/*|robot/*)
-            areas="hardware"
-            ;;
-        launch/*|simulation/*|sim/*|worlds/*|gazebo/*|ign/*)
-            areas="simulation"
-            ;;
-        data/*|datasets/*|notebooks/*)
-            areas="datasets"
-            ;;
-        models/*|checkpoints/*|artifacts/*)
-            areas="models"
+            candidates="architecture"
             ;;
         *)
-            areas="architecture"
+            candidates="architecture"
             ;;
     esac
 
-    while IFS= read -r existing; do
-        [ -n "$existing" ] || continue
-        if [ -f "$MEMORY_DIR/$existing.md" ]; then
+    # Check each candidate against actually existing branch notes.
+    # A branch exists as either Memory/<name>.md or Memory/<name>/<name>.md.
+    for existing in $candidates; do
+        if [ -f "$MEMORY_DIR/$existing.md" ] || [ -f "$MEMORY_DIR/$existing/$existing.md" ]; then
             printf '%s\n' "$existing"
         fi
-    done <<EOF
-$areas
-EOF
+    done
 }
 
 append_note_change() {
@@ -237,8 +224,12 @@ render_decision_note() {
             ;;
     esac
 
-    kc_append_unique_bullet "$DECISIONS_DIR/INDEX.md" "Current State" "- [$title]($slug.md) - Recorded from project sync." "Memory/decisions/INDEX.md"
-    kc_append_unique_bullet "$DECISIONS_DIR/INDEX.md" "Recent Changes" "- $(kc_today) - Updated decision note [$title]($slug.md)." "Memory/decisions/INDEX.md"
+    # Update decisions log (decisions.md, with fallback to legacy INDEX.md)
+    local decisions_log="$DECISIONS_DIR/decisions.md"
+    [ -f "$decisions_log" ] || decisions_log="$DECISIONS_DIR/INDEX.md"
+    local decisions_label="Memory/decisions/$(basename "$decisions_log")"
+    kc_append_unique_bullet "$decisions_log" "Current State" "- [$title]($slug.md) - Recorded from project sync." "$decisions_label"
+    kc_append_unique_bullet "$decisions_log" "Recent Changes" "- $(kc_today) - Updated decision note [$title]($slug.md)." "$decisions_label"
 }
 
 affected_areas_raw=""

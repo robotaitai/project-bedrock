@@ -190,7 +190,7 @@ def sync(project: str, dry_run: bool, json_mode: bool) -> None:
 
 @main.command()
 @click.option("--project", default=".", type=click.Path(exists=True), help="Project repo root.")
-@click.option("--profile", default=None, help="Force a profile (web-app, robotics, ml-platform, hybrid).")
+@click.option("--profile", default=None, help="Profile hint (web-app, robotics, ml-platform, hybrid). Advisory only.")
 @click.option("--dry-run", is_flag=True, help="Preview changes without writing.")
 @click.option("--json", "json_mode", is_flag=True, help="Output JSON only.")
 @click.option("--force", is_flag=True, help="Overwrite existing files.")

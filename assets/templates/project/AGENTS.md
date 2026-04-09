@@ -11,10 +11,36 @@ Check `./agent-knowledge/STATUS.md`. If `onboarding: pending`:
 2. Inspect project-local tool config: `.cursor/`, `.claude/`, `.codex/` if present
 3. Review recent git history (last ~50 commits, key branches)
 4. Import findings into `Evidence/raw/` using `agent-knowledge import`
-5. Create curated notes in `Memory/` for verified, stable facts only
-6. Update `./agent-knowledge/STATUS.md`: set `onboarding: complete`
+5. Infer the project ontology from the actual repo structure and terminology
+6. Create a small set of initial branch notes in `Memory/` (2-4 branches)
+7. Update `Memory/MEMORY.md` with links to the new branches
+8. Update `./agent-knowledge/STATUS.md`: set `onboarding: complete`
 
-Rules for onboarding:
+## Branch Convention
+
+Use the same-name branch-note pattern:
+
+```
+Memory/
+  MEMORY.md                    # root -- always read first
+  stack.md                     # flat note when no subtopics needed
+  perception/
+    perception.md              # entry note = same name as folder
+    fusion.md                  # subtopic note
+  decisions/
+    decisions.md               # decision log
+    2025-01-15-use-raw-sql.md  # individual decision
+```
+
+Rules:
+- Small topic with no subtopics: one flat note (`stack.md`)
+- Bigger topic: folder + same-name entry note (`perception/perception.md`)
+- Do not create deep trees automatically -- grow only when justified
+- Use the project's own terminology for branch names, not generic templates
+- Do not force a generic architecture template onto the project
+
+## Onboarding Rules
+
 - Only write confirmed facts to `Memory/` -- never speculate
 - Keep raw/extracted material in `Evidence/`, not `Memory/`
 - Keep generated views in `Outputs/` -- never treat as canonical truth
@@ -38,7 +64,9 @@ After onboarding is complete, during normal work:
 - `STATUS.md` -- Onboarding and maintenance state
 - `.agent-project.yaml` -- Project configuration
 
-## Project Config
+## Reading Order
 
-- `.agent-project.yaml` -- project metadata and sync config
-- `.agentknowledgeignore` -- paths to exclude from evidence imports
+1. `Memory/MEMORY.md` -- always read first
+2. Relevant branch entry notes (e.g., `perception/perception.md`)
+3. Leaf notes only if the specific detail is needed
+4. Keep context lean -- do not read branches unrelated to the current task

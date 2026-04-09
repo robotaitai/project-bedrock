@@ -12,7 +12,6 @@ tags:
 
 ## Current State
 
-- Profile: `<profile-type>`
 - Memory root: [../Memory/MEMORY.md](../Memory/MEMORY.md)
 - Evidence roots: [../Evidence/raw/README.md](../Evidence/raw/README.md), [../Evidence/imports/README.md](../Evidence/imports/README.md)
 

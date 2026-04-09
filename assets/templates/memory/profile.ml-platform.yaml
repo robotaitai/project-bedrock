@@ -1,25 +1,18 @@
 profile: ml-platform
 title: ML Platform
 description: Model training, data pipelines, serving, and experiment tracking systems.
-areas: [stack, architecture, conventions, gotchas, datasets, models]
-
+signals:
+  - pyproject.toml or requirements.txt with ML framework deps
+  - notebooks
+  - models directory
+  - data directory
+candidate_areas:
+  - stack
+  - architecture
+  - datasets
+  - models
 area_hints:
-  stack: "Framework (PyTorch/JAX/TF), orchestration (Ray/Airflow/Prefect), serving layer, artifact storage"
+  stack: "Framework (PyTorch/JAX/TF), orchestration, serving layer, artifact storage"
   architecture: "Pipeline stages, feature store, model registry, experiment tracking, deployment targets"
-  conventions: "Experiment naming, artifact path schema, config management (hydra/yaml), notebook hygiene"
-  gotchas: "GPU/env setup, data versioning, non-determinism sources, scale limits, dependency conflicts"
   datasets: "Data sources, schema, version lineage, known quality issues, access patterns"
   models: "Active models in production, evaluation baselines, versioning scheme, rollback procedure"
-
-bootstrap_checks:
-  - pyproject.toml or requirements.txt
-  - notebooks
-  - models
-  - data
-  - workflow files
-
-backfill_focus:
-  - data lineage
-  - model registry and rollout
-  - experiment tracking
-  - serving paths

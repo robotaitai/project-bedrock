@@ -5,8 +5,8 @@ description: Bootstrap an adaptive project knowledge tree. Use when agent-knowle
 
 # Project Ontology Bootstrap
 
-Creates an adaptive, profile-driven knowledge tree for a project from scratch.
-Run this once — then maintain with the writeback rule.
+Creates a minimal knowledge scaffold, then the agent infers the ontology from the
+real project. Run this once -- then maintain with the writeback rule.
 
 ## When to use
 
@@ -17,7 +17,7 @@ Run this once — then maintain with the writeback rule.
 
 ---
 
-## Step 0 — Verify the local pointer
+## Step 0 -- Verify the local pointer
 
 The project entrypoint is `./agent-knowledge`.
 
@@ -33,57 +33,19 @@ scripts/install-project-links.sh --slug <project-slug> --repo /path/to/project
 
 ---
 
-## Step 1 — Inspect the repo before choosing a profile
-
-Inspect:
-- manifests and lockfiles
-- directory structure
-- docs (`README.md`, `AGENTS.md`, `CLAUDE.md`, `docs/`)
-- config files
-- test directories
-- workflow files
-- any structural evidence already present under `Evidence/imports/` or `Outputs/`
-
-Infer the profile from the strongest verified signals:
-
-| Signal | Profile |
-|--------|---------|
-| `package.xml`, `CMakeLists.txt`, `launch/`, `urdf/`, ROS/Gazebo/MoveIt docs | robotics |
-| `pyproject.toml` or `requirements.txt` + `models/`, `notebooks/`, `data/`, ML framework deps | ml-platform |
-| workspace files, `packages/`, `services/`, `apps/`, multiple manifests | hybrid |
-| `package.json` + React/Next/Vue/Svelte/Angular/Vite without strong workspace signals | web-app |
-| No strong signal | hybrid |
-
-**If uncertain**: ask the user once — "Is this a web-app, robotics, ml-platform, or hybrid project?"
-
----
-
-## Step 2 — Read the profile
-
-Read `templates/memory/profile.<type>.yaml` from the agents-rules repo.
-
-It contains:
-- `areas`: initial durable memory branches
-- `area_hints`: what each branch should cover
-- bootstrap/backfill focus hints
-
----
-
-## Step 3 — Run the bootstrap script
+## Step 1 -- Run the bootstrap script
 
 ```bash
-scripts/bootstrap-memory-tree.sh /path/to/project [profile]
+scripts/bootstrap-memory-tree.sh /path/to/project
 ```
 
-This creates:
+This creates a minimal scaffold:
 ```text
 agent-knowledge/
-  INDEX.md
   Memory/
-    MEMORY.md           ← root durable memory note
-    <area>.md           ← one stub per profile area
+    MEMORY.md           <- root durable memory note
     decisions/
-      INDEX.md
+      decisions.md      <- decision log (same-name convention)
   Evidence/
     raw/
     imports/
@@ -92,62 +54,91 @@ agent-knowledge/
   Dashboards/
   Templates/
   .obsidian/
+  STATUS.md
 ```
 
-The real files live in the external knowledge folder. Inside the repo, agents still operate through `./agent-knowledge`.
-
-If the script is unavailable, create the files manually using the templates in `templates/memory/`.
-
----
-
-## Step 4 — Seed the tree from immediately available facts
-
-The bootstrap pass should seed the tree from verified signals only:
-
-- **Stack**: read `package.json`, `pyproject.toml`, `Cargo.toml`, or equivalent
-- **Architecture**: inspect top-level directories, tests, workflows, and major docs
-- **Conventions**: look for config files and style/tooling signals
-- **Gotchas**: only record verified warnings or operational constraints
-- **Profile-specific branches**: seed from the strongest matching directories and docs
-- **Structural evidence outputs**: use `Outputs/architecture-summary.md` or `Outputs/structural-map.md` only as orientation, not canonical truth
-
-For each fact you write:
-- Use **Current State** section for what is true now
-- Keep it concise and verified
-- Do not invent facts — write only what you can verify from the repo
-- If the best source is machine-generated structure, treat it as evidence and verify against the repo before promoting it into memory
+The script detects a profile hint (web-app, robotics, ml-platform, or hybrid) and
+stores it in STATUS.md. The hint does NOT create branch notes -- that is the agent's job.
 
 ---
 
-## Step 5 — Set up Cursor symlink (if needed)
+## Step 2 -- Inspect the repo and infer the ontology
 
-```bash
-# Find the Cursor project ID for this workspace
-CURSOR_PROJECT=$(ls ~/.cursor/projects/ | while read d; do
-    [ -f "$HOME/.cursor/projects/$d/.project" ] && \
-      grep -q "$(basename $(pwd))" "$HOME/.cursor/projects/$d/.project" 2>/dev/null && echo "$d"
-done | head -1)
+After the scaffold exists, inspect:
+- Manifests and lockfiles
+- Directory structure
+- Docs (README.md, AGENTS.md, CLAUDE.md, docs/)
+- Config files
+- Test directories
+- Workflow files
+- Any evidence already present under Evidence/
 
-if [ -n "$CURSOR_PROJECT" ]; then
-    ln -sf "$(pwd)/agent-knowledge/Memory" "$HOME/.cursor/projects/$CURSOR_PROJECT/memory"
-    echo "Symlinked to ~/.cursor/projects/$CURSOR_PROJECT/memory"
-fi
+From these signals, determine the project's natural decomposition. Use the project's
+own terminology, not generic template names.
+
+---
+
+## Step 3 -- Create initial branch notes
+
+Create a small set of initial branches (2-4 is typical). Use the same-name convention:
+
+- Small topic with no subtopics: `Memory/<topic>.md`
+- Bigger topic with subtopics: `Memory/<topic>/<topic>.md`
+
+Example for a robotics project:
+```text
+Memory/
+  MEMORY.md
+  stack.md
+  perception/
+    perception.md
+  navigation/
+    navigation.md
+  decisions/
+    decisions.md
+```
+
+Rules:
+- Use the project's own decomposition, not generic templates
+- Start with 2-4 branches; grow only when justified
+- Do not create empty placeholder branches
+- Do not force categories like "conventions" or "gotchas" unless they clearly apply
+- Each branch entry note should have frontmatter, Purpose, Current State, Recent Changes,
+  Decisions, and Open Questions sections
+
+---
+
+## Step 4 -- Seed from immediately available facts
+
+For each branch you create, seed it with verified facts:
+
+- Read manifests, configs, docs, and directory structure
+- Write only confirmed facts to Current State
+- Do not invent facts or speculate
+- If a source is machine-generated, verify against the repo before writing to Memory/
+
+---
+
+## Step 5 -- Update Memory/MEMORY.md
+
+Add links to each branch note in the Branches section:
+
+```markdown
+## Branches
+
+- [Stack](stack.md) -- Python 3.10, ROS2 Humble, colcon build system
+- [Perception](perception/perception.md) -- Camera pipeline, YOLO detection, depth fusion
+- [Navigation](navigation/navigation.md) -- Nav2 stack, custom costmap layers
 ```
 
 ---
 
-## Step 6 — Trigger history backfill
+## Step 6 -- Trigger history backfill
 
 Bootstrap creates structure only. To fill it with real project history:
 
 ```bash
 scripts/import-agent-history.sh /path/to/project
-```
-
-Optional structural graph imports can be added with:
-
-```bash
-scripts/graphify-sync.sh /path/to/project
 ```
 
 Then follow the `history-backfill` skill to distill evidence into memory.
@@ -157,10 +148,10 @@ Then follow the `history-backfill` skill to distill evidence into memory.
 ## Output checklist
 
 After bootstrap, verify:
-- [ ] `agent-knowledge/INDEX.md` exists
 - [ ] `agent-knowledge/Memory/MEMORY.md` exists and uses YAML frontmatter
-- [ ] Each area file has a **Purpose** and at least one entry in **Current State**
-- [ ] `decisions/INDEX.md` exists (may be empty)
+- [ ] `agent-knowledge/Memory/decisions/decisions.md` exists
+- [ ] Each branch note has a Purpose and at least one entry in Current State
 - [ ] `agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/` exist
 - [ ] `agent-knowledge/Sessions/` exists
 - [ ] `Memory/MEMORY.md` is still short enough to scan quickly
+- [ ] No INDEX.md files were created

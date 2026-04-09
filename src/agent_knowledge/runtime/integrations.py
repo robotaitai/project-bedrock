@@ -132,17 +132,21 @@ def install_all(
     dry_run: bool = False,
     force: bool = False,
 ) -> dict[str, list[str]]:
-    """Install bridge files for all detected (or all) integrations.
+    """Install bridge files for detected integrations.
 
-    Always installs Cursor hooks since it's the most common agent tool.
-    For Claude and Codex, installs only if detected or creates minimal bridge.
+    Cursor is always installed (hooks + rule) because it is the primary agent
+    IDE and the hooks/rules have no effect when Cursor is not in use.
+
+    Claude and Codex bridges are only installed when their marker directories
+    (.claude/ or .codex/) are detected, to avoid polluting repos that don't
+    use those tools.
     """
     results: dict[str, list[str]] = {}
 
-    # Always install Cursor hooks -- it's the primary integration
+    # Cursor: always install -- hooks/rules are inert outside Cursor
     results["cursor"] = _INSTALLERS["cursor"](repo, dry_run=dry_run, force=force)
 
-    # Install Claude/Codex bridges for any detected tool
+    # Claude / Codex: install only when detected
     for tool in ("claude", "codex"):
         if detected.get(tool, False):
             results[tool] = _INSTALLERS[tool](repo, dry_run=dry_run, force=force)

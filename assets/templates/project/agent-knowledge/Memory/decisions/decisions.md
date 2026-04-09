@@ -1,5 +1,5 @@
 ---
-note_type: decision-index
+note_type: decision-log
 project: <project-name>
 status: active
 last_updated: <date>
@@ -8,11 +8,11 @@ tags:
   - decision
 ---
 
-# Decisions Index
+# Decisions
 
 ## Purpose
 
-Index of architectural and process decisions that affect this project.
+Architectural and process decisions that affect this project.
 
 ## Current State
 
@@ -20,7 +20,11 @@ Index of architectural and process decisions that affect this project.
 
 ## Recent Changes
 
-- <date> - Created decision index.
+- <date> - Created decision log.
+
+## Decisions
+
+- None recorded yet.
 
 ## Open Questions
 

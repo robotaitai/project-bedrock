@@ -1,5 +1,5 @@
 ---
-description: After meaningful project state changes, update the correct memory branch — or explicitly state no update is needed.
+description: After meaningful project state changes, update the correct memory branch -- or explicitly state no update is needed.
 alwaysApply: true
 ---
 
@@ -11,7 +11,7 @@ If no, say so explicitly.
 
 ---
 
-## Evaluation — ask after every meaningful task
+## Evaluation -- ask after every meaningful task
 
 > "Did this session change what future sessions should understand about this project?"
 
@@ -38,28 +38,31 @@ When skipping, state it: **Memory writeback: none needed.**
 
 | Fact type | Target |
 |-----------|--------|
-| Architectural decision | `agent-knowledge/Memory/decisions/YYYY-MM-DD-slug.md` + link from the relevant branch |
-| New pattern / convention | `agent-knowledge/Memory/conventions.md` → Current State |
-| Gotcha or constraint | `agent-knowledge/Memory/gotchas.md` → Current State |
-| Stack change | `agent-knowledge/Memory/stack.md` → Current State + Recent Changes |
-| Completed feature area | relevant area file → Current State |
-| Lesson from a mistake | relevant area file → Current State, with **Why:** and **How to apply:** |
+| Architectural decision | `Memory/decisions/YYYY-MM-DD-slug.md` + link from the relevant branch |
+| New pattern or convention | relevant branch note -> Current State |
+| Gotcha or constraint | relevant branch note -> Current State |
+| Stack change | relevant branch note -> Current State + Recent Changes |
+| Completed feature area | relevant branch note -> Current State |
+| Lesson from a mistake | relevant branch note -> Current State, with **Why:** and **How to apply:** |
+
+If no existing branch fits the fact, create a new branch note using the same-name convention.
+Use the project's own terminology for branch names.
 
 ---
 
 ## How to write
 
-1. Identify the target area file.
+1. Identify the target branch note.
 2. Read its current content.
 3. Preserve YAML frontmatter and add or update the fact in the correct section.
    - **Current State**: what is true now (replace stale entries, don't append duplicates)
-   - **Recent Changes**: YYYY-MM-DD — what changed (prune entries older than ~4 weeks)
+   - **Recent Changes**: YYYY-MM-DD -- what changed (prune entries older than ~4 weeks)
    - **Decisions**: link to decision file
    - **Open Questions**: add unresolved items only if they remain open after verification
 4. If the branch now exceeds ~150 lines, follow the `memory-compaction` skill.
 5. If branch summaries changed, update `agent-knowledge/Memory/MEMORY.md`.
 
-For architectural decisions, use the `decision-recording` skill — do not inline them.
+For architectural decisions, use the `decision-recording` skill -- do not inline them.
 
 ---
 
@@ -72,7 +75,7 @@ Raw SQL + pgtyped types for all DB access. No ORM.
 
 For lessons, add context:
 ```
-Yarn is not in PATH on this machine — use node .yarn/releases/yarn-4.x.cjs directly.
+Yarn is not in PATH on this machine -- use node .yarn/releases/yarn-4.x.cjs directly.
 Why: the repo uses Yarn 4 via Corepack, not the global yarn binary.
 How to apply: always invoke yarn via the release script, never via yarn directly.
 ```

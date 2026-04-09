@@ -17,32 +17,33 @@ The local `./agent-knowledge` path is the project entrypoint and should point to
 
 | State | Action |
 |-------|--------|
-| File exists and has real content (not just template placeholders) | Skip — proceed with the task |
-| File exists but contains only bootstrap placeholders or generic "no verified facts yet" text | Re-bootstrap or backfill: read `project-ontology-bootstrap` skill |
+| File exists and has real content (not just template placeholders) | Skip -- proceed with the task |
+| File exists but contains only bootstrap placeholders or generic text | Re-bootstrap or backfill: read `project-ontology-bootstrap` skill |
 | File is missing, empty, or the `agent-knowledge` pointer is broken | Bootstrap: read `project-ontology-bootstrap` skill |
 
 "Real content" means the memory root has frontmatter and at least one branch note contains verified facts in **Current State**.
 
 ---
 
-## Bootstrap steps (summary — full detail in skill)
+## Bootstrap steps (summary -- full detail in skill)
 
 1. Read the `project-ontology-bootstrap` skill.
 2. Ensure the local `./agent-knowledge` pointer exists and resolves to the external knowledge folder. If it does not, run `scripts/install-project-links.sh` first.
-3. Inspect repo structure, manifests, docs, configs, tests, and workflows.
-4. Select the matching profile from `templates/memory/profile.<type>.yaml`.
-5. Run `scripts/bootstrap-memory-tree.sh .` (or follow the skill manually).
-6. Collect evidence with `scripts/import-agent-history.sh .`
-7. If the project already has history, apply `history-backfill`.
-8. Confirm the tree is in place before proceeding with the user's task.
+3. Run `scripts/bootstrap-memory-tree.sh .` to create the minimal scaffold.
+4. Inspect repo structure, manifests, docs, configs, tests, and workflows.
+5. Infer the project ontology and create 2-4 initial branch notes using the project's own terminology.
+6. Use the same-name branch convention: `<topic>.md` for flat notes, `<topic>/<topic>.md` for branches with subtopics.
+7. Collect evidence with `scripts/import-agent-history.sh .`
+8. If the project already has history, apply `history-backfill`.
+9. Confirm the tree is in place before proceeding with the user's task.
 
 ---
 
 ## When to skip
 
-- Memory tree exists with real content → always skip, do not re-bootstrap
-- User explicitly asked to skip bootstrap → skip for this session only
-- The task is purely read-only exploration → bootstrap is optional (do it anyway if convenient)
+- Memory tree exists with real content -- always skip, do not re-bootstrap
+- User explicitly asked to skip bootstrap -- skip for this session only
+- The task is purely read-only exploration -- bootstrap is optional (do it anyway if convenient)
 
 ---
 

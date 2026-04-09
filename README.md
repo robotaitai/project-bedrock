@@ -6,12 +6,6 @@ One command gives any project a knowledge vault that agents read on startup,
 maintain during work, and carry across sessions -- no database, no server,
 just markdown files and a CLI.
 
-<p align="center">
-  <img src="docs/obsidian-graph.png" alt="Knowledge graph in Obsidian" width="720" />
-  <br />
-  <em>Project knowledge graph viewed in Obsidian</em>
-</p>
-
 ## Install
 
 ```
@@ -43,11 +37,17 @@ your-project/
   AGENTS.md                   # instructions agents read on startup
   agent-knowledge/            # symlink -> ~/agent-os/projects/<slug>/
     STATUS.md                 # onboarding state + sync timestamps
-    Memory/                   # curated, durable knowledge (source of truth)
-    Evidence/                 # imported/extracted material
-    Outputs/                  # generated views (never canonical)
-    Sessions/                 # ephemeral session state
-    Dashboards/               # rollup views
+    Memory/
+      MEMORY.md              # root entrypoint (read first)
+      stack.md               # flat branch note
+      perception/
+        perception.md        # branch entry (same name as folder)
+        fusion.md            # subtopic note
+      decisions/
+        decisions.md         # decision log
+    Evidence/                # imported/extracted material
+    Outputs/                 # generated views (never canonical)
+    Sessions/                # ephemeral session state
 ```
 
 Knowledge lives **outside** the repo so it persists across branches, tools,
@@ -55,7 +55,20 @@ and clones. The symlink gives every tool a stable `./agent-knowledge` path.
 
 When an agent opens the repo it reads `AGENTS.md` and `STATUS.md`.
 If onboarding is pending, it inspects the project, imports evidence,
-and writes curated memory. After that, maintenance is automatic.
+infers the ontology from the actual repo, and writes curated memory.
+After that, maintenance is automatic.
+
+## Branch Convention
+
+The memory tree uses a same-name branch-note convention:
+
+- **Flat note** (`stack.md`): for topics with no subtopics
+- **Folder** (`perception/perception.md`): for topics that grow subtopics
+- **Folder name = topic**, entry note = same name as folder
+- **Agents infer** the branch structure from the real project -- no fixed profiles
+
+The agent starts small (2-4 branches) and grows the tree only when justified.
+Hooks stay thin -- they detect changes and trigger updates, not rebuild the ontology.
 
 ## Commands
 
@@ -77,11 +90,11 @@ All write commands support `--dry-run`. Use `--json` for machine-readable output
 
 `init` detects which tools are present and installs the right bridge files:
 
-| Tool | Bridge file | How it works |
-|------|-------------|-------------|
-| Cursor | `.cursor/hooks.json` + `.cursor/rules/agent-knowledge.mdc` | Hook runs on save; rule loads on session start |
-| Claude | `CLAUDE.md` | Points to AGENTS.md and STATUS.md |
-| Codex | `.codex/AGENTS.md` | Points to AGENTS.md and STATUS.md |
+| Tool | Bridge file | When installed |
+|------|-------------|---------------|
+| Cursor | `.cursor/hooks.json` + `.cursor/rules/agent-knowledge.mdc` | Always (hooks/rules are inert outside Cursor) |
+| Claude | `CLAUDE.md` | When `.claude/` directory is detected |
+| Codex | `.codex/AGENTS.md` | When `.codex/` directory is detected |
 
 Multiple tools in the same repo work together.
 
@@ -99,6 +112,13 @@ Enable **Graph view** in Settings > Core plugins and set
 export AGENT_KNOWLEDGE_HOME=~/my-knowledge
 agent-knowledge init
 ```
+
+## Platform Support
+
+- **macOS** and **Linux** are fully supported.
+- **Windows** is not currently supported. The CLI relies on `bash` and POSIX shell
+  scripts for most operations.
+- Python 3.9+ is required.
 
 ## Development
 

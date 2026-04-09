@@ -1,14 +1,12 @@
 ---
-note_type: durable-memory-branch
+note_type: memory-branch
 project: <project-name>
-profile: <profile-type>
 area: <area-slug>
 status: active
 last_updated: <date>
 tags:
   - agent-knowledge
   - memory
-  - <profile-type>
   - <area-slug>
 ---
 
@@ -33,7 +31,3 @@ tags:
 ## Open Questions
 
 <open-question-lines>
-
-## Subtopics
-
-<subtopic-lines>

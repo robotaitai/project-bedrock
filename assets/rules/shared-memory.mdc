@@ -16,16 +16,19 @@ ln -s <workspace>/agent-knowledge/Memory ~/.cursor/projects/<project-id>/memory
 
 ## Tree structure
 
-Memory is organized as a **tree**. Agents load only the branches relevant to their current task.
+Memory is organized as a **tree** using the same-name branch convention.
+Agents load only the branches relevant to their current task.
 
 ```text
 agent-knowledge/
-  INDEX.md
   Memory/
-    MEMORY.md           ← root curated-memory index — always loaded, max ~200 lines
-    <area>.md           ← one file per functional area (branch node)
-    <area>/<subtopic>.md
+    MEMORY.md               <- root curated-memory index -- always loaded, max ~200 lines
+    <topic>.md              <- flat branch note (no subtopics)
+    <topic>/
+      <topic>.md            <- branch entry note (same name as folder)
+      <subtopic>.md         <- leaf note beside the entry
     decisions/
+      decisions.md          <- decision log
   Evidence/
     raw/
     imports/
@@ -34,41 +37,42 @@ agent-knowledge/
 
 ### Reading the tree
 
-1. `Memory/MEMORY.md` is always loaded automatically. It is a concise index only — no deep detail.
-2. At session start, identify which area(s) your task touches from the index entries.
-3. Read the relevant area file(s) before starting work.
-4. If the area file links to a sub-topic file needed for your task, read that too.
-5. Do not read branches unrelated to your task — keep context lean.
+1. `Memory/MEMORY.md` is always loaded automatically. It is a concise index only -- no deep detail.
+2. At session start, identify which branch(es) your task touches from the Branches section.
+3. Read the relevant branch entry notes before starting work.
+4. If the branch has subtopic files needed for your task, read those too.
+5. Do not read branches unrelated to your task -- keep context lean.
 
 ### Writing to the tree
 
 - **Memory/MEMORY.md**: short branch summaries with relative links. Keep it under 200 lines.
-- **Area file** (`<area>.md`): all stable facts, decisions, gotchas, and patterns for that area.
-- **Sub-topic file** (`<area>/<subtopic>.md`): created only when an area file grows beyond ~150 lines or a sub-topic needs isolated detail.
-- When adding a sub-topic file, replace the inline detail in the area file with a one-line link.
+- **Branch entry note** (`<topic>.md` or `<topic>/<topic>.md`): all stable facts for that area.
+- **Subtopic note** (`<topic>/<subtopic>.md`): created only when a branch note grows beyond ~150 lines.
+- When adding a subtopic, replace the inline detail in the entry note with a link.
 
 ### Example branch link in Memory/MEMORY.md
 
 ```markdown
-## OCR Pipeline
-Paperwork intake, zip upload, review queue, credential resolution.
-→ [ocr.md](ocr.md)
+## Branches
+
+- [Perception](perception/perception.md) -- camera pipeline, YOLO detection, depth fusion
+- [Stack](stack.md) -- Python 3.10, ROS2, colcon
 ```
 
-### Example area file structure
+### Example branch entry note
 
 ```markdown
-# OCR Pipeline
+# Perception
 
-## Architecture
-...
+## Purpose
+Camera data acquisition, object detection, and depth fusion pipeline.
 
-## Credentials
-...
-→ [credentials.md](credentials/credentials.md)  ← only if detail warrants a sub-file
+## Current State
+- YOLO v8 for detection, custom depth fusion node
+- 30 Hz pipeline on Jetson Orin
 
-## Gotchas
-...
+## Decisions
+- [2025-01-20-yolo-v8.md](decisions/2025-01-20-yolo-v8.md) -- chose YOLO v8 for latency
 ```
 
 ## When to update
@@ -76,7 +80,7 @@ Paperwork intake, zip upload, review queue, credential resolution.
 Update the tree when you learn:
 - A new architectural decision or pattern
 - A critical "gotcha" (DB state, build requirement, PATH issue, etc.)
-- A customer-facing fact that changed (business_id, credentials location, deployment state)
+- A customer-facing fact that changed
 - A lesson from a mistake that should not be repeated
 
 Do NOT save: in-progress task state, speculative plans, or anything already in git history.
@@ -85,11 +89,11 @@ Do NOT save: in-progress task state, speculative plans, or anything already in g
 
 Lead with the fact. For feedback/lessons: add a **Why:** line and a **How to apply:** line so future agents understand the context, not just the rule.
 
-## v2 extensions
+## Extensions
 
 - **Bootstrap**: if `agent-knowledge/Memory/MEMORY.md` is missing, apply the `memory-bootstrap` rule before any other work.
 - **Writeback**: after meaningful state changes, apply the `memory-writeback` rule.
 - **Backfill**: when memory is sparse and the repo has history, apply the `history-backfill` rule.
 - **Decisions**: record architecture decisions with the `decision-recording` skill.
 - **Compaction**: when files grow large, apply the `memory-compaction` skill.
-- **Evidence**: evidence lives in `agent-knowledge/Evidence/raw/` and `agent-knowledge/Evidence/imports/` — never mix with curated memory.
+- **Evidence**: evidence lives in `agent-knowledge/Evidence/` -- never mix with curated memory.

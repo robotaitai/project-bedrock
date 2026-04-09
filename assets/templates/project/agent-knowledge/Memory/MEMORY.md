@@ -1,7 +1,6 @@
 ---
 note_type: durable-memory-root
 project: <project-name>
-profile: <profile-type>
 status: active
 last_updated: <date>
 tags:
@@ -18,7 +17,8 @@ the right branch notes.
 
 ## Current State
 
-- Project memory has been initialized but not yet fully backfilled.
+- Project memory has been initialized but not yet populated.
+- The agent should inspect the repo and create initial branch notes.
 
 ## Recent Changes
 
@@ -26,12 +26,12 @@ the right branch notes.
 
 ## Decisions
 
-- [decisions/INDEX.md](decisions/INDEX.md) - Decision index.
+- [decisions/decisions.md](decisions/decisions.md) - Decision log.
 
 ## Open Questions
 
-- Which branches need backfill first?
+- Which areas of the project should become the first memory branches?
 
-## Subtopics
+## Branches
 
-- Add branch links here after bootstrap.
+- Add branch links here as the agent infers project structure.

@@ -361,7 +361,7 @@ kc_load_project_context() {
     if [ -f "$AGENT_PROJECT_FILE" ]; then
         PROJECT_NAME="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "name" || printf '%s' "$PROJECT_NAME")"
         PROJECT_SLUG="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "slug" || printf '%s' "$PROJECT_SLUG")"
-        PROJECT_PROFILE="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "profile" || printf 'unknown')"
+        PROJECT_PROFILE="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "profile_hint" || kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "profile" || printf 'unknown')"
         FRAMEWORK_REPO="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "repo" || true)"
         pointer_value="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "pointer_path" || true)"
         real_value="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "real_path" || true)"
@@ -744,6 +744,7 @@ kc_has_frontmatter() {
 kc_status_load() {
     STATUS_PROJECT="$PROJECT_NAME"
     STATUS_PROFILE="$PROJECT_PROFILE"
+    STATUS_ONTOLOGY_MODEL="2"
     STATUS_REAL_PATH="$KNOWLEDGE_REAL_DIR"
     STATUS_POINTER_PATH="$POINTER_DISPLAY"
     STATUS_LAST_BOOTSTRAP=""
@@ -764,7 +765,9 @@ kc_status_load() {
     fi
 
     STATUS_PROJECT="$(kc_yaml_leaf_value "$STATUS_FILE" "project" || printf '%s' "$STATUS_PROJECT")"
-    STATUS_PROFILE="$(kc_yaml_leaf_value "$STATUS_FILE" "profile" || printf '%s' "$STATUS_PROFILE")"
+    # Read profile_hint first, fall back to legacy profile key
+    STATUS_PROFILE="$(kc_yaml_leaf_value "$STATUS_FILE" "profile_hint" || kc_yaml_leaf_value "$STATUS_FILE" "profile" || printf '%s' "$STATUS_PROFILE")"
+    STATUS_ONTOLOGY_MODEL="$(kc_yaml_leaf_value "$STATUS_FILE" "ontology_model" || printf '2')"
     STATUS_REAL_PATH="$(kc_yaml_leaf_value "$STATUS_FILE" "real_knowledge_path" || printf '%s' "$STATUS_REAL_PATH")"
     STATUS_POINTER_PATH="$(kc_yaml_leaf_value "$STATUS_FILE" "local_pointer_path" || printf '%s' "$STATUS_POINTER_PATH")"
     STATUS_ONBOARDING="$(kc_yaml_leaf_value "$STATUS_FILE" "onboarding" || printf 'pending')"
@@ -797,7 +800,8 @@ kc_status_write() {
         printf '%s\n' '---'
         printf 'note_type: knowledge-status\n'
         printf 'project: %s\n' "$STATUS_PROJECT"
-        printf 'profile: %s\n' "$STATUS_PROFILE"
+        printf 'profile_hint: %s\n' "$STATUS_PROFILE"
+        printf 'ontology_model: %s\n' "${STATUS_ONTOLOGY_MODEL:-2}"
         printf 'real_knowledge_path: %s\n' "$STATUS_REAL_PATH"
         printf 'local_pointer_path: %s\n' "$STATUS_POINTER_PATH"
         printf 'onboarding: %s\n' "$STATUS_ONBOARDING"
@@ -814,7 +818,8 @@ kc_status_write() {
         printf '%s\n\n' '---'
         printf '# Knowledge Status: %s\n\n' "$STATUS_PROJECT"
         printf '## Current State\n\n'
-        printf -- '- Profile: `%s`\n' "$STATUS_PROFILE"
+        printf -- '- Profile hint: `%s`\n' "$STATUS_PROFILE"
+        printf -- '- Ontology model: `%s`\n' "${STATUS_ONTOLOGY_MODEL:-2}"
         printf -- '- Real knowledge path: `%s`\n' "$STATUS_REAL_PATH"
         printf -- '- Local pointer path: `%s`\n' "$STATUS_POINTER_PATH"
         printf -- '- Onboarding: `%s`\n\n' "$STATUS_ONBOARDING"

@@ -88,7 +88,6 @@ check_required_dir "$EVIDENCE_RAW_DIR" "Evidence/raw"
 check_required_dir "$EVIDENCE_IMPORTS_DIR" "Evidence/imports"
 check_required_dir "$SESSIONS_DIR" "Sessions"
 check_required_dir "$OUTPUTS_DIR" "Outputs"
-check_required_dir "$DASHBOARDS_DIR" "Dashboards"
 
 if [ -f "$AGENT_PROJECT_FILE" ]; then
     for key in name slug pointer_path real_path memory_root evidence_raw evidence_imports; do
@@ -124,7 +123,7 @@ validate_durable_note() {
     fi
 
     case "$note_type" in
-        durable-memory-root|durable-memory-branch|tooling-memory|tooling-index)
+        durable-memory-root|durable-memory-branch|memory-branch|tooling-memory|tooling-index|decision-log)
             for heading in "## Purpose" "## Current State" "## Recent Changes" "## Decisions" "## Open Questions"; do
                 if ! grep -q "^$heading\$" "$file"; then
                     ERRORS+=("$rel is missing required section: $heading")
@@ -178,6 +177,19 @@ while IFS= read -r file; do
     validate_durable_note "$file"
 done <<EOF
 $memory_files
+EOF
+
+# Check same-name branch convention: folders under Memory/ should have a same-name entry note
+branch_dirs="$(find "$MEMORY_DIR" -mindepth 1 -maxdepth 1 -type d 2>/dev/null | sort)"
+while IFS= read -r branch_dir; do
+    [ -n "$branch_dir" ] || continue
+    branch_name="$(basename "$branch_dir")"
+    entry_note="$branch_dir/$branch_name.md"
+    if [ ! -f "$entry_note" ]; then
+        WARNINGS+=("Branch folder Memory/$branch_name/ is missing its entry note: $branch_name.md")
+    fi
+done <<EOF
+$branch_dirs
 EOF
 
 knowledge_markdown="$(find "$KNOWLEDGE_DIR" -name "*.md" | sort)"

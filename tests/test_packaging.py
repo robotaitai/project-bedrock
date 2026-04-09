@@ -51,7 +51,7 @@ def test_bundled_templates_exist():
 
     assets = get_assets_dir()
     assert (assets / "templates" / "project" / ".agent-project.yaml").is_file()
-    assert (assets / "templates" / "memory" / "area.template.md").is_file()
+    assert (assets / "templates" / "memory" / "branch.template.md").is_file()
     assert (assets / "templates" / "memory" / "MEMORY.root.template.md").is_file()
 
 

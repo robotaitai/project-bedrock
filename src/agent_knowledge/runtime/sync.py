@@ -53,13 +53,14 @@ def sync_memory_branches(
             if src_mtime <= dst_mtime:
                 continue
 
+        already_exists = dst_file.exists()
         if dry_run:
-            verb = "would update" if dst_file.exists() else "would create"
+            verb = "would update" if already_exists else "would create"
             actions.append(f"  [dry-run] {verb}: Memory/{rel}")
         else:
             dst_file.parent.mkdir(parents=True, exist_ok=True)
             shutil.copy2(src_file, dst_file)
-            verb = "updated" if dst_file.exists() else "created"
+            verb = "updated" if already_exists else "created"
             actions.append(f"  {verb}: Memory/{rel}")
 
     if not actions:

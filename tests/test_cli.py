@@ -36,9 +36,11 @@ def test_top_level_help():
 
 
 def test_version():
+    from agent_knowledge import __version__
+
     r = _run("--version")
     assert r.returncode == 0
-    assert "0.1.1" in r.stdout
+    assert __version__ in r.stdout
 
 
 @pytest.mark.parametrize(

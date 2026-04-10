@@ -103,6 +103,8 @@ Multiple tools in the same repo work together.
 Open `~/agent-os/projects/<slug>/` as an Obsidian vault. The knowledge graph
 shows all memory areas, evidence, and dashboards connected through wiki-links.
 
+![Obsidian graph view of a project knowledge vault](docs/obsidian-graph.png)
+
 Enable **Graph view** in Settings > Core plugins and set
 **Files and links > Use `[[Wikilinks]]`** to ON for the best experience.
 

@@ -1,3 +1,3 @@
 """agent-knowledge: adaptive, file-based project knowledge for AI coding agents."""
 
-__version__ = "0.1.2"
+__version__ = "0.2.0"

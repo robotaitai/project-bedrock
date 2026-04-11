@@ -37,37 +37,9 @@ Open Cursor — the agent picks up from there automatically.
 
 ## How It Works
 
-```
-your-project/
-  .agent-project.yaml        # project config
-  AGENTS.md                   # instructions agents read on startup
-  .cursor/
-    rules/agent-knowledge.mdc # always-on memory contract
-    hooks.json                 # session lifecycle hooks
-    commands/                  # /memory-update, /system-update slash commands
-  agent-knowledge/            # symlink -> ~/agent-os/projects/<slug>/
-    STATUS.md                 # onboarding state + sync timestamps
-    Memory/                   # curated, durable knowledge (source of truth)
-      MEMORY.md
-      stack.md
-      decisions/
-        decisions.md
-    History/                  # lightweight diary (what happened over time)
-      events.ndjson
-      history.md
-    Evidence/                 # imported or extracted material (not canonical)
-      raw/
-      imports/
-      captures/               # automatic event stream
-    Outputs/                  # generated views (never canonical)
-      knowledge-index.json
-      knowledge-index.md
-      site/
-    Sessions/                 # ephemeral session state
-```
-
-Knowledge lives **outside** the repo so it persists across branches, tools,
-and clones. The symlink gives every tool a stable `./agent-knowledge` path.
+Knowledge lives **outside** the repo at `~/agent-os/projects/<slug>/` so it persists
+across branches, tools, and clones. The symlink `./agent-knowledge` gives every tool
+a stable local handle.
 
 ### Architecture boundaries
 
@@ -81,6 +53,23 @@ and clones. The symlink gives every tool a stable `./agent-knowledge` path.
 
 Evidence is never auto-promoted into Memory. Outputs are never treated as truth.
 Only agents and humans deliberately write to Memory or History.
+
+## Obsidian-ready
+
+The knowledge vault at `~/agent-os/projects/<slug>/` is a valid Obsidian vault.
+Open it directly for backlinks, graph view, and note navigation.
+
+![Obsidian graph view of a project knowledge vault](docs/obsidian-graph.png)
+
+For a spatial canvas of the knowledge graph:
+
+```bash
+agent-knowledge export-canvas
+# produces: agent-knowledge/Outputs/knowledge-export.canvas
+```
+
+The vault is designed to work well in Obsidian — good markdown, YAML frontmatter,
+branch-note convention, internal links. But everything works without it too.
 
 ### Automatic capture
 
@@ -149,28 +138,19 @@ If any file is stale or missing, `doctor` suggests `agent-knowledge refresh-syst
 
 | Command | What it does |
 |---------|-------------|
-| `init` | Set up a project (zero-arg, auto-detects everything) |
-| `sync` | Memory sync + session rollup + git evidence + capture + index |
-| `doctor` | Validate setup and report health |
-| `update` | Sync project changes into the knowledge tree |
-| `import` | Import repo history into Evidence/ |
-| `ship` | Validate, sync, commit, push |
-| `bootstrap` | Create or repair the memory tree |
-| `setup` | Install global Cursor rules and skills |
-| `global-sync` | Import safe local tooling config |
-| `graphify-sync` | Import graph/discovery artifacts |
-| `compact` | Prune stale memory and old captures |
-| `index` | Regenerate the knowledge index in Outputs/ |
+| `init` | Set up a project — one command, no arguments needed |
+| `sync` | Full sync: memory, history, git evidence, index |
+| `doctor` | Validate setup, integration health, version staleness |
+| `ship` | Validate + sync + commit + push |
 | `search <query>` | Search the knowledge index (Memory-first) |
-| `export-html` | Build polished static site in Outputs/site/ |
-| `view` | Build site and open it in the browser |
-| `clean-import <url>` | Import a URL or HTML file as cleaned evidence |
-| `refresh-system` | Refresh integration files to the current framework version |
-| `export-canvas` | Export vault as an Obsidian Canvas file (optional) |
-| `backfill-history` | Backfill lightweight project history from git |
-| `measure-tokens` | Estimate context token savings |
+| `export-html` | Build a polished static site from the vault |
+| `view` | Build site and open in browser |
+| `clean-import <url>` | Import a URL as cleaned, non-canonical evidence |
+| `refresh-system` | Refresh all integration files to the current framework version |
+| `backfill-history` | Rebuild lightweight project history from git |
+| `compact` | Prune stale captures and old session state |
 
-All write commands support `--dry-run`. Use `--json` for machine-readable output.
+All write commands support `--dry-run` and `--json`. Run `agent-knowledge --help` for the full command list.
 
 ## Static site export with graph
 
@@ -251,23 +231,6 @@ Strips navigation, ads, scripts, and boilerplate. Writes clean markdown with
 YAML frontmatter marking it as non-canonical. Verify facts before promoting
 any content to Memory/.
 
-## Obsidian (optional)
-
-Obsidian is an **optional** viewer/editor. agent-knowledge is not Obsidian-centric.
-
-Open `~/agent-os/projects/<slug>/` as an Obsidian vault for backlinks and graph view.
-
-![Obsidian graph view of a project knowledge vault](docs/obsidian-graph.png)
-
-For an optional spatial canvas of the knowledge graph:
-
-```
-agent-knowledge export-canvas
-# produces: agent-knowledge/Outputs/knowledge-export.canvas
-# open in Obsidian with Core plugins > Canvas
-```
-
-All Obsidian-specific features are optional. The system works fully without Obsidian.
 
 ## Multi-Tool Support
 

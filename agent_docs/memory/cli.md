@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: cli
-updated: 2026-04-11
+updated: 2026-04-12
 tags:
   - agent-knowledge
   - cli
@@ -44,18 +44,22 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 ## init (zero-arg)
 
 - Infers slug from directory name, detects integrations automatically
-- After setup: **auto-calls `run_backfill()`** from `history.py` if vault exists
-- Prints cyan-bordered prompt with next-step suggestion
+- Auto-runs `import-agent-history.sh` (no manual step needed)
+- Auto-calls `run_backfill()` from `history.py` if vault exists
+- **Final output**: single cyan box — "Paste in your agent chat: ..." (no noisy "Next steps" list)
+- Bootstrap and install scripts no longer print their own "Next steps" sections
 
 ## doctor
 
 - Calls `doctor.sh` (bash)
 - **Python pre-check 1**: `refresh.is_stale()` — warns if framework version is behind
-- **Python pre-check 2**: `history.history_exists()` — warns if History/ missing
+- **Python pre-check 2**: `refresh.check_cursor_integration()` — warns if rule/hooks/commands missing or incomplete
+- **Python pre-check 3**: `history.history_exists()` — warns if History/ missing
 
 ## refresh-system
 
-- Refreshes `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/agent-knowledge.mdc`, `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
+- Refreshes `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/agent-knowledge.mdc`, `.cursor/commands/`, `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
+- Creates missing command files (memory-update.md, system-update.md) if commands/ dir absent
 - Idempotent: returns "up-to-date" if version already matches
 - Never touches `Memory/`, `Evidence/`, `Sessions/`, `Outputs/`, `History/`
 - Supports `--dry-run`, `--json`

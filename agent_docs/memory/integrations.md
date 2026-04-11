@@ -1,44 +1,67 @@
 ---
+note_type: durable-branch
 area: integrations
-updated: 2026-04-08
+updated: 2026-04-12
+tags:
+  - agent-knowledge
+  - memory
+  - integrations
 ---
 
 # Integrations
 
-## Purpose
 Multi-tool detection and bridge file installation for Cursor, Claude, and Codex.
 
-## Current State
+## Detection (`runtime/integrations.py`)
 
-### Detection logic (runtime/integrations.py)
-- `detect(repo_path)` returns `{"cursor": bool, "claude": bool, "codex": bool}`.
-- Cursor: always True (default integration).
-- Claude: True if `.claude/` directory exists in repo.
-- Codex: True if `.codex/` directory exists in repo.
+| Tool | Detection | Always installed? |
+|------|-----------|-------------------|
+| Cursor | `.cursor/` exists | Yes (default integration) |
+| Claude | `.claude/` exists | Only if detected |
+| Codex | `.codex/` exists | Only if detected |
 
-### Bridge files installed per tool
-- **Cursor**: `.cursor/hooks.json` (post-write hook calling `agent-knowledge update`) + `.cursor/rules/agent-knowledge.mdc` (alwaysApply rule instructing agent to read STATUS.md on session start).
-- **Claude**: `CLAUDE.md` at project root (directs Claude to AGENTS.md and STATUS.md).
-- **Codex**: `.codex/AGENTS.md` (directs Codex to root AGENTS.md and STATUS.md).
+Called by [[cli#init (zero-arg)|init]] via `detect()` then `install_all()`.
 
-### Onboarding handoff
-- Bridge files instruct agents to check `./agent-knowledge/STATUS.md`.
-- If `onboarding: pending`, agents should follow `AGENTS.md` first-time onboarding instructions.
-- If `onboarding: complete`, agents read `Memory/MEMORY.md` for project context.
-- No separate `next-prompt` command needed -- handoff is automatic via repo files.
+## Bridge Files
 
-### init integration
-- `init` calls `detect()` then `install_all()` by default.
-- `--no-integrations` flag skips auto-detection.
-- `--force` flag overwrites existing integration files.
-- Existing files are left untouched unless `--force` is passed.
+### Cursor (primary runtime)
+- `.cursor/hooks.json` -- **4 hooks**: `post-write` (update), `session-start` (sync), `stop` (sync), `preCompact` (sync)
+- `.cursor/rules/agent-knowledge.mdc` -- `alwaysApply` rule: knowledge layers table, onboarding flow, `/memory-update` reference
+- `.cursor/commands/memory-update.md` -- `/memory-update` slash command: runs sync + reviews work + writes Memory
+- `.cursor/commands/system-update.md` -- `/system-update` slash command: runs refresh-system + reports
 
-## Decisions
+Rule content is **inlined as `_CURSOR_RULE` in `integrations.py`** (no separate template file — refresh.py falls back to this constant if template file absent).
 
-- Cursor rule content (`_CURSOR_RULE`) is inlined as a Python string in `integrations.py` instead of read from a template file. **Why:** pip had a rare bug silently skipping `.mdc` file extraction from wheels during editable installs.
-- Cursor is always installed (even without `.cursor/` directory). **Why:** It's the primary tool and the hooks/rule should be present for when Cursor is used.
-- Each tool's bridge file is minimal -- it just points to AGENTS.md and STATUS.md. The real instructions live in AGENTS.md to avoid duplication.
+Constants in `integrations.py`:
+- `CURSOR_EXPECTED_HOOK_EVENTS = {"session-start", "post-write", "stop", "preCompact"}`
+- `CURSOR_EXPECTED_COMMANDS = {"memory-update.md", "system-update.md"}`
 
-## Open Questions
+`check_cursor_integration(repo_root)` in `refresh.py` validates all 3 components (rule, hooks, commands) and is called by `doctor`.
 
-- None currently.
+### Claude
+- `CLAUDE.md` at project root -- directs to `AGENTS.md` and [[STATUS]]
+
+### Codex
+- `.codex/AGENTS.md` -- directs to root `AGENTS.md` and [[STATUS]]
+
+## Onboarding Handoff
+
+Bridge files instruct agents to check [[STATUS|STATUS.md]]:
+- If `onboarding: pending` -> follow `AGENTS.md` first-time instructions
+- If `onboarding: complete` -> read [[MEMORY]] for context
+
+No manual `next-prompt` command needed.
+
+## PATH Conflict Gotcha
+
+Multiple tools can install an `agent-knowledge` binary. Graphify (Node.js) installs one at `~/.nvm/versions/node/<version>/bin/agent-knowledge` which may shadow our Python CLI. Fix: add Python bin to PATH before nvm — `export PATH="/Users/taio/Library/Python/3.13/bin:$PATH"`. Or invoke directly: `python3 -m agent_knowledge`.
+
+## Key Decision
+
+Cursor rule content is **inlined as `_CURSOR_RULE`** in `integrations.py` (not a separate template). `refresh.py` falls back to this constant when no file at `assets/templates/integrations/cursor/agent-knowledge.mdc`. See [[decisions]].
+
+## See Also
+
+- [[cli#init (zero-arg)|init command]] -- orchestrates detection and install
+- [[architecture#Integration System]] -- design overview
+- [[testing]] -- integration test coverage

@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: architecture
-updated: 2026-04-11
+updated: 2026-04-12
 tags:
   - agent-knowledge
   - memory
@@ -85,9 +85,11 @@ Site views: Overview, Tree/Ontology, Note/Detail, Evidence, Graph (force-directe
 ## System Refresh (`runtime/refresh.py`)
 
 - Compares `framework_version` in STATUS.md to `__version__`
-- Refreshes: `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/agent-knowledge.mdc`, `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
+- Refreshes: `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/agent-knowledge.mdc`, `.cursor/commands/`, `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
+- `_refresh_cursor_commands()`: creates or updates command files (memory-update.md, system-update.md)
+- `check_cursor_integration()`: validates rule/hooks/commands health — called by `doctor`
+- `is_stale()` used by `doctor` command for version staleness warning
 - Idempotent: skips files already at current version
-- `is_stale()` used by `doctor` command for staleness warning
 
 ## Capture Layer
 
@@ -108,3 +110,4 @@ Site views: Overview, Tree/Ontology, Note/Detail, Evidence, Graph (force-directe
 - `ship.sh` must use `python -m pytest -q` not bare `pytest`
 - Canvas 2D rendering: reading `clientWidth`/`clientHeight` after `display:none→block` must be deferred with `requestAnimationFrame` (graph fix, 2026-04-11)
 - Evidence/Outputs are non-canonical and must not be auto-promoted to Memory/
+- Editable installs (`pip install -e .`) copy assets into `.venv/site-packages/` at install time — script edits under `assets/scripts/` require re-running `pip install -e .` to propagate

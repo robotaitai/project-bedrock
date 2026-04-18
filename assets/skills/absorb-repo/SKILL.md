@@ -1,6 +1,6 @@
 ---
 name: absorb-repo
-description: Scan a git repository (or current directory) for markdown documentation and feed it to the agent-knowledge `/absorb` command in logical batches. Use when the user asks to absorb a whole repo, onboard an existing project into agent-knowledge, or pull all project `.md` files into Memory. Ignores vendor and build artefacts (node_modules, .git, .terraform/providers, dist, build, .next, .venv, target, vendor, __pycache__, .pytest_cache, .mypy_cache, coverage). Invokes `/absorb` once per top-level directory so classification and deduplication happen inside `/absorb`'s normal logic. Do NOT use to ingest a single file — use `/absorb <path>` directly.
+description: Ingest an entire repository into agent-knowledge by running `/absorb` once and helping triage the resulting manifest into Memory branches. Use when the user asks to onboard an existing project, pull all project docs into Memory, or bring a legacy repo into the vault. For a single file or narrow subset, use `/absorb` directly instead.
 allowed-tools: Bash
 ---
 
@@ -8,16 +8,19 @@ allowed-tools: Bash
 
 ## Purpose
 
-`/absorb` knows how to classify and route a single set of markdown files
-into the agent-knowledge vault. This skill is the **discovery and
-orchestration layer on top of it** — it walks a repository, filters out
-vendor/build noise, and feeds `/absorb` one logical batch at a time.
+Drive a full-repo onboarding pass into the agent-knowledge vault.
 
-The skill never classifies content itself. `/absorb` owns:
-- Deciding which branch each file maps to
-- Reconciling contradictions against existing Memory
-- Splitting mixed-content files across branches
-- Skipping boilerplate
+The CLI (`agent-knowledge absorb`, exposed as the `/absorb` slash
+command) already discovers knowledge-bearing files
+(`README.md`, `ARCHITECTURE.md`, `CHANGELOG.md`, ADRs, `docs/`,
+`decisions/`, etc.) and copies them into `Evidence/imports/` as
+non-canonical evidence. This skill is the **triage layer on top**: it
+runs `/absorb` once, then walks the generated manifest and decides what
+deserves promotion into `Memory/`.
+
+The skill never re-implements discovery — `/absorb` owns that. It
+focuses on the work `/absorb` explicitly leaves to the agent:
+interpreting evidence and writing durable memory.
 
 ## Prerequisites
 
@@ -30,112 +33,69 @@ The skill never classifies content itself. `/absorb` owns:
 
 ## Instructions
 
-### Step 1 — Identify target
+### Step 1 — Run `/absorb` at the repo root
 
-- If the user passed a path as argument, use it as `TARGET`.
-- Otherwise use the current working directory.
-- Verify the path exists and is a directory. Reject single files — tell
-  the user to call `/absorb <file>` directly for one-offs.
+Invoke the `/absorb` slash command once from the repo root. Do not try
+to pass a file list — the CLI scans the whole project itself and
+ignores unexpected arguments. Let it run to completion.
 
-### Step 2 — Scan
+Output locations after it finishes:
+- `Evidence/imports/` — raw copies with metadata headers
+- `Memory/decisions/decisions.md` — parsed ADR entries (if any)
+- `Outputs/absorb-manifest.md` — manifest of what was imported/skipped
+- `History/events.ndjson` — absorb event appended
 
-Run a single Bash command to list every `.md` file under `TARGET`,
-excluding vendor and build artefacts. Use this exact `find` invocation
-(it handles the ignore list in one pass and is fast on large repos):
+### Step 2 — Read the manifest
 
-```bash
-find "$TARGET" -type d \( \
-  -name node_modules -o \
-  -name .git -o \
-  -name dist -o \
-  -name build -o \
-  -name .next -o \
-  -name .venv -o \
-  -name target -o \
-  -name vendor -o \
-  -name __pycache__ -o \
-  -name .pytest_cache -o \
-  -name .mypy_cache -o \
-  -name coverage \
-\) -prune -o \
--type d -path '*/.terraform/providers' -prune -o \
--type f -name '*.md' -print | sort
-```
+Read `./agent-knowledge/Outputs/absorb-manifest.md`. It lists:
+- Files copied into `Evidence/imports/`
+- Files skipped (already present, ignored, or boilerplate)
+- Decisions parsed from ADR-shaped files
 
-If the result is empty, stop and tell the user no markdown files were
-found under the target.
+Skim the manifest before touching Memory — it is the cheapest way to
+understand the shape of the repo's knowledge.
 
-### Step 3 — Group into logical batches
+### Step 3 — Triage into Memory
 
-Group results by the **first path segment relative to `TARGET`**. Files
-directly under `TARGET` form a single `root` batch.
+For each imported file, decide where stable facts belong:
 
-Example, with `TARGET=/repo/VisageAI-main`:
-
-| Batch name | Paths matched |
+| Content shape | Destination |
 |---|---|
-| `root` | `README.md`, `AGENTS.md`, `CLAUDE.md` |
-| `docs` | everything under `docs/` |
-| `backend` | everything under `backend/` |
-| `frontend` | everything under `frontend/` |
-| ... | |
+| Architectural decision / ADR | `Memory/decisions/decisions.md` (often already populated by absorb — verify and enrich) |
+| System component or service description | `Memory/<branch>.md` — create or update the relevant branch note |
+| Changelog / release history | Spot-check `History/events.ndjson`; promote only durable milestones |
+| Onboarding / contribution / setup doc | Extract durable facts only; leave process-heavy content in Evidence |
+| Boilerplate (license headers, stubs, TOC-only files) | Leave in Evidence, do not promote |
 
-Preserve natural batching even if a batch is large — do not split a
-directory. `/absorb` handles per-batch volume internally.
+Use the `project-memory-writing` and `branch-note-convention` skills for
+the actual Memory writes — keep branch notes small, curated, and
+cross-linked. Use `memory-management` to decide whether a branch
+already exists or a new one is justified.
 
-### Step 4 — Announce the plan
+### Step 4 — Update `MEMORY.md`
 
-Before invoking `/absorb`, show the user:
-1. Target path.
-2. Total file count.
-3. The batch list with a count per batch.
+If you created new branch notes, add a one-line entry for each under
+the relevant section of `Memory/MEMORY.md`. Keep it an index, not a
+summary.
 
-Then proceed without waiting for confirmation — the user has already
-asked to absorb the repo. If they want to abort, they will stop the
-run.
+### Step 5 — Finish with `/memory-update`
 
-### Step 5 — Invoke `/absorb` per batch
-
-For each batch, invoke the `/absorb` slash command once with the
-explicit file list as arguments, space-separated. Always pass absolute
-paths so `/absorb` is robust to cwd changes.
-
-Run batches **sequentially**, not in parallel. `/absorb` writes to
-shared Memory files (`MEMORY.md`, `decisions.md`, `events.ndjson`) and
-parallel writes would race.
-
-Wait for each `/absorb` invocation to finish before starting the next
-one. After each batch, briefly note what happened (branches
-touched, decisions added, files skipped) so the user can follow along.
-
-### Step 6 — Final summary
-
-After all batches finish, run `agent-knowledge sync --project <TARGET>`
-once (if `/absorb` has not already done so in the last batch — it
-usually does), then print:
-
-- Target path and total files discovered
-- Batch count
-- New or updated Memory branches across the whole run
-- Any batches that produced no writes (e.g. all-boilerplate dirs)
-- A reminder that `/absorb` already logged individual absorb events to
-  `History/events.ndjson`
+Run `/memory-update` to sync the vault, regenerate the index, and log
+a session summary. This closes the onboarding loop and makes the new
+branches discoverable to future sessions.
 
 ## Notes
 
-- **No dedup against prior absorb runs.** The skill re-feeds every
-  discovered file. `/absorb` is responsible for recognising unchanged
-  facts and no-op'ing; if that is not happening, that is a `/absorb`
-  bug, not something this skill should work around.
-- **Do not edit the ignore list inline.** If a project needs a
-  different exclusion set, tell the user to invoke `/absorb` directly
-  on the specific paths they want.
-- **Do not touch `.terraform/providers` subtrees** — these contain
-  vendored provider docs that would pollute Memory. The `-path` prune
-  above handles this.
-- **Batch order matters slightly.** Prefer this order if possible:
-  `root` → `docs` → `backend` → `frontend` → `mobile` → infra dirs
-  (`terraform`, `scripts`, `.github`). It mirrors the typical
-  logical-dependency order and gives `/absorb` the richest cross-ref
-  context as branches accumulate. If the repo doesn't have these dirs,
-  alphabetical is fine.
+- **Absorb is idempotent.** Re-running `/absorb` is safe — files
+  already in `Evidence/imports/` are skipped. Triage, however, is not
+  idempotent; be deliberate about what you promote.
+- **Evidence is not Memory.** `Evidence/imports/` stays non-canonical.
+  The manifest gives you the raw surface; `Memory/` captures the
+  durable facts you have deliberately curated.
+- **Large repos.** If the manifest runs to hundreds of imports, triage
+  by directory rather than file-by-file: identify the three or four
+  directories that carry the real knowledge and focus there. Everything
+  unpromoted stays usefully searchable in Evidence.
+- **Single files or a narrow subset.** Do not use this skill — call
+  `/absorb` directly. This skill is specifically the whole-repo
+  onboarding workflow.

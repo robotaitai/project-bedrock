@@ -21,6 +21,7 @@ This is not a git replacement.
 
 ## Recent Activity
 
+- **2026-04-28** `release` [v0.3.0] — Release v0.3.0
 - **2026-04-28** `release` [v0.2.9] — Release v0.2.9
 - **2026-04-26** `release` [v0.2.8] — Release v0.2.8
 - **2026-04-23** `backfill` [v0.2.7, v0.2.6] — History backfill: 42 commits, 10 releases, 2 integrations
@@ -35,7 +36,6 @@ This is not a git replacement.
 - **2026-04-23** `release` [v0.2.4] — Release v0.2.4
 - **2026-04-23** `release` [v0.2.5] — Release v0.2.5
 - **2026-04-23** `release` [v0.2.6] — Release v0.2.6
-- **2026-04-23** `release` [v0.2.7] — Release v0.2.7
 
 ## Reference
 

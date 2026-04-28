@@ -827,13 +827,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .section-heading{font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:.07em;color:var(--muted);margin-bottom:13px;display:flex;align-items:center;gap:8px}
 .section-heading::after{content:"";flex:1;height:1px;background:var(--border)}
 
-.branch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:11px}
-.branch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:14px 15px;cursor:pointer;transition:border-color .15s,background .15s}
+.branch-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:8px}
+.branch-card{background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 12px;cursor:pointer;transition:border-color .15s,background .15s}
 .branch-card:hover{border-color:var(--accent);background:var(--surface-2)}
-.branch-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px;gap:8px}
-.branch-card-title{font-weight:600;font-size:14px;color:var(--text);flex:1}
-.branch-card-purpose{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
-.branch-card-foot{font-size:11px;color:var(--muted-2);display:flex;gap:10px;align-items:center;margin-top:auto}
+.branch-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:4px;gap:6px}
+.branch-card-title{font-weight:600;font-size:13px;color:var(--text);flex:1}
+.branch-card-purpose{font-size:11.5px;color:var(--muted);line-height:1.45;margin-bottom:6px}
+.branch-card-foot{font-size:10.5px;color:var(--muted-2);display:flex;gap:8px;align-items:center;margin-top:auto}
 .bc-changes{color:var(--ok);font-weight:600}
 .bc-updated{color:var(--muted-2);margin-left:auto}
 
@@ -1063,6 +1063,7 @@ function _hideGraph(){
   const gc = document.getElementById('graph-container');
   if(gc) gc.classList.remove('visible');
   if(_simFrame){ cancelAnimationFrame(_simFrame); _simFrame=null; }
+  _simRunning = false;
 }
 
 function handleHash(){
@@ -1190,7 +1191,7 @@ function showOverview(){
       const changesN = (b.recent_changes||[]).length;
       h += `<div class="branch-card" onclick="nav('note','${esc(b.path)}')">`;
       h += `<div class="branch-card-top"><span class="branch-card-title">${esc(b.title)}</span>${badge('Memory')}</div>`;
-      h += `<div class="branch-card-purpose">${esc(summary.substring(0,140))}${summary.length>140?'…':''}</div>`;
+      h += `<div class="branch-card-purpose">${esc(summary.substring(0,110))}${summary.length>110?'…':''}</div>`;
       h += `<div class="branch-card-foot">`;
       if(changesN>0) h += `<span class="bc-changes">${changesN} change${changesN>1?'s':''}</span>`;
       if(b.updated) h += `<span class="bc-updated">updated ${esc(b.updated)}</span>`;
@@ -1411,8 +1412,10 @@ function showGraph(){
       _graphInited = true;
       _initGraph();
     } else {
-      _resizeGraph();
-      if(!_simRunning) _renderGraph();
+      // Restore canvas size (it collapses to 0 while display:none) then
+      // just redraw at the stored node positions — no simulation restart.
+      _resizeCanvasOnly();
+      _renderGraph();
     }
   });
 }
@@ -1526,7 +1529,7 @@ function _simStep(){
     n.fy -= SIM_GRAVITY*n.y*_simAlpha;
   }
 
-  // Repulsion O(n²) — acceptable for vault sizes (<300 nodes typical)
+  // Repulsion
   for(let i=0;i<vis.length;i++){
     const a=vis[i];
     for(let j=i+1;j<vis.length;j++){
@@ -1540,7 +1543,7 @@ function _simStep(){
     }
   }
 
-  // Spring forces on visible edges
+  // Springs
   for(const e of _gEdges){
     if(!e.src||!e.tgt||!e.src.visible||!e.tgt.visible) continue;
     const dx=e.tgt.x-e.src.x, dy=e.tgt.y-e.src.y;
@@ -1551,12 +1554,10 @@ function _simStep(){
   }
 
   // Integrate
-  let ke=0;
   for(const n of vis){
     n.vx=(n.vx+n.fx)*SIM_DAMPING;
     n.vy=(n.vy+n.fy)*SIM_DAMPING;
     n.x+=n.vx; n.y+=n.vy;
-    ke+=n.vx*n.vx+n.vy*n.vy;
   }
 
   _simAlpha*=0.992;
@@ -1569,6 +1570,18 @@ function _simStep(){
     _simRunning=false;
     _renderGraph();
   }
+}
+
+function _resizeCanvasOnly(){
+  // Resize the canvas backing buffer without touching pan/zoom or starting sim.
+  // Used when returning to the graph tab after display:none collapsed it to 0.
+  if(!_gCanvas) return;
+  const cnt = _gCanvas.parentElement;
+  const dpr = window.devicePixelRatio||1;
+  const W = cnt.clientWidth, H = cnt.clientHeight;
+  if(!W || !H){ requestAnimationFrame(()=>{ _resizeCanvasOnly(); _renderGraph(); }); return; }
+  _gCanvas.width = W*dpr; _gCanvas.height = H*dpr;
+  _gCanvas.style.width = W+'px'; _gCanvas.style.height = H+'px';
 }
 
 function _resizeGraph(){
@@ -1747,8 +1760,15 @@ function _onGMove(e){
 }
 
 function _onGUp(e){
+  const wasDraggingNode = !!_gNodeDrag;
   _gNodeDrag=null; _gDragging=false; _gDragStart=null;
   _gCanvas.classList.remove('gdrag');
+  // Let neighbours settle after a node drag
+  if(wasDraggingNode&&!_simRunning){
+    _simAlpha=0.3; _simRunning=true;
+    if(_simFrame) cancelAnimationFrame(_simFrame);
+    _simStep();
+  }
 }
 
 function _onGClick(e){

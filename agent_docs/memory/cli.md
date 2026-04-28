@@ -8,12 +8,12 @@ tags:
 update_when: >
   A command is added, removed, or renamed; a command's delegation target changes
   (shell script → pure Python or vice-versa); a significant flag is added to an
-  existing command. Run `agent-knowledge --help` and diff against the table below.
+  existing command. Run `bedrock --help` and diff against the table below.
 ---
 
 # CLI
 
-Design and implementation of the `agent-knowledge` command-line interface.
+Design and implementation of the `bedrock` command-line interface.
 
 ## Framework
 

@@ -27,6 +27,7 @@ dev = ["pytest>=7.0", "build"]
 tokens = ["tiktoken"]
 
 [project.scripts]
+bedrock = "agent_knowledge.cli:main"
 agent-knowledge = "agent_knowledge.cli:main"
 
 [tool.hatch.build.targets.wheel]

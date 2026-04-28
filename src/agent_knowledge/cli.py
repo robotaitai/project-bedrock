@@ -1,4 +1,4 @@
-"""CLI entry point for agent-knowledge."""
+"""CLI entry point for project-bedrock (bedrock command)."""
 
 from __future__ import annotations
 
@@ -31,7 +31,7 @@ def _add_common_flags(
 
 
 @click.group()
-@click.version_option(version=__version__, prog_name="agent-knowledge")
+@click.version_option(version=__version__, prog_name="bedrock")
 def main() -> None:
     """Adaptive, file-based project knowledge for AI coding agents."""
 
@@ -354,7 +354,7 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
     """Validate setup, pointer resolution, and note structure.
 
     Reports whether the project integration is stale and suggests
-    `agent-knowledge refresh-system` when the framework version has changed.
+    `bedrock refresh-system` when the framework version has changed.
     """
     from agent_knowledge.runtime.refresh import (
         is_stale, check_cursor_integration, check_claude_integration,
@@ -370,14 +370,14 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
         if prior:
             click.secho(
                 f"Warning: project integration is at v{prior}, installed framework is v{current}. "
-                f"Run: agent-knowledge refresh-system",
+                f"Run: bedrock refresh-system",
                 fg="yellow",
                 err=True,
             )
         else:
             click.secho(
                 f"Warning: no framework_version in STATUS.md. "
-                f"Run: agent-knowledge refresh-system",
+                f"Run: bedrock refresh-system",
                 fg="yellow",
                 err=True,
             )
@@ -401,7 +401,7 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
     vault_dir = repo_root / "agent-knowledge"
     if vault_dir.is_dir() and not history_exists(vault_dir) and not json_mode:
         click.secho(
-            "Note: no History/ layer found. Run: agent-knowledge backfill-history",
+            "Note: no History/ layer found. Run: bedrock backfill-history",
             fg="cyan",
             err=True,
         )
@@ -425,7 +425,7 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
             if w.get("update_when"):
                 click.secho(f"    update when: {w['update_when'][:120]}", fg="yellow", err=True)
         click.secho(
-            "  Review these notes and update with: agent-knowledge sync",
+            "  Review these notes and update with: bedrock sync",
             fg="yellow",
             err=True,
         )
@@ -544,7 +544,7 @@ def measure_tokens(args: tuple[str, ...]) -> None:
     \b
     Subcommands: compare, log-run, summarize-log.
     Pass --help after the subcommand for its options:
-      agent-knowledge measure-tokens compare --help
+      bedrock measure-tokens compare --help
     """
     if not args:
         sys.exit(run_python_script("measure-token-savings.py", ["--help"]))
@@ -574,11 +574,11 @@ def search(query: str, project: str, limit: int, include_all: bool, json_mode: b
 
     vault = Path(project).resolve() / "agent-knowledge"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: agent-knowledge init", err=True)
+        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     if not query:
-        click.echo("Usage: agent-knowledge search <query>", err=True)
+        click.echo("Usage: bedrock search <query>", err=True)
         sys.exit(0)
 
     results = idx_search(vault, query, max_results=limit, include_non_canonical=include_all)
@@ -621,7 +621,7 @@ def index_cmd(project: str, dry_run: bool, json_mode: bool) -> None:
 
     vault = Path(project).resolve() / "agent-knowledge"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: agent-knowledge init", err=True)
+        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     actions = write_index(vault, dry_run=dry_run)
@@ -660,10 +660,10 @@ def export_html(
 
     \b
     Examples:
-      agent-knowledge export-html
-      agent-knowledge export-html --open
-      agent-knowledge export-html --dry-run
-      agent-knowledge export-html --no-evidence
+      bedrock export-html
+      bedrock export-html --open
+      bedrock export-html --dry-run
+      bedrock export-html --no-evidence
     """
     import json as json_mod
 
@@ -671,7 +671,7 @@ def export_html(
 
     vault = Path(project).resolve() / "agent-knowledge"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: agent-knowledge init", err=True)
+        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     out_dir = Path(output_dir).resolve() if output_dir else None
@@ -717,7 +717,7 @@ def view(project: str, output_dir: str | None) -> None:
 
     vault = Path(project).resolve() / "agent-knowledge"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: agent-knowledge init", err=True)
+        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     out_dir = Path(output_dir).resolve() if output_dir else None
@@ -751,9 +751,9 @@ def clean_import(
 
     \b
     Examples:
-      agent-knowledge clean-import https://docs.example.com/api
-      agent-knowledge clean-import page.html --slug api-ref-2025-01-15
-      agent-knowledge clean-import https://... --dry-run
+      bedrock clean-import https://docs.example.com/api
+      bedrock clean-import page.html --slug api-ref-2025-01-15
+      bedrock clean-import https://... --dry-run
     """
     import json as json_mod
 
@@ -818,7 +818,7 @@ def export_canvas(project: str, output: str | None, dry_run: bool) -> None:
 
     vault = Path(project).resolve() / "agent-knowledge"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: agent-knowledge init", err=True)
+        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     out_path = Path(output).resolve() if output else None
@@ -843,16 +843,16 @@ def backfill_history(project: str, dry_run: bool, json_mode: bool, force: bool) 
     """Backfill lightweight project history from git and integration artifacts.
 
     Creates History/events.ndjson, History/history.md, and a compact timeline
-    note. Runs automatically during `agent-knowledge init` on existing repos.
+    note. Runs automatically during `bedrock init` on existing repos.
 
     History records what happened over time (milestones, releases, integrations)
     without replacing Memory/ or duplicating git. Safe to run multiple times.
 
     \b
     Examples:
-      agent-knowledge backfill-history
-      agent-knowledge backfill-history --dry-run
-      agent-knowledge backfill-history --json
+      bedrock backfill-history
+      bedrock backfill-history --dry-run
+      bedrock backfill-history --json
     """
     import json as json_mod
 
@@ -862,7 +862,7 @@ def backfill_history(project: str, dry_run: bool, json_mode: bool, force: bool) 
     vault_dir = repo_root / "agent-knowledge"
 
     if not vault_dir.is_dir():
-        msg = {"error": "No agent-knowledge vault found. Run: agent-knowledge init"}
+        msg = {"error": "No agent-knowledge vault found. Run: bedrock init"}
         if json_mode:
             click.echo(json_mod.dumps(msg))
         else:
@@ -957,11 +957,11 @@ def absorb(project: str, dry_run: bool, json_mode: bool, no_decisions: bool) -> 
     if not vault_dir.exists():
         if json_mode:
             click.echo(
-                __import__("json").dumps({"error": "agent-knowledge vault not found; run: agent-knowledge init"}),
+                __import__("json").dumps({"error": "agent-knowledge vault not found; run: bedrock init"}),
                 err=False,
             )
         else:
-            click.secho("Error: agent-knowledge vault not found. Run: agent-knowledge init", fg="red", err=True)
+            click.secho("Error: agent-knowledge vault not found. Run: bedrock init", fg="red", err=True)
         raise SystemExit(1)
 
     if not json_mode:
@@ -1028,9 +1028,9 @@ def refresh_system(project: str, dry_run: bool, json_mode: bool, force: bool) ->
 
     \b
     Examples:
-      agent-knowledge refresh-system
-      agent-knowledge refresh-system --dry-run
-      agent-knowledge refresh-system --json
+      bedrock refresh-system
+      bedrock refresh-system --dry-run
+      bedrock refresh-system --json
     """
     import json as json_mod
 
@@ -1085,7 +1085,7 @@ def refresh_system(project: str, dry_run: bool, json_mode: bool, force: bool) ->
 
     click.echo("", err=True)
     if not dry_run and action not in ("up-to-date",):
-        click.echo("Next: agent-knowledge doctor --project .", err=True)
+        click.echo("Next: bedrock doctor --project .", err=True)
 
 
 # -- setup ----------------------------------------------------------------- #

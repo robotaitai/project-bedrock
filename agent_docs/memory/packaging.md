@@ -14,13 +14,13 @@ update_when: >
 
 # Packaging
 
-Python [[stack|packaging]] strategy for making agent-knowledge pip-installable.
+Python [[stack|packaging]] strategy for making bedrock pip-installable.
 
 ## Build System
 
 - Backend: **hatchling** via `pyproject.toml`
 - Layout: src-layout at `src/agent_knowledge/`
-- Entry point: `agent-knowledge = agent_knowledge.cli:main`
+- Entry points: `bedrock = agent_knowledge.cli:main`, `agent-knowledge = agent_knowledge.cli:main` (deprecated alias)
 
 ## Asset Bundling
 
@@ -36,7 +36,7 @@ See [[architecture#Path Resolution]] for how the code finds these at runtime.
 
 Current: **0.3.0** (tagged `v0.3.0`). PyPI package name: `project-bedrock`. See [[deployments]].
 
-Install: `pip install project-bedrock`. Command: `agent-knowledge`.
+Install: `pip install project-bedrock`. Command: `bedrock`.
 
 ## Dependencies
 

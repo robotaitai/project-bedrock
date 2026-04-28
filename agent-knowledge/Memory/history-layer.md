@@ -52,9 +52,9 @@ History is **not** a git replacement, not a full transcript store, not a second 
 
 ## Commands
 
-- `agent-knowledge init` — auto-backfills history after setup
-- `agent-knowledge backfill-history` — manual refresh, supports `--dry-run`, `--json`, `--force`
-- `agent-knowledge doctor` — warns if `History/` is missing
+- `bedrock init` — auto-backfills history after setup
+- `bedrock backfill-history` — manual refresh, supports `--dry-run`, `--json`, `--force`
+- `bedrock doctor` — warns if `History/` is missing
 
 ## Implementation
 

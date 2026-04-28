@@ -64,7 +64,7 @@ Architectural and process decisions for agent-knowledge.
 
 - **Date**: 2026-04-12
 - **Context**: Only `post-write` and `session-start` hooks existed; stop and compaction events missed
-- **Decision**: Add `stop` + `preCompact` hooks both calling `agent-knowledge sync`; hooks stay thin
+- **Decision**: Add `stop` + `preCompact` hooks both calling `bedrock sync`; hooks stay thin
 - **Status**: Active
 
 ## 009 - init auto-runs import and shows single clean prompt {#009}

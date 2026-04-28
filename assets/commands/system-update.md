@@ -1,6 +1,6 @@
 # System Update
 
-System Update refreshes the current project's agent-knowledge integration layer
+System Update refreshes the current project's bedrock integration layer
 to match the currently installed framework version.
 
 It does not rebuild the ontology, re-import history, or modify curated project
@@ -9,7 +9,7 @@ knowledge. It only updates integration bridge files and metadata version markers
 ## When to use
 
 Use `/system-update` when:
-- A new version of agent-knowledge has been installed (`pip install -U project-bedrock`)
+- A new version of project-bedrock has been installed (`pip install -U project-bedrock`)
 - The doctor command reports that the project integration is stale
 - Tool bridge files (Cursor hooks, CLAUDE.md, AGENTS.md header) may be outdated
 - STATUS.md is missing `framework_version` (legacy project)
@@ -17,7 +17,7 @@ Use `/system-update` when:
 
 Do NOT use `/system-update` to:
 - Rebuild the full ontology (use the `project-ontology-bootstrap` skill)
-- Re-import project history (use `agent-knowledge import`)
+- Re-import project history (use `bedrock import`)
 - Rewrite Memory/ branches (use `memory-management` skill)
 
 ## What it updates
@@ -54,10 +54,10 @@ all items reporting "up-to-date" and no files written.
 ## Expected CLI Entry Point
 
 ```bash
-agent-knowledge refresh-system
-agent-knowledge refresh-system --dry-run
-agent-knowledge refresh-system --json
-agent-knowledge refresh-system --project /path/to/repo
+bedrock refresh-system
+bedrock refresh-system --dry-run
+bedrock refresh-system --json
+bedrock refresh-system --project /path/to/repo
 ```
 
 ## After running
@@ -65,5 +65,5 @@ agent-knowledge refresh-system --project /path/to/repo
 After a successful system update:
 1. Check the summary for any warnings
 2. If `CLAUDE.md` or `AGENTS.md` was flagged for manual review, inspect the diff
-3. Re-run `agent-knowledge doctor` to confirm health
-4. Commit the refreshed integration files with: `git add AGENTS.md .cursor/ && git commit -m "chore: refresh agent-knowledge integration"`
+3. Re-run `bedrock doctor` to confirm health
+4. Commit the refreshed integration files with: `git add AGENTS.md .cursor/ && git commit -m "chore: refresh bedrock integration"`

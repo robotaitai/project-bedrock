@@ -5,7 +5,7 @@ description: Infer a project's natural ontology from the actual repo. Use when d
 
 # Ontology Inference
 
-The agent-knowledge system never imposes a fixed ontology. Branch names and structure
+The bedrock system never imposes a fixed ontology. Branch names and structure
 must be inferred from the real project, not from templates or generic categories.
 
 This skill covers the inference process: how to read a repo and determine its natural

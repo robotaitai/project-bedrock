@@ -80,7 +80,7 @@ fi
 kc_load_project_context "$TARGET_PROJECT_ARG"
 
 if [ ! -e "$KNOWLEDGE_POINTER_PATH" ]; then
-    kc_fail "Missing ./agent-knowledge pointer. Run: agent-knowledge init"
+    kc_fail "Missing ./agent-knowledge pointer. Run: bedrock init"
 fi
 
 kc_require_knowledge_pointer

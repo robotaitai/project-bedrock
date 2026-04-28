@@ -1,7 +1,7 @@
 Perform a project memory update.
 
 Steps:
-1. Run in terminal: `agent-knowledge sync --project .`
+1. Run in terminal: `bedrock sync --project .`
 2. Review this session's work and identify what stable project knowledge changed
 3. For each changed area, update the relevant `./agent-knowledge/Memory/<branch>.md`:
    - Edit the Current State section with confirmed facts

@@ -1,6 +1,6 @@
 # Agent Knowledge
 
-This project uses agent-knowledge for persistent project memory.
+This project uses bedrock for persistent project memory.
 Read the root `AGENTS.md` for knowledge management instructions.
 Check `./agent-knowledge/STATUS.md` for onboarding state.
 
@@ -11,7 +11,7 @@ If onboarding is pending, follow the instructions in the root AGENTS.md before o
 Run at the beginning of each session:
 
 ```bash
-agent-knowledge sync --project . && agent-knowledge refresh-system --project .
+bedrock sync --project . && bedrock refresh-system --project .
 ```
 
 This syncs memory branches, rolls up sessions, refreshes git evidence, updates the knowledge index, and refreshes integration files.
@@ -24,7 +24,7 @@ After completing meaningful work in a session:
    - Update the relevant branch note
    - Add a dated entry to the `Recent Changes` section
    - Update `./agent-knowledge/Memory/MEMORY.md` if branch summaries changed
-2. Run `agent-knowledge sync --project .` to propagate changes
+2. Run `bedrock sync --project .` to propagate changes
 
 Write to memory when:
 - An architectural decision was made
@@ -38,7 +38,7 @@ Write to memory when:
 Run to keep integration files current with the installed framework:
 
 ```bash
-agent-knowledge refresh-system --project .
+bedrock refresh-system --project .
 ```
 
 Do NOT write to memory for:

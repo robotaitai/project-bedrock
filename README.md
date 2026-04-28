@@ -2,9 +2,11 @@
 
 <img src="docs/cover.png" width="100%" alt="project-bedrock cover" />
 
-# project-bedrock: Shared Memory for AI Development Teams
+# project-bedrock: A team lead for your AI agents.
 
-### Tell your AI developers how to work, and every session leaves the project smarter.
+### Every session starts with context.  
+### Every important decision leaves a trail.  
+### Every session leaves the project smarter.
 
 robotaitai
 
@@ -29,7 +31,7 @@ Architecture gets rediscovered.
 New sessions start from zero.  
 And the next developer, human or AI, has to figure out again what changed, where, and why.
 
-**agent-knowledge** gives every repo a shared memory layer for humans and AI developers.
+**Project Bedrock** gives every repo a shared memory layer for humans and AI developers.
 
 It works like the operating discipline of a strong team lead:
 - every session starts with context
@@ -54,7 +56,7 @@ No database. No server. No hosted backend. No black box.
 pip install project-bedrock
 ```
 
-> **PyPI:** `project-bedrock` &nbsp;&middot;&nbsp; **CLI:** `agent-knowledge`
+> **PyPI:** `project-bedrock` &nbsp;&middot;&nbsp; **CLI:** `bedrock` &nbsp;&middot;&nbsp; **alias:** `agent-knowledge` (deprecated)
 
 ---
 
@@ -62,7 +64,7 @@ pip install project-bedrock
 
 ```bash
 cd your-project
-agent-knowledge init
+bedrock init
 ```
 
 **That's it.** Open the project in Claude Code or Cursor and the agent has persistent memory automatically -- no manual prompting, no config, no setup.
@@ -93,13 +95,13 @@ Curated knowledge is committed normally; noisy subfolders are gitignored.
 
 ```bash
 # Default: in-repo (recommended)
-agent-knowledge init
+bedrock init
 
 # External: knowledge outside the repo (not committed)
-agent-knowledge init --external
+bedrock init --external
 
 # Convert external -> in-repo later
-agent-knowledge migrate-to-local
+bedrock migrate-to-local
 ```
 
 ---
@@ -172,10 +174,10 @@ Hooks fire automatically -- **zero manual intervention:**
 
 | Event | Claude Code | Cursor | What runs |
 |-------|:-----------:|:------:|-----------|
-| Session start | `SessionStart` | `session-start` | `agent-knowledge sync` |
-| File saved | -- | `post-write` | `agent-knowledge update` |
-| Task complete | `Stop` | `stop` | `agent-knowledge sync` |
-| Context compaction | `PreCompact` | `preCompact` | `agent-knowledge sync` |
+| Session start | `SessionStart` | `session-start` | `bedrock sync` |
+| File saved | -- | `post-write` | `bedrock update` |
+| Task complete | `Stop` | `stop` | `bedrock sync` |
+| Context compaction | `PreCompact` | `preCompact` | `bedrock sync` |
 
 The agent reads `STATUS.md` and `Memory/MEMORY.md` at the start of every session, with no prompting required.
 
@@ -193,7 +195,7 @@ These are how the team writes to the logbook. Both work in Claude Code and Curso
 ### 🩺 Integration Health
 
 ```bash
-agent-knowledge doctor
+bedrock doctor
 ```
 
 Reports whether all integration files are installed and current. If anything is stale or missing, `doctor` tells you exactly what to run.
@@ -207,11 +209,11 @@ Each project's `./agent-knowledge/` is a valid **Obsidian vault** on its own. Bu
 One window. Every team.
 
 ```bash
-agent-knowledge export-canvas
+bedrock export-canvas
 # produces: agent-knowledge/Outputs/knowledge-export.canvas
 ```
 
-Works great with Obsidian. Works without it too.
+Obsidian is optional. Works without it too.
 
 ---
 
@@ -232,18 +234,18 @@ Works great with Obsidian. Works without it too.
 
 `absorb` &middot; `search` &middot; `export-html` &middot; `export-canvas` &middot; `clean-import` &middot; `refresh-system` &middot; `backfill-history` &middot; `compact` &middot; `migrate-to-local` &middot; `init --external`
 
-All write commands support `--dry-run` and `--json`. Run `agent-knowledge --help` for the full list.
+All write commands support `--dry-run` and `--json`. Run `bedrock --help` for the full list.
 
 </details>
 
 ## More
 
-- [Static site export](docs/reference.md#static-site-export) -- `agent-knowledge view` builds an interactive HTML site from your vault
+- [Static site export](docs/reference.md#static-site-export) -- `bedrock view` builds an interactive HTML site from your vault
 - [Automatic capture](docs/reference.md#automatic-capture) -- every sync event is recorded as lightweight evidence
 - [Progressive retrieval](docs/reference.md#progressive-retrieval) -- agents load only the branches they need
 - [Clean web import](docs/reference.md#clean-web-import) -- import a URL as cleaned markdown evidence
 - [Project history](docs/reference.md#project-history) -- lightweight event log auto-backfilled from git
-- [Keeping up to date](docs/reference.md#keeping-up-to-date) -- `pip install -U` + `refresh-system`
+- [Keeping up to date](docs/reference.md#keeping-up-to-date) -- `pip install -U project-bedrock` + `bedrock refresh-system`
 - [Custom knowledge home](docs/reference.md#custom-knowledge-home) -- change where `~/agent-os/` lives
 - [Troubleshooting](docs/reference.md#troubleshooting) -- common issues and fixes
 - [Platform support](docs/reference.md#platform-support) -- macOS, Linux, Python 3.9+

@@ -4,7 +4,7 @@ Absorb existing project knowledge artifacts into the vault.
 
 ## Steps
 
-1. Run in terminal: `agent-knowledge absorb --project .`
+1. Run in terminal: `bedrock absorb --project .`
 2. Read `./agent-knowledge/Outputs/absorb-manifest.md` to see what was imported
 3. For each imported file in `Evidence/imports/`, extract stable facts:
    - If it contains architecture decisions → update `Memory/decisions/decisions.md`

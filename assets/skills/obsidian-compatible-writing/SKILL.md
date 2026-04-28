@@ -5,7 +5,7 @@ description: Write memory notes that are pleasant in Obsidian without requiring 
 
 # Obsidian-Compatible Writing
 
-**Optional enhancement skill.** The core agent-knowledge system works fully without Obsidian.
+**Optional enhancement skill.** The core bedrock system works fully without Obsidian.
 This skill improves note quality for users who also browse the vault in Obsidian.
 
 Nothing here changes the canonical data model. Memory/ is still the source of truth.
@@ -57,7 +57,7 @@ Tags:
 Aliases: add the human-readable name of the branch if it differs from the file name.
 (e.g., `jwt.md` could alias to `JWT Handling`)
 
-These fields are optional. The agent-knowledge system ignores them. Obsidian uses them.
+These fields are optional. The bedrock system ignores them. Obsidian uses them.
 
 ---
 
@@ -118,7 +118,7 @@ TABLE date, title FROM "Sessions" SORT date DESC LIMIT 5
 
 ## Optional: canvas export
 
-The `agent-knowledge export-canvas` command generates `Outputs/knowledge-export.canvas`
+The `bedrock export-canvas` command generates `Outputs/knowledge-export.canvas`
 for viewing the vault as an Obsidian Canvas.
 
 The canvas shows:
@@ -129,7 +129,7 @@ The canvas shows:
 Open it in Obsidian with Canvas enabled (Settings > Core plugins > Canvas).
 
 This is a generated Output: non-canonical, regeneratable. Do not manually edit it.
-To refresh: `agent-knowledge export-canvas --project .`
+To refresh: `bedrock export-canvas --project .`
 
 ---
 

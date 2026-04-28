@@ -24,7 +24,7 @@ Steps:
 
 4. If new Memory branches were created, update `./agent-knowledge/Memory/MEMORY.md` with a one-line summary and link
 
-5. Run in terminal: `agent-knowledge sync --project .`
+5. Run in terminal: `bedrock sync --project .`
 
 6. Summarize:
    - Which files were read

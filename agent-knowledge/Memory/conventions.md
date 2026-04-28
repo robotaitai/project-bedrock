@@ -17,7 +17,7 @@ Coding patterns, naming, and design rules.
 
 ## Naming
 
-- [[cli|CLI]] command names use **hyphens**: `agent-knowledge graphify-sync`
+- [[cli|CLI]] command names use **hyphens**: `bedrock graphify-sync`
 - Python package uses **underscores**: `agent_knowledge`
 - User-facing messages reference CLI commands, never script paths
 

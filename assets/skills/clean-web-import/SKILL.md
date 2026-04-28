@@ -28,7 +28,7 @@ Do NOT use for:
 ## CLI usage
 
 ```bash
-agent-knowledge clean-import <url-or-file> --project .
+bedrock clean-import <url-or-file> --project .
 ```
 
 Options:

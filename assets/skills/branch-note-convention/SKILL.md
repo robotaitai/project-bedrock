@@ -5,7 +5,7 @@ description: The exact naming and structure convention for memory branch notes. 
 
 # Branch-Note Convention
 
-The branch-note convention is the structural spine of the agent-knowledge memory tree.
+The branch-note convention is the structural spine of the bedrock memory tree.
 It controls how notes are named, organized, and navigated.
 
 ---

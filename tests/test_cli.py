@@ -33,7 +33,7 @@ def _init_repo(tmp_path: Path, name: str = "test-repo") -> Path:
 def test_top_level_help():
     r = _run("--help")
     assert r.returncode == 0
-    assert "agent-knowledge" in r.stdout.lower() or "adaptive" in r.stdout.lower()
+    assert "bedrock" in r.stdout.lower() or "adaptive" in r.stdout.lower()
 
 
 def test_version():
@@ -915,8 +915,8 @@ def test_package_naming_consistent():
     )
 
 
-def test_cli_command_is_agent_knowledge():
-    """The installed CLI entry point must be named agent-knowledge."""
+def test_cli_command_is_bedrock():
+    """The primary CLI entry point must be named bedrock; agent-knowledge kept as deprecated alias."""
     import re
 
     pyproject = (
@@ -925,7 +925,8 @@ def test_cli_command_is_agent_knowledge():
     m = re.search(r'^\[project\.scripts\](.*?)(?=^\[|\Z)', pyproject, re.MULTILINE | re.DOTALL)
     assert m is not None, "pyproject.toml must have [project.scripts]"
     scripts_block = m.group(0)
-    assert "agent-knowledge" in scripts_block, "CLI command must be 'agent-knowledge'"
+    assert "bedrock" in scripts_block, "Primary CLI command must be 'bedrock'"
+    assert "agent-knowledge" in scripts_block, "Deprecated alias 'agent-knowledge' must still be present"
 
 
 # -- skills tests ---------------------------------------------------------- #

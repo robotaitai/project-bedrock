@@ -24,7 +24,7 @@ Core design: path resolution, runtime modules, project config, integrations, kno
 | `paths.py` | Asset directory resolution (installed vs dev checkout) |
 | `shell.py` | `run_bash_script()` / `run_python_script()` subprocess wrappers |
 | `integrations.py` | Multi-tool detection and bridge file installation |
-| `sync.py` | `agent-knowledge sync` implementation (memory, sessions, git, capture, index) |
+| `sync.py` | `bedrock sync` implementation (memory, sessions, git, capture, index) |
 | `capture.py` | Automatic capture layer (Evidence/captures/ YAML files) + clean-import |
 | `index.py` | Knowledge index generation (knowledge-index.json/md) + search |
 | `site.py` | Static HTML site export with interactive graph view |
@@ -40,7 +40,7 @@ Two storage modes controlled by `vault_mode` in `.agent-project.yaml`:
 | `local` **(default)** | real directory in repo (git-tracked) | symlink → `./agent-knowledge` |
 | `external` | symlink → external vault | real directory (source of truth) |
 
-`agent-knowledge init` defaults to local mode. Use `--external` for external mode, or `agent-knowledge migrate-to-local` to convert an existing external project.
+`bedrock init` defaults to local mode. Use `--external` for external mode, or `bedrock migrate-to-local` to convert an existing external project.
 In local mode, `.gitignore` auto-patched to exclude `Evidence/raw/`, `Sessions/`, `Outputs/site/`, etc.
 
 Vault structure (same in both modes):
@@ -98,7 +98,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - `knowledge.vault_mode: local|external` — set by `init --local` or `migrate-to-local`
 - `onboarding: status: pending|complete` in STATUS.md
 - No `root_index` — entry points are STATUS.md + Memory/MEMORY.md
-- Hooks reference `agent-knowledge update --project .`
+- Hooks reference `bedrock update --project .`
 
 ## System Refresh (`runtime/refresh.py`)
 
@@ -118,7 +118,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - `Outputs/knowledge-index.json` — structured catalog for programmatic retrieval
 - `Outputs/knowledge-index.md` — human-readable version
 - Search: Memory-first, Evidence/Outputs clearly marked non-canonical
-- Used by `agent-knowledge search <query>`
+- Used by `bedrock search <query>`
 
 ## Gotchas
 

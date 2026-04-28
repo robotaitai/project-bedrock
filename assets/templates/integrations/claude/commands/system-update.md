@@ -1,7 +1,7 @@
-Refresh this project's agent-knowledge integration to the latest framework version.
+Refresh this project's bedrock integration to the latest framework version.
 
 Run in terminal:
-`agent-knowledge refresh-system --project .`
+`bedrock refresh-system --project .`
 
 Then report:
 - What integration files were updated (hooks, settings, commands, AGENTS.md)

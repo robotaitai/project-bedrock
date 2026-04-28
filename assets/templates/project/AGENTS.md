@@ -1,6 +1,6 @@
 # Agent Knowledge: <project-name>
 
-This project uses **agent-knowledge** for persistent project memory.
+This project uses **Project Bedrock** for persistent project memory.
 All knowledge is accessed through `./agent-knowledge/` (symlink to external vault).
 
 ## First-Time Onboarding
@@ -10,7 +10,7 @@ Check `./agent-knowledge/STATUS.md`. If `onboarding: pending`:
 1. Inspect project structure: manifests, package files, CI/CD config, docs
 2. Inspect project-local tool config: `.cursor/`, `.claude/`, `.codex/` if present
 3. Review recent git history (last ~50 commits, key branches)
-4. Import findings into `Evidence/raw/` using `agent-knowledge import`
+4. Import findings into `Evidence/raw/` using `bedrock import`
 5. Infer the project ontology from the actual repo -- use the project's own
    functional domains as branch names (e.g., perception, navigation, localization),
    not generic categories (e.g., architecture, conventions)
@@ -66,7 +66,7 @@ Rules:
 If you support shell commands, run at session start:
 
 ```bash
-agent-knowledge sync --project .
+bedrock sync --project .
 ```
 
 ## Memory Maintenance
@@ -77,7 +77,7 @@ After meaningful work, update `./agent-knowledge/Memory/` directly:
    - Update `Current State` with confirmed facts (replace stale entries, no duplicates)
    - Add a `YYYY-MM-DD -- what changed` line to `Recent Changes`
 2. Update `Memory/MEMORY.md` if branch one-line summaries changed
-3. Run `agent-knowledge sync --project .` to propagate and refresh indexes
+3. Run `bedrock sync --project .` to propagate and refresh indexes
 
 Write to memory when:
 - A new feature, command, or module was completed

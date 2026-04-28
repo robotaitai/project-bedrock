@@ -82,7 +82,7 @@ fi
 kc_load_project_context "$TARGET_PROJECT_ARG"
 DATE="$(kc_today)"
 
-[ -L "$KNOWLEDGE_POINTER_PATH" ] || kc_fail "Bootstrap requires ./agent-knowledge to already be a pointer to the external knowledge folder. Run: agent-knowledge init"
+[ -L "$KNOWLEDGE_POINTER_PATH" ] || kc_fail "Bootstrap requires ./agent-knowledge to already be a pointer to the external knowledge folder. Run: bedrock init"
 
 # ---------------------------------------------------------------------------
 # Profile detection (hint only -- does not drive file creation)

@@ -1,6 +1,6 @@
-# agent-knowledge Skills
+# bedrock Skills
 
-Focused, composable skills for the agent-knowledge project knowledge system.
+Focused, composable skills for the bedrock project knowledge system.
 
 Skills are reusable instruction sets that compatible agents (Cursor, Claude Code,
 Codex, or any skill-aware agent) can load on demand.
@@ -9,11 +9,11 @@ Codex, or any skill-aware agent) can load on demand.
 
 ## How skills relate to the CLI
 
-The agent-knowledge CLI is the primary install surface:
+The bedrock CLI is the primary install surface:
 
 ```
 pip install project-bedrock
-agent-knowledge init
+bedrock init
 ```
 
 Skills are a **portable layer on top**. They provide focused guidance to agents
@@ -23,7 +23,7 @@ the CLI, but skills make agents much more effective.
 Install skills globally with:
 
 ```
-agent-knowledge setup
+bedrock setup
 ```
 
 This symlinks the bundled skills into `~/.cursor/skills/` and `~/.cursor/skills-cursor/`.

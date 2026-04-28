@@ -901,7 +901,7 @@ def test_hooks_json_has_required_fields(tmp_path: Path):
 
 
 def test_package_naming_consistent():
-    """pyproject.toml package name must be agent-knowledge-cli."""
+    """pyproject.toml package name must be project-bedrock."""
     import re
 
     pyproject = (
@@ -910,8 +910,8 @@ def test_package_naming_consistent():
     m = re.search(r'^name\s*=\s*"([^"]+)"', pyproject, re.MULTILINE)
     assert m is not None, "pyproject.toml must have a name field"
     pkg_name = m.group(1)
-    assert pkg_name == "agent-knowledge-cli", (
-        f"PyPI package name must be 'agent-knowledge-cli', got '{pkg_name}'"
+    assert pkg_name == "project-bedrock", (
+        f"PyPI package name must be 'project-bedrock', got '{pkg_name}'"
     )
 
 

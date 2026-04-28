@@ -30,7 +30,7 @@ Release, CI, and distribution strategy.
 
 ## Distribution
 
-- `pip install agent-knowledge-cli` (published to PyPI)
+- `pip install project-bedrock` (published to PyPI)
 - Build: `python -m build` produces wheel and sdist
 - Local dev: `pip install -e ".[dev]"` inside a venv (see [[gotchas]])
 

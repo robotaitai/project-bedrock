@@ -1,16 +1,16 @@
 <div align="center">
 
-# agent-knowledge: Shared Memory for AI Development Teams
+# project-bedrock: Shared Memory for AI Development Teams
 
 ### Tell your AI developers how to work, and every session leaves the project smarter.
 
 robotaitai
 
-[![PyPI](https://img.shields.io/pypi/v/agent-knowledge-cli?color=blue&label=PyPI)](https://pypi.org/project/agent-knowledge-cli/)
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-ready-orange)](https://docs.anthropic.com/en/docs/claude-code)
-[![Cursor](https://img.shields.io/badge/Cursor-ready-purple)](https://cursor.sh)
-[![Codex](https://img.shields.io/badge/Codex-ready-black)](https://openai.com/codex)
-[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE)
+[![PyPI](https://img.shields.io/pypi/v/project-bedrock?color=blue&label=PyPI)](https://pypi.org/project/project-bedrock/) --
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-ready-orange)](https://docs.anthropic.com/en/docs/claude-code) --
+[![Cursor](https://img.shields.io/badge/Cursor-ready-purple)](https://cursor.sh) --
+[![Codex](https://img.shields.io/badge/Codex-ready-black)](https://openai.com/codex) --
+[![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE) 
 
 <img src="docs/agent-knowledge-tour.gif" width="100%" alt="agent-knowledge tour" />
 
@@ -49,10 +49,10 @@ No database. No server. No hosted backend. No black box.
 ## 📦 Install
 
 ```bash
-pip install agent-knowledge-cli
+pip install project-bedrock
 ```
 
-> **PyPI:** `agent-knowledge-cli` &nbsp;&middot;&nbsp; **CLI:** `agent-knowledge`
+> **PyPI:** `project-bedrock` &nbsp;&middot;&nbsp; **CLI:** `agent-knowledge`
 
 ---
 
@@ -184,7 +184,7 @@ These are how the team writes to the logbook. Both work in Claude Code and Curso
 | Command | When to use it |
 |---------|---------------|
 | **`/memory-update`** | End of session, before logging off. The agent reviews what happened, writes stable facts into `Memory/`, and summarizes changes. **This is the team handoff** -- the next developer (or session) gets it for free. |
-| **`/system-update`** | After upgrading `agent-knowledge-cli`. Refreshes hooks, rules, commands. Purely infrastructure -- never touches knowledge content. |
+| **`/system-update`** | After upgrading `project-bedrock`. Refreshes hooks, rules, commands. Purely infrastructure -- never touches knowledge content. |
 
 > A developer should never finish a session without running `/memory-update`. It's the equivalent of a daily standup writeup -- short, factual, and always there for the next person.
 
@@ -249,4 +249,4 @@ All write commands support `--dry-run` and `--json`. Run `agent-knowledge --help
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=robotaitai/agent-knowledge-cli&type=Date)](https://star-history.com/#robotaitai/agent-knowledge-cli&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=robotaitai/agent-knowledge&type=Date)](https://star-history.com/#robotaitai/agent-knowledge&Date)

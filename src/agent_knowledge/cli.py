@@ -1024,7 +1024,7 @@ def refresh_system(project: str, dry_run: bool, json_mode: bool, force: bool) ->
     and metadata version markers (STATUS.md, .agent-project.yaml).
 
     Memory/, Evidence/, and project-curated content are never touched.
-    Safe to run after `pip install -U agent-knowledge-cli`.
+    Safe to run after `pip install -U project-bedrock`.
 
     \b
     Examples:

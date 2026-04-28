@@ -71,7 +71,7 @@ It is not a git replacement. Current truth lives in `Memory/`.
 ## Keeping up to date
 
 ```bash
-pip install -U agent-knowledge-cli
+pip install -U project-bedrock
 agent-knowledge refresh-system
 ```
 
@@ -115,7 +115,7 @@ Common issues:
 
 | What | Value |
 |------|-------|
-| PyPI package | `agent-knowledge-cli` |
+| PyPI package | `project-bedrock` |
 | CLI command | `agent-knowledge` |
 | Python import | `agent_knowledge` |
 

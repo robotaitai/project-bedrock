@@ -9,7 +9,7 @@ knowledge. It only updates integration bridge files and metadata version markers
 ## When to use
 
 Use `/system-update` when:
-- A new version of agent-knowledge has been installed (`pip install -U agent-knowledge-cli`)
+- A new version of agent-knowledge has been installed (`pip install -U project-bedrock`)
 - The doctor command reports that the project integration is stale
 - Tool bridge files (Cursor hooks, CLAUDE.md, AGENTS.md header) may be outdated
 - STATUS.md is missing `framework_version` (legacy project)

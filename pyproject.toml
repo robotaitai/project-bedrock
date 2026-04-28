@@ -3,13 +3,13 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "agent-knowledge-cli"
+name = "project-bedrock"
 dynamic = ["version"]
-description = "Adaptive, file-based project knowledge for AI coding agents"
+description = "Shared memory foundation for AI development teams"
 readme = "README.md"
 requires-python = ">=3.9"
 license = "MIT"
-authors = [{ name = "agent-knowledge contributors" }]
+authors = [{ name = "robotaitai" }]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Environment :: Console",

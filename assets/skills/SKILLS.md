@@ -12,7 +12,7 @@ Codex, or any skill-aware agent) can load on demand.
 The agent-knowledge CLI is the primary install surface:
 
 ```
-pip install agent-knowledge-cli
+pip install project-bedrock
 agent-knowledge init
 ```
 

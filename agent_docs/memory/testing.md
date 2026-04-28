@@ -50,7 +50,7 @@ Test strategy for packaging validation and CLI correctness.
 - Search: returns results, prefers Memory/ over other folders.
 - Export-HTML: creates standalone HTML with badges and non-canonical warnings, idempotent, dry-run safe.
 - Hooks: `.cursor/hooks.json` uses CLI commands (not raw script paths), has required fields.
-- Package naming: `pyproject.toml` name is `agent-knowledge-cli`, scripts entry is `agent-knowledge`.
+- Package naming: `pyproject.toml` name is `project-bedrock`, scripts entry is `agent-knowledge`.
 - Skills: all expected skill files exist, have frontmatter, and `SKILLS.md` index is present.
 - `clean-import`: imports HTML file, strips nav, does not write to Memory/, dry-run safe, JSON output.
 - `export-canvas`: creates valid Canvas JSON in Outputs/, dry-run safe, includes Memory/ nodes, not in Memory/.

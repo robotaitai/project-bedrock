@@ -34,9 +34,9 @@ See [[architecture#Path Resolution]] for how the code finds these at runtime.
 
 ## Version
 
-Current: **0.3.0** (tagged `v0.3.0`). PyPI package name: `agent-knowledge-cli`. See [[deployments]].
+Current: **0.3.0** (tagged `v0.3.0`). PyPI package name: `project-bedrock`. See [[deployments]].
 
-Install: `pip install agent-knowledge-cli`. Command: `agent-knowledge`.
+Install: `pip install project-bedrock`. Command: `agent-knowledge`.
 
 ## Dependencies
 

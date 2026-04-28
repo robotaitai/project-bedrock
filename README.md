@@ -24,7 +24,7 @@ nothing to host. The vault lives in your repo, travels with your code, and
 diffs cleanly in git so reviewing what your team learned this week is just a
 PR review.
 
-![agent-knowledge tour](docs/agent-knowledge-tour.gif)
+<img src="docs/agent-knowledge-tour.gif" width="100%" alt="agent-knowledge tour" />
 
 ## Install
 

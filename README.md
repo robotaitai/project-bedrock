@@ -1,15 +1,17 @@
 <div align="center">
 
+<img src="docs/cover.png" width="100%" alt="project-bedrock cover" />
+
 # project-bedrock: Shared Memory for AI Development Teams
 
 ### Tell your AI developers how to work, and every session leaves the project smarter.
 
 robotaitai
 
-[![PyPI](https://img.shields.io/pypi/v/project-bedrock?color=blue&label=PyPI)](https://pypi.org/project/project-bedrock/) --
-[![Claude Code](https://img.shields.io/badge/Claude%20Code-ready-orange)](https://docs.anthropic.com/en/docs/claude-code) --
-[![Cursor](https://img.shields.io/badge/Cursor-ready-purple)](https://cursor.sh) --
-[![Codex](https://img.shields.io/badge/Codex-ready-black)](https://openai.com/codex) --
+[![PyPI](https://img.shields.io/pypi/v/project-bedrock?color=blue&label=PyPI)](https://pypi.org/project/project-bedrock/)
+[![Claude Code](https://img.shields.io/badge/Claude%20Code-ready-orange)](https://docs.anthropic.com/en/docs/claude-code)
+[![Cursor](https://img.shields.io/badge/Cursor-ready-purple)](https://cursor.sh) 
+[![Codex](https://img.shields.io/badge/Codex-ready-black)](https://openai.com/codex) 
 [![License: MIT](https://img.shields.io/badge/License-MIT-green)](LICENSE) 
 
 <img src="docs/agent-knowledge-tour.gif" width="100%" alt="agent-knowledge tour" />

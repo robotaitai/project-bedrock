@@ -46,6 +46,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 | `absorb` | Ingest existing project docs into Evidence/imports/, parse ADRs into decisions.md | pure Python |
 | `refresh-system` | Refresh integration files to current framework version | `runtime/refresh.py` |
 | `backfill-history` | Backfill lightweight history from git | `runtime/history.py` |
+| `migrate-from-legacy` | Migrate from agent-knowledge-cli: runs refresh-system + prints pip uninstall steps | pure Python |
 
 ## init
 
@@ -114,6 +115,8 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - 2026-04-28: `init` now defaults to local (in-repo) mode; `--external` flag added to opt out.
 - 2026-04-28: `doctor` now runs Python pre-checks for staleness — compares note `updated` dates against source code commit dates.
 - 2026-04-28: `absorb` subcommand added (imports external docs/ADRs into Evidence/).
+- 2026-04-28: CLI renamed to `bedrock`; `agent-knowledge` kept as deprecated alias. All help text, templates, skills, hooks updated.
+- 2026-04-28: `migrate-from-legacy` added — runs refresh-system and prints pip migration instructions for agent-knowledge-cli users.
 
 ## See Also
 

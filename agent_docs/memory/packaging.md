@@ -34,9 +34,9 @@ See [[architecture#Path Resolution]] for how the code finds these at runtime.
 
 ## Version
 
-Current: **0.3.0** (tagged `v0.3.0`). PyPI package name: `project-bedrock`. See [[deployments]].
+Current: **0.3.2** (tagged `v0.3.2`). PyPI package name: `project-bedrock`. See [[deployments]].
 
-Install: `pip install project-bedrock`. Command: `bedrock`.
+Install: `pip install project-bedrock` or `pipx install project-bedrock`. Command: `bedrock`.
 
 ## Dependencies
 
@@ -46,6 +46,9 @@ See [[stack#Dependencies]] for the full list.
 
 - 2026-04-28: Bumped to v0.2.9; `docs/` folder added to repo for GitHub/PyPI display assets (GIF, examples) — not included in wheel.
 - 2026-04-28: Bumped to v0.3.0 — see deployments for full changelog.
+- 2026-04-28: PyPI package renamed from `agent-knowledge-cli` to `project-bedrock` (v0.3.0).
+- 2026-04-28: CLI primary command renamed from `agent-knowledge` to `bedrock`; `agent-knowledge` kept as deprecated alias (v0.3.1).
+- 2026-04-28: `migrate-from-legacy` command added to help existing users migrate (v0.3.2). `pipx install project-bedrock` recommended for global install.
 
 ## See Also
 

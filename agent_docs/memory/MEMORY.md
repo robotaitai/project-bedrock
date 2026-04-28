@@ -7,7 +7,7 @@ updated: 2026-04-28
 
 ## Areas
 
-- [packaging](packaging.md) -- Python packaging, hatchling, PyPI name: project-bedrock, pip install project-bedrock; docs/ for GitHub/PyPI assets
+- [packaging](packaging.md) -- PyPI: project-bedrock, CLI: bedrock (alias: agent-knowledge deprecated), v0.3.2, pipx install recommended
 - [cli](cli.md) -- CLI, 23 subcommands, click framework; init defaults to local mode; doctor checks staleness
 - [architecture](architecture.md) -- Runtime modules, path resolution, project config v4; site.py: table rendering, graph neighbor highlight, wikilink edges
 - [integrations](integrations.md) -- Multi-tool detection (Cursor/Claude/Codex), bridge files, hooks

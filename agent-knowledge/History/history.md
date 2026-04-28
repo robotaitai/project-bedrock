@@ -21,6 +21,8 @@ This is not a git replacement.
 
 ## Recent Activity
 
+- **2026-04-28** `release` [v0.3.1] — Release v0.3.1
+- **2026-04-28** `release` [v0.3.2] — Release v0.3.2
 - **2026-04-28** `release` [v0.3.0] — Release v0.3.0
 - **2026-04-28** `release` [v0.2.9] — Release v0.2.9
 - **2026-04-26** `release` [v0.2.8] — Release v0.2.8
@@ -34,8 +36,6 @@ This is not a git replacement.
 - **2026-04-23** `release` [v0.2.2] — Release v0.2.2
 - **2026-04-23** `release` [v0.2.3] — Release v0.2.3
 - **2026-04-23** `release` [v0.2.4] — Release v0.2.4
-- **2026-04-23** `release` [v0.2.5] — Release v0.2.5
-- **2026-04-23** `release` [v0.2.6] — Release v0.2.6
 
 ## Reference
 

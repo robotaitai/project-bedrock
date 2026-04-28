@@ -18,7 +18,7 @@ Release, CI, and distribution strategy.
 
 ## Version
 
-**0.3.0** (tagged `v0.3.0`). See [[packaging]].
+**0.3.2** (tagged `v0.3.2`). See [[packaging]].
 
 ## CI Pipeline
 
@@ -41,6 +41,8 @@ No Docker, no container deployment, no API server. See [[stack]].
 ## Recent Changes
 
 - 2026-04-28: Released v0.3.0 — table rendering, graph neighbor highlight, local-mode default, staleness detection, absorb command, graph spread tuning.
+- 2026-04-28: Released v0.3.1 — CLI renamed to `bedrock`; PyPI package renamed to `project-bedrock`; `agent-knowledge` kept as deprecated alias.
+- 2026-04-28: Released v0.3.2 — `migrate-from-legacy` command; migration guide in docs/reference.md; cover image and demo GIF in README.
 
 ## See Also
 

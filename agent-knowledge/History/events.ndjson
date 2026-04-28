@@ -75,3 +75,5 @@
 {"ts":"2026-04-26T16:30:47Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.8","tags":["v0.2.8"]}
 {"ts":"2026-04-28T08:33:11Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.9","tags":["v0.2.9"]}
 {"ts":"2026-04-28T09:39:08Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.3.0","tags":["v0.3.0"]}
+{"ts":"2026-04-28T20:56:26Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.3.2","tags":["v0.3.2"]}
+{"ts":"2026-04-28T20:56:26Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.3.1","tags":["v0.3.1"]}

@@ -1,11 +1,14 @@
 ---
 note_type: durable-branch
 area: conventions
-updated: 2026-04-08
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - conventions
+update_when: >
+  A new coding pattern or naming rule is established and agreed on; an existing
+  convention is changed intentionally; a new Memory note type is introduced.
 ---
 
 # Conventions
@@ -27,7 +30,9 @@ Coding patterns, naming, and design rules.
 ## Memory Notes
 
 - Require YAML frontmatter: `note_type`, `area`/`project`, `updated`, `tags`
-- Use wiki-links (`[[note-name]]`) for Obsidian graph connectivity
+- `durable-branch` notes must include an `update_when` field in frontmatter: a plain-English description of the conditions that should trigger an update to that note. This tells agents when to revisit without requiring them to understand the whole codebase.
+- `doctor` automatically detects potentially stale notes by comparing the note's `updated` date against `git log` on the source paths registered for that area in `refresh._NOTE_AREA_PATHS`. When adding a new durable-branch area, add a corresponding entry there.
+- Use wiki-links (`[[note-name]]`) for Obsidian graph connectivity — they become edges in the graph view
 - [[MEMORY|Evidence and Outputs]] are never treated as curated truth
 
 ## Shell Scripts
@@ -35,6 +40,11 @@ Coding patterns, naming, and design rules.
 - Always `set -euo pipefail`
 - Avoid `[ test ] && cmd` -- use `if/then` (see [[gotchas]])
 - Find assets via `SCRIPT_DIR`, never hardcode paths
+
+## Recent Changes
+
+- 2026-04-28: Added `update_when` convention for all `durable-branch` notes; `doctor` uses it to detect stale notes.
+- 2026-04-28: Documented that each area in `refresh._NOTE_AREA_PATHS` must have a matching durable-branch entry.
 
 ## See Also
 

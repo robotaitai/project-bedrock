@@ -1,11 +1,15 @@
 ---
 note_type: durable-branch
 area: gotchas
-updated: 2026-04-08
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - gotchas
+update_when: >
+  A new non-obvious bug is hit and fixed; a workaround is discovered for a
+  platform or environment issue; an existing gotcha is resolved and no longer
+  applies.
 ---
 
 # Gotchas
@@ -31,6 +35,14 @@ Known pitfalls, traps, and non-obvious behaviors.
 ## Sync
 
 - `stamp_status` regex must use `[ \t]*` not `\s*` to avoid eating newlines across YAML frontmatter fields. Fixed in `runtime/sync.py`.
+
+## Python Version Compatibility
+
+- **f-string backslash (Python < 3.12)**: `re.sub(r'...', '', val)` cannot be called directly inside an f-string `{}` on Python 3.10/3.11 — raises `SyntaxError: f-string expression part cannot include a backslash`. Extract the call to a local variable first. Fixed in `runtime/site.py` (2026-04-28). Python 3.12+ relaxed this restriction.
+
+## Recent Changes
+
+- 2026-04-28: Documented f-string backslash `SyntaxError` on Python < 3.12; fixed in `runtime/site.py`.
 
 ## See Also
 

@@ -14,6 +14,7 @@ from __future__ import annotations
 import datetime
 import json
 import re
+import subprocess
 from pathlib import Path
 from typing import Any
 
@@ -403,6 +404,97 @@ def is_stale(repo_root: Path) -> tuple[bool, str | None, str]:
         return True, None, __version__
 
     return prior != __version__, prior, __version__
+
+
+# --------------------------------------------------------------------------- #
+# Durable-branch note staleness check (used by doctor)                        #
+# --------------------------------------------------------------------------- #
+
+# Maps each memory note area to the source paths most likely to change when
+# the note's content becomes stale.
+_NOTE_AREA_PATHS: dict[str, list[str]] = {
+    "cli":           ["src/agent_knowledge/cli.py"],
+    "architecture":  ["src/agent_knowledge/runtime/"],
+    "stack":         ["pyproject.toml"],
+    "packaging":     ["pyproject.toml", "src/agent_knowledge/__init__.py"],
+    "testing":       ["tests/"],
+    "deployments":   [".github/workflows/", "pyproject.toml"],
+    "conventions":   ["src/agent_knowledge/"],
+    "integrations":  ["src/agent_knowledge/runtime/integrations.py",
+                      "src/agent_knowledge/runtime/refresh.py"],
+    "gotchas":       ["src/agent_knowledge/"],
+    "history-layer": ["src/agent_knowledge/runtime/history.py"],
+}
+
+
+def _git_latest_commit_date(repo_root: Path, paths: list[str]) -> str | None:
+    """Return ISO date of the most recent commit touching any of the given paths.
+
+    Returns None if git is unavailable or the repo has no commits.
+    """
+    try:
+        result = subprocess.run(
+            ["git", "log", "-1", "--format=%cs", "--"] + paths,
+            cwd=repo_root,
+            capture_output=True,
+            text=True,
+            timeout=5,
+        )
+        date_str = result.stdout.strip()
+        return date_str if date_str else None
+    except Exception:
+        return None
+
+
+def check_stale_notes(repo_root: Path) -> list[dict[str, str]]:
+    """Check durable-branch Memory notes for potential staleness.
+
+    For each note that declares an `area`, compares the note's `updated` date
+    against the most recent git commit touching that area's source paths. If
+    source files were modified after the note was last updated, the note is
+    flagged as potentially stale.
+
+    Returns a list of warning dicts with keys: path, area, note_updated,
+    last_src_commit, update_when.
+    """
+    vault_dir = repo_root / "agent-knowledge" / "Memory"
+    if not vault_dir.is_dir():
+        return []
+
+    warnings: list[dict[str, str]] = []
+
+    for md_file in sorted(vault_dir.glob("*.md")):
+        text = _read_text(md_file)
+        if not text.startswith("---"):
+            continue
+        note_type = _fm_get(text, "note_type")
+        if note_type != "durable-branch":
+            continue
+
+        area = _fm_get(text, "area")
+        note_updated = _fm_get(text, "updated")
+        update_when = _fm_get(text, "update_when")
+        if not area or not note_updated:
+            continue
+
+        watched_paths = _NOTE_AREA_PATHS.get(area)
+        if not watched_paths:
+            continue
+
+        last_src = _git_latest_commit_date(repo_root, watched_paths)
+        if not last_src:
+            continue
+
+        if last_src > note_updated:
+            warnings.append({
+                "path": str(md_file.relative_to(repo_root / "agent-knowledge")),
+                "area": area,
+                "note_updated": note_updated,
+                "last_src_commit": last_src,
+                "update_when": update_when,
+            })
+
+    return warnings
 
 
 # --------------------------------------------------------------------------- #

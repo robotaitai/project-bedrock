@@ -22,17 +22,18 @@ HOOK_TEMPLATE="$AGENTS_RULES_DIR/templates/hooks/hooks.json.template"
 usage() {
     cat <<'EOF'
 Usage:
-  scripts/install-project-links.sh --slug <slug> --repo <repo-path> [--knowledge-home <dir>] [--real-path <dir>] [--local] [--install-hooks] [--dry-run] [--json] [--summary-file <file>]
+  scripts/install-project-links.sh --slug <slug> --repo <repo-path> [--external] [--knowledge-home <dir>] [--real-path <dir>] [--install-hooks] [--dry-run] [--json] [--summary-file <file>]
 
 Modes:
-  default (--external): knowledge lives in ~/agent-os/projects/<slug>/,
-                        ./agent-knowledge is a symlink to that folder.
-  --local:              knowledge lives in ./agent-knowledge/ (in the repo,
-                        git-tracked), ~/agent-os/projects/<slug>/ is a symlink
-                        pointing back to the repo folder.
+  default (local):  knowledge lives in ./agent-knowledge/ (in the repo,
+                    git-tracked). ~/agent-os/projects/<slug>/ is a symlink
+                    pointing back to the repo folder.
+  --external:       knowledge lives in ~/agent-os/projects/<slug>/,
+                    ./agent-knowledge is a symlink to that folder.
 
 Notes:
   - Existing valid setup is left alone unless --force is provided.
+  - --local is accepted as a no-op alias for backward compatibility.
 EOF
 }
 
@@ -41,7 +42,7 @@ REPO_PATH=""
 KNOWLEDGE_HOME="$HOME/agent-os/projects"
 REAL_PATH_ARG=""
 INSTALL_HOOKS=0
-LOCAL_MODE=0
+LOCAL_MODE=1
 POSITIONAL=()
 WARNINGS=()
 CHANGES=()
@@ -79,7 +80,11 @@ while [ "$#" -gt 0 ]; do
             shift
             ;;
         --local)
-            LOCAL_MODE=1
+            LOCAL_MODE=1  # no-op: local is now the default; kept for backward compat
+            shift
+            ;;
+        --external)
+            LOCAL_MODE=0
             shift
             ;;
         *)

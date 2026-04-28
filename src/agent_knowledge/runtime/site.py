@@ -79,6 +79,38 @@ def _strip_frontmatter(text: str) -> str:
     return text
 
 
+def _strip_md_for_summary(text: str) -> str:
+    """Strip markdown syntax from text intended for use as a plain-text summary.
+
+    Removes: wikilinks, bold/italic, inline code, table rows, headings markers,
+    code fences, and horizontal rules. Returns clean readable prose.
+    """
+    lines = []
+    for line in text.splitlines():
+        s = line.strip()
+        # Skip table rows, code fences, horizontal rules, headings
+        if s.startswith("|") or s.startswith("```") or s.startswith("---") or s.startswith("#"):
+            continue
+        if re.match(r"^[*_-]{3,}$", s):
+            continue
+        # Replace wikilinks [[target|display]] → display, [[target]] → target
+        s = re.sub(r"\[\[([^\]|]+)\|([^\]]+)\]\]", r"\2", s)
+        s = re.sub(r"\[\[([^\]]+)\]\]", r"\1", s)
+        # Strip bold/italic
+        s = re.sub(r"\*\*(.+?)\*\*", r"\1", s)
+        s = re.sub(r"__(.+?)__", r"\1", s)
+        s = re.sub(r"\*(.+?)\*", r"\1", s)
+        s = re.sub(r"_(.+?)_", r"\1", s)
+        # Strip inline code backticks
+        s = re.sub(r"`([^`]+)`", r"\1", s)
+        # Strip markdown links [text](url) → text
+        s = re.sub(r"\[([^\]]+)\]\([^)]+\)", r"\1", s)
+        s = s.strip()
+        if s:
+            lines.append(s)
+    return " ".join(lines)
+
+
 # --------------------------------------------------------------------------- #
 # Minimal markdown → HTML (no external deps)                                  #
 # --------------------------------------------------------------------------- #
@@ -129,9 +161,41 @@ def _md_to_html(text: str) -> str:
         )
         return s
 
+    in_table = False
+    table_rows: list[list[str]] = []
+    table_header_done = False
+
+    def flush_table() -> None:
+        nonlocal in_table, table_rows, table_header_done
+        if not in_table:
+            return
+        in_table = False
+        if not table_rows:
+            table_header_done = False
+            return
+        out.append('<table>')
+        for i, row in enumerate(table_rows):
+            tag = 'th' if i == 0 else 'td'
+            out.append('<tr>' + ''.join(f'<{tag}>{inline(cell.strip())}</{tag}>' for cell in row) + '</tr>')
+        out.append('</table>')
+        table_rows = []
+        table_header_done = False
+
+    def _is_separator_row(s: str) -> bool:
+        return bool(re.match(r'^\|[\s\-:|]+\|[\s\-:|]*$', s))
+
+    def _parse_table_row(s: str) -> list[str]:
+        s = s.strip()
+        if s.startswith('|'):
+            s = s[1:]
+        if s.endswith('|'):
+            s = s[:-1]
+        return s.split('|')
+
     for line in lines:
         if line.startswith("```"):
             flush_list()
+            flush_table()
             if in_code:
                 out.append(html_mod.escape("\n".join(code_buf)))
                 out.append("</code></pre>")
@@ -149,11 +213,29 @@ def _md_to_html(text: str) -> str:
             code_buf.append(line)
             continue
 
+        # Table rows
+        if line.startswith("|"):
+            flush_list()
+            if _is_separator_row(line):
+                table_header_done = True
+                in_table = True
+                continue
+            in_table = True
+            if not table_header_done or not table_rows:
+                table_rows.append(_parse_table_row(line))
+            else:
+                table_rows.append(_parse_table_row(line))
+            continue
+
+        # Non-table line: flush any open table first
+        if in_table:
+            flush_table()
+
         if re.match(r"^#{1,6}\s", line):
             flush_list()
             level = len(re.match(r"^(#+)", line).group(1))
             content = line.lstrip("#").strip()
-            out.append(f"<h{level}>{html_mod.escape(content)}</h{level}>")
+            out.append(f"<h{level}>{inline(content)}</h{level}>")
         elif line.startswith("> "):
             flush_list()
             out.append(f"<blockquote><p>{inline(line[2:])}</p></blockquote>")
@@ -168,7 +250,8 @@ def _md_to_html(text: str) -> str:
                 flush_list()
                 out.append("<ol>")
                 in_ol = True
-            out.append(f"<li>{inline(re.sub(r'^\d+\.\s+', '', line))}</li>")
+            stripped = re.sub(r'^\d+\.\s+', '', line)
+            out.append(f"<li>{inline(stripped)}</li>")
         elif re.match(r"^---+$", line.strip()) or re.match(r"^\*\*\*+$", line.strip()):
             flush_list()
             out.append("<hr>")
@@ -180,6 +263,7 @@ def _md_to_html(text: str) -> str:
             out.append(f"<p>{inline(line)}</p>")
 
     flush_list()
+    flush_table()
     if in_code and code_buf:
         out.append(html_mod.escape("\n".join(code_buf)))
         out.append("</code></pre>")
@@ -244,6 +328,9 @@ def _build_branch_data(vault_dir: Path, meta: dict[str, Any]) -> dict[str, Any]:
     if not purpose:
         purpose = _first_content_lines(raw, max_chars=200)
 
+    # Build a clean plain-text summary for use in card previews
+    clean_summary = _strip_md_for_summary(purpose)[:150] if purpose else ""
+
     return {
         "path": meta["path"],
         "title": meta["title"],
@@ -253,7 +340,7 @@ def _build_branch_data(vault_dir: Path, meta: dict[str, Any]) -> dict[str, Any]:
         "area": fm.get("area", meta.get("area", "")),
         "is_branch_entry": True,
         "updated": fm.get("updated", ""),
-        "summary": meta.get("summary", purpose[:150] if purpose else ""),
+        "summary": clean_summary or meta.get("summary", ""),
         "purpose": purpose,
         "current_state": _parse_bullets(raw, "Current State"),
         "recent_changes": _parse_recent_changes(raw),
@@ -589,6 +676,56 @@ def build_graph_data(site_data: dict[str, Any]) -> dict[str, Any]:
             "inferred": True,
         })
 
+    # Wikilink edges — resolve [[Target]] links between nodes
+    # Build a case-insensitive label → node_id lookup
+    label_to_id: dict[str, str] = {}
+    for node in nodes:
+        label_to_id[node["label"].lower()] = node["id"]
+        if node.get("path"):
+            # Also index by stem (filename without extension)
+            stem = Path(node["path"]).stem.lower()
+            if stem not in label_to_id:
+                label_to_id[stem] = node["id"]
+
+    # Collect node html by id so we can scan for wikilinks
+    def _collect_html_sources() -> list[tuple[str, str]]:
+        """Yield (node_id, html) for every node that has html content."""
+        pairs: list[tuple[str, str]] = []
+        for branch in site_data.get("branches", []):
+            bid = f"branch/{branch['path']}"
+            if branch.get("html"):
+                pairs.append((bid, branch["html"]))
+            for leaf in branch.get("leaves", []):
+                nid = f"note/{leaf['path']}"
+                if leaf.get("html"):
+                    pairs.append((nid, leaf["html"]))
+        for decision in site_data.get("decisions", []):
+            did = f"decision/{decision['path']}"
+            if decision.get("html"):
+                pairs.append((did, decision["html"]))
+        for ev in site_data.get("evidence", []):
+            eid = f"evidence/{ev['path']}"
+            if ev.get("html"):
+                pairs.append((eid, ev["html"]))
+        return pairs
+
+    seen_edges: set[tuple[str, str]] = set()
+    wikilink_re = re.compile(r'data-target="([^"]+)"')
+    for source_id, html in _collect_html_sources():
+        for m in wikilink_re.finditer(html):
+            target_label = m.group(1).strip().lower()
+            target_id = label_to_id.get(target_label)
+            if target_id and target_id != source_id:
+                key = (source_id, target_id)
+                if key not in seen_edges:
+                    seen_edges.add(key)
+                    edges.append({
+                        "source": source_id,
+                        "target": target_id,
+                        "type": "related_to",
+                        "inferred": False,
+                    })
+
     return {
         "schema": _SITE_SCHEMA_VERSION,
         "generated": site_data.get("generated", ""),
@@ -696,7 +833,9 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 .branch-card-top{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:7px;gap:8px}
 .branch-card-title{font-weight:600;font-size:14px;color:var(--text);flex:1}
 .branch-card-purpose{font-size:12px;color:var(--muted);line-height:1.5;margin-bottom:8px}
-.branch-card-foot{font-size:11px;color:var(--muted-2);display:flex;gap:10px}
+.branch-card-foot{font-size:11px;color:var(--muted-2);display:flex;gap:10px;align-items:center;margin-top:auto}
+.bc-changes{color:var(--ok);font-weight:600}
+.bc-updated{color:var(--muted-2);margin-left:auto}
 
 .changes-list{display:flex;flex-direction:column;gap:1px}
 .change-row{display:grid;grid-template-columns:90px auto 1fr;gap:10px;align-items:baseline;padding:6px 0;border-bottom:1px solid var(--border-2);font-size:13px}
@@ -788,23 +927,24 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 #graph-canvas{position:absolute;top:0;left:0;width:100%;height:100%;display:block;cursor:grab}
 #graph-canvas.gdrag{cursor:grabbing}
 
-/* graph controls bar */
-#gc-bar{position:absolute;top:10px;left:10px;display:flex;align-items:center;gap:5px;flex-wrap:wrap;background:rgba(22,27,34,.95);border:1px solid var(--border);border-radius:var(--radius);padding:6px 10px;z-index:10;max-width:calc(100% - 250px);backdrop-filter:blur(6px)}
-#gc-search{background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);color:var(--text);font-size:12px;outline:none;padding:4px 9px;width:120px;transition:border-color .15s}
-#gc-search:focus{border-color:var(--accent)}
-.gc-sep{color:var(--border-2);padding:0 2px;font-size:10px;user-select:none}
-.gc-lbl{color:var(--muted-2);font-size:9px;font-weight:700;text-transform:uppercase;letter-spacing:.06em;flex-shrink:0}
-.gf-btn{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;color:var(--muted);cursor:pointer;font-size:9px;font-weight:700;letter-spacing:.04em;padding:2px 7px;text-transform:uppercase;transition:all .15s}
-.gf-btn.active{background:var(--mem-bg);border-color:var(--mem-border);color:var(--mem-fg)}
+/* graph controls bar — single slim row */
+#gc-bar{position:absolute;top:12px;left:12px;right:230px;display:flex;align-items:center;gap:6px;background:rgba(13,17,23,.88);border:1px solid var(--border);border-radius:20px;padding:5px 12px;z-index:10;backdrop-filter:blur(8px)}
+#gc-search{background:transparent;border:none;border-right:1px solid var(--border);color:var(--text);font-size:12px;outline:none;padding:2px 10px 2px 2px;width:150px;transition:border-color .15s;margin-right:4px}
+#gc-search::placeholder{color:var(--muted-2)}
+#gc-search:focus{border-right-color:var(--accent)}
+.gc-sep{color:var(--border);padding:0 1px;font-size:10px;user-select:none}
+.gc-lbl{color:var(--muted-2);font-size:10px;font-weight:600;letter-spacing:.03em;flex-shrink:0}
+.gf-btn{background:transparent;border:1px solid transparent;border-radius:10px;color:var(--muted);cursor:pointer;font-size:10px;font-weight:600;padding:2px 8px;transition:all .12s}
+.gf-btn.active{background:rgba(56,139,253,.15);border-color:rgba(56,139,253,.4);color:#79c0ff}
 .gf-btn:hover{color:var(--text)}
-.gcf-btn{background:var(--surface-2);border:1px solid var(--border);border-radius:11px;color:var(--muted);cursor:pointer;font-size:9px;padding:2px 7px;transition:all .15s}
-.gcf-btn.active{background:var(--accent-muted);border-color:var(--accent);color:var(--text)}
+.gcf-btn{background:transparent;border:1px solid transparent;border-radius:10px;color:var(--muted);cursor:pointer;font-size:10px;padding:2px 8px;transition:all .12s}
+.gcf-btn.active{background:rgba(88,166,255,.15);border-color:rgba(88,166,255,.4);color:var(--accent)}
 
-/* graph legend */
-#gc-legend{position:absolute;bottom:10px;left:10px;background:rgba(22,27,34,.9);border:1px solid var(--border);border-radius:var(--radius);padding:7px 11px;display:flex;gap:10px;flex-wrap:wrap;align-items:center;z-index:10;backdrop-filter:blur(4px)}
-.gl-item{display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted);white-space:nowrap}
+/* graph legend — bottom strip */
+#gc-legend{position:absolute;bottom:12px;left:12px;background:rgba(13,17,23,.8);border:1px solid var(--border-2);border-radius:14px;padding:5px 12px;display:flex;gap:12px;align-items:center;z-index:10;backdrop-filter:blur(4px)}
+.gl-item{display:flex;align-items:center;gap:4px;font-size:10px;color:var(--muted);white-space:nowrap}
 .gl-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;border:1.5px solid transparent}
-.gc-hint{color:var(--muted-2);font-size:9px;font-style:italic}
+.gc-hint{color:var(--muted-2);font-size:10px;font-style:italic}
 
 /* graph info panel */
 #gc-info{position:absolute;top:10px;right:10px;width:210px;background:rgba(22,27,34,.97);border:1px solid var(--border);border-radius:var(--radius);padding:13px 15px;z-index:10;display:none;backdrop-filter:blur(6px)}
@@ -881,13 +1021,13 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <span class="gc-hint">Scroll=zoom · Drag=pan · Click=select</span>
       </div>
       <div id="gc-info">
-        <button class="gi-close" onclick="closeInfoPanel()">x</button>
+        <button class="gi-close" onclick="closeInfoPanel()" title="Close">✕</button>
         <div id="gc-info-body"></div>
       </div>
       <div id="gc-zoom">
         <button class="gcz-btn" onclick="graphZoomIn()" title="Zoom in">+</button>
-        <button class="gcz-btn" onclick="graphZoomOut()" title="Zoom out">-</button>
-        <button class="gcz-btn" onclick="resetGraphView()" title="Reset view" style="font-size:10px">reset</button>
+        <button class="gcz-btn" onclick="graphZoomOut()" title="Zoom out">−</button>
+        <button class="gcz-btn" onclick="resetGraphView()" title="Reset view" style="font-size:10px">⊙</button>
       </div>
       <div id="gc-empty" style="display:none">No nodes to display.<br>Adjust filters or run agent-knowledge sync first.</div>
     </div>
@@ -1024,8 +1164,10 @@ function showOverview(){
   h += `<div class="ov-meta">`;
   h += `<span class="ov-meta-item">slug: <code>${esc(p.slug)}</code></span>`;
   h += `<span class="sep-dot">·</span>`;
-  h += `<span class="ov-meta-item">profile: ${esc(p.profile)}</span>`;
-  h += `<span class="sep-dot">·</span>`;
+  if(p.profile&&p.profile!=='unknown') {
+    h += `<span class="ov-meta-item">profile: ${esc(p.profile)}</span>`;
+    h += `<span class="sep-dot">·</span>`;
+  }
   const onbColor = onbOk?'status-ok':'status-pending';
   h += `<span class="ov-meta-item ${onbColor}">onboarding: ${esc(onb)}</span>`;
   if(DATA.stats){
@@ -1044,13 +1186,15 @@ function showOverview(){
     h += `<div class="section"><div class="section-heading">Knowledge Branches</div>`;
     h += `<div class="branch-grid">`;
     for(const b of mainBranches){
-      const purpose = b.purpose||b.summary||'';
-      const stateN = (b.current_state||[]).length;
+      const summary = b.summary||b.purpose||'';
       const changesN = (b.recent_changes||[]).length;
       h += `<div class="branch-card" onclick="nav('note','${esc(b.path)}')">`;
       h += `<div class="branch-card-top"><span class="branch-card-title">${esc(b.title)}</span>${badge('Memory')}</div>`;
-      h += `<div class="branch-card-purpose">${esc(purpose.substring(0,130))}${purpose.length>130?'...':''}</div>`;
-      h += `<div class="branch-card-foot"><span>${stateN} facts</span><span>${changesN} changes</span>${b.updated?`<span>${esc(b.updated)}</span>`:''}</div>`;
+      h += `<div class="branch-card-purpose">${esc(summary.substring(0,140))}${summary.length>140?'…':''}</div>`;
+      h += `<div class="branch-card-foot">`;
+      if(changesN>0) h += `<span class="bc-changes">${changesN} change${changesN>1?'s':''}</span>`;
+      if(b.updated) h += `<span class="bc-updated">updated ${esc(b.updated)}</span>`;
+      h += `</div>`;
       h += `</div>`;
     }
     h += `</div></div>`;
@@ -1236,10 +1380,10 @@ const GC = {
 const GR = { project:22, branch:16, note:10, decision:13, evidence:9, output:9 };
 
 // Simulation constants
-const SIM_REPULSION = 7000;
-const SIM_SPRING = 0.05;
-const SIM_REST = 140;
-const SIM_GRAVITY = 0.02;
+const SIM_REPULSION = 18000;
+const SIM_SPRING = 0.04;
+const SIM_REST = 220;
+const SIM_GRAVITY = 0.008;
 const SIM_DAMPING = 0.82;
 
 // Graph state
@@ -1467,19 +1611,33 @@ function _renderGraph(){
     if(!e.src||!e.tgt||!e.src.visible||!e.tgt.visible) continue;
     const connected = _gSelected&&(e.src===_gSelected||e.tgt===_gSelected);
     const dim = _gSelected&&!connected;
-    const baseAlpha = e.inferred?0.2:0.38;
-    const alpha = dim?0.05:connected?0.85:baseAlpha;
+    const isWikilink = e.type==='related_to';
+    const baseAlpha = e.inferred?0.2:isWikilink?0.45:0.32;
+    const alpha = dim?0.04:connected?0.9:baseAlpha;
 
     _gCtx.beginPath();
     _gCtx.moveTo(e.src.x,e.src.y);
     _gCtx.lineTo(e.tgt.x,e.tgt.y);
-    _gCtx.strokeStyle = `rgba(139,148,158,${alpha})`;
-    _gCtx.lineWidth = (e.inferred?1:1.5)/_gZoom;
+    // Wikilinks: warm blue; hierarchy: neutral gray; inferred: muted
+    if(isWikilink) _gCtx.strokeStyle = `rgba(88,166,255,${alpha})`;
+    else if(e.inferred) _gCtx.strokeStyle = `rgba(139,148,158,${alpha})`;
+    else _gCtx.strokeStyle = `rgba(100,120,140,${alpha})`;
+    _gCtx.lineWidth = (e.inferred?1:isWikilink?1.5:1.2)/_gZoom;
     if(e.inferred) _gCtx.setLineDash([5/_gZoom,4/_gZoom]);
     else _gCtx.setLineDash([]);
     _gCtx.stroke();
   }
   _gCtx.setLineDash([]);
+
+  // Pre-compute direct neighbors of selected node
+  const _gNeighbors = new Set();
+  if(_gSelected){
+    for(const e of _gEdges){
+      if(!e.src||!e.tgt) continue;
+      if(e.src===_gSelected&&e.tgt.visible) _gNeighbors.add(e.tgt);
+      if(e.tgt===_gSelected&&e.src.visible) _gNeighbors.add(e.src);
+    }
+  }
 
   // Draw nodes (larger first so small ones render on top)
   const sorted = [...vis].sort((a,b)=>b.radius-a.radius);
@@ -1488,7 +1646,9 @@ function _renderGraph(){
   for(const n of sorted){
     const isH = n===_gHovered;
     const isS = n===_gSelected;
-    const dim = _gSelected&&!isS&&!isH;
+    const isNeighbor = _gNeighbors.has(n);
+    // Full dim only for nodes with no connection to selected
+    const dim = _gSelected&&!isS&&!isH&&!isNeighbor;
     const col = GC[n.type]||GC.note;
     const r = n.radius;
     const isMatch = _gSearchQ&&n.label.toLowerCase().includes(_gSearchQ);
@@ -1501,14 +1661,17 @@ function _renderGraph(){
 
     _gCtx.beginPath();
     _gCtx.arc(n.x,n.y,isH||isS?r+2:r,0,Math.PI*2);
-    if(isS) _gCtx.fillStyle = col.stroke;
-    else if(isMatch) _gCtx.fillStyle = col.stroke+'55';
-    else if(dim) _gCtx.fillStyle = col.fill+'66';
-    else _gCtx.fillStyle = col.fill;
+    if(isS)           _gCtx.fillStyle = col.stroke;
+    else if(isMatch)  _gCtx.fillStyle = col.stroke+'55';
+    else if(isNeighbor) _gCtx.fillStyle = col.fill+'cc';  // neighbors: semi-bright
+    else if(dim)      _gCtx.fillStyle = col.fill+'22';    // others: heavy fade
+    else              _gCtx.fillStyle = col.fill;
     _gCtx.fill();
 
-    _gCtx.strokeStyle = dim?`rgba(139,148,158,0.2)`:isH||isS?col.stroke:col.stroke+'cc';
-    _gCtx.lineWidth = (isS?3:isH?2.5:1.5)/_gZoom;
+    if(isNeighbor)    _gCtx.strokeStyle = col.stroke+'88';
+    else if(dim)      _gCtx.strokeStyle = `rgba(139,148,158,0.12)`;
+    else              _gCtx.strokeStyle = isH||isS?col.stroke:col.stroke+'cc';
+    _gCtx.lineWidth = (isS?3:isH?2.5:isNeighbor?2:1.5)/_gZoom;
     _gCtx.stroke();
     _gCtx.shadowBlur=0;
 
@@ -1516,20 +1679,21 @@ function _renderGraph(){
     if(!n.canonical){
       _gCtx.beginPath();
       _gCtx.arc(n.x+r*0.62,n.y-r*0.62,Math.max(2,3.5/_gZoom),0,Math.PI*2);
-      _gCtx.fillStyle = dim?'rgba(110,64,201,0.3)':'#6e40c9';
+      _gCtx.fillStyle = dim?'rgba(110,64,201,0.12)':isNeighbor?'rgba(110,64,201,0.6)':'#6e40c9';
       _gCtx.fill();
     }
 
-    // Labels
-    if(showLabel&&!dim||(isH||isS)){
-      const fs = Math.min(11,Math.max(7,11/_gZoom));
-      const maxCh = Math.max(5,Math.floor(15/_gZoom));
-      const lbl = n.label.length>maxCh?n.label.slice(0,maxCh-1)+'..':n.label;
-      _gCtx.font = `${n.type==='project'||n.type==='branch'?'600 ':''}${fs}px -apple-system,system-ui,sans-serif`;
-      _gCtx.fillStyle = dim?`rgba(139,148,158,0.25)`:col.label;
+    // Labels: always for selected/hovered/neighbor; hide for fully dimmed
+    if(isS||isH||isNeighbor||(showLabel&&!dim)){
+      const fs = Math.min(13,Math.max(9,11/_gZoom));
+      const bold = n.type==='project'||n.type==='branch' ? '600 ' : '';
+      _gCtx.font = `${bold}${fs}px -apple-system,system-ui,sans-serif`;
+      _gCtx.fillStyle = dim ? 'rgba(139,148,158,0.12)' : col.label;
+      _gCtx.globalAlpha = isNeighbor ? 0.65 : 1.0;
       _gCtx.textAlign='center';
       _gCtx.textBaseline='top';
-      _gCtx.fillText(lbl,n.x,n.y+r+Math.max(3,4/_gZoom));
+      _gCtx.fillText(n.label,n.x,n.y+r+Math.max(3,4/_gZoom));
+      _gCtx.globalAlpha = 1.0;
     }
   }
 

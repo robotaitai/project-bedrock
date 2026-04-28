@@ -1,11 +1,15 @@
 ---
 note_type: durable-branch
 area: deployments
-updated: 2026-04-08
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - deployments
+update_when: >
+  A new version is tagged and released; the CI matrix changes; the PyPI
+  publication process changes; new release steps are added.
+  Check `git tag --list` for the latest tag.
 ---
 
 # Deployments
@@ -14,7 +18,7 @@ Release, CI, and distribution strategy.
 
 ## Version
 
-**0.0.1** (tagged `v0.0.1`). See [[packaging]].
+**0.3.0** (tagged `v0.3.0`). See [[packaging]].
 
 ## CI Pipeline
 
@@ -26,13 +30,17 @@ Release, CI, and distribution strategy.
 
 ## Distribution
 
-- `pip install agent-knowledge` (PyPI-ready, not yet published)
+- `pip install agent-knowledge-cli` (published to PyPI)
 - Build: `python -m build` produces wheel and sdist
 - Local dev: `pip install -e ".[dev]"` inside a venv (see [[gotchas]])
 
 ## No Server Components
 
 No Docker, no container deployment, no API server. See [[stack]].
+
+## Recent Changes
+
+- 2026-04-28: Released v0.3.0 — table rendering, graph neighbor highlight, local-mode default, staleness detection, absorb command, graph spread tuning.
 
 ## See Also
 

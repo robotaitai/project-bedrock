@@ -1,7 +1,7 @@
 ---
 area: history
 project: agent-knowledge
-updated: 2026-04-26
+updated: 2026-04-28
 ---
 
 # Project History
@@ -13,6 +13,7 @@ This is not a git replacement.
 
 ## Timeline Notes
 
+- [2026-04-28-backfill](timeline/2026-04-28-backfill.md)
 - [2026-04-26-backfill](timeline/2026-04-26-backfill.md)
 - [2026-04-23-backfill](timeline/2026-04-23-backfill.md)
 - [2026-04-18-backfill](timeline/2026-04-18-backfill.md)
@@ -20,6 +21,7 @@ This is not a git replacement.
 
 ## Recent Activity
 
+- **2026-04-28** `release` [v0.2.9] — Release v0.2.9
 - **2026-04-26** `release` [v0.2.8] — Release v0.2.8
 - **2026-04-23** `backfill` [v0.2.7, v0.2.6] — History backfill: 42 commits, 10 releases, 2 integrations
 - **2026-04-23** `integration_claude` — claude integration detected
@@ -34,7 +36,6 @@ This is not a git replacement.
 - **2026-04-23** `release` [v0.2.5] — Release v0.2.5
 - **2026-04-23** `release` [v0.2.6] — Release v0.2.6
 - **2026-04-23** `release` [v0.2.7] — Release v0.2.7
-- **2026-04-23** `project_start` — Project started (first commit: 2026-03-19, 42 total commits)
 
 ## Reference
 

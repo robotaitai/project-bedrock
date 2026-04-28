@@ -1,11 +1,15 @@
 ---
 note_type: durable-branch
 area: stack
-updated: 2026-04-08
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - stack
+update_when: >
+  A new dependency is added or removed from pyproject.toml; the minimum Python
+  version changes; CI adds or drops a Python version or OS target; a significant
+  new optional dependency (e.g. tiktoken) is introduced.
 ---
 
 # Stack

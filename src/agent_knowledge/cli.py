@@ -77,8 +77,9 @@ def _patch_gitignore_for_local_knowledge(repo_path: Path, json_mode: bool) -> No
 @click.option("--slug", default=None, help="Project slug (default: repo directory name).")
 @click.option("--repo", default=".", type=click.Path(exists=True), help="Project repo path (default: cwd).")
 @click.option("--knowledge-home", default=None, help="Knowledge root (default: $AGENT_KNOWLEDGE_HOME or ~/agent-os/projects).")
-@click.option("--real-path", default=None, help="Explicit external knowledge folder path.")
-@click.option("--local", "local_mode", is_flag=True, help="Store knowledge inside the repo (git-tracked). ~/agent-os symlink points back to the repo folder.")
+@click.option("--real-path", default=None, help="Explicit external knowledge folder path (only used with --external).")
+@click.option("--external", "external_mode", is_flag=True, help="Store knowledge in ~/agent-os/projects/<slug>/ (external vault). ./agent-knowledge becomes a symlink.")
+@click.option("--local", "local_compat", is_flag=True, hidden=True, help="No-op: local is now the default. Kept for backward compatibility.")
 @click.option("--no-integrations", is_flag=True, help="Skip auto-detection and installation of tool integrations.")
 @click.option("--dry-run", is_flag=True, help="Preview changes without writing.")
 @click.option("--json", "json_mode", is_flag=True, help="Output JSON only.")
@@ -88,7 +89,8 @@ def init(
     repo: str,
     knowledge_home: str | None,
     real_path: str | None,
-    local_mode: bool,
+    external_mode: bool,
+    local_compat: bool,
     no_integrations: bool,
     dry_run: bool,
     json_mode: bool,
@@ -101,12 +103,12 @@ def init(
 
     \b
     Storage modes:
-      default   Knowledge lives in ~/agent-os/projects/<slug>/ (external vault).
-                ./agent-knowledge is a symlink to that folder.
-      --local   Knowledge lives in ./agent-knowledge/ inside the repo (git-tracked).
-                ~/agent-os/projects/<slug>/ is a symlink back to the repo folder.
-                Noisy subfolders (Evidence/raw, Evidence/captures) are added
-                to .gitignore automatically.
+      default   Knowledge lives in ./agent-knowledge/ inside the repo
+                (git-tracked). ~/agent-os/projects/<slug>/ is a symlink
+                back to the repo folder. Noisy subfolders are added to
+                .gitignore automatically.
+      --external  Knowledge lives in ~/agent-os/projects/<slug>/ (external
+                vault). ./agent-knowledge is a symlink to that folder.
     """
     from agent_knowledge.runtime.integrations import detect, install_all
 
@@ -123,16 +125,16 @@ def init(
         args.extend(["--knowledge-home", knowledge_home])
     if real_path:
         args.extend(["--real-path", real_path])
-    if local_mode:
-        args.append("--local")
+    if external_mode:
+        args.append("--external")
     args.append("--install-hooks")
     _add_common_flags(args, dry_run=dry_run, json_mode=json_mode, force=force)
     rc = run_bash_script("install-project-links.sh", args)
     if rc != 0:
         sys.exit(rc)
 
-    # In local mode, patch .gitignore to exclude noisy knowledge subfolders
-    if local_mode and not dry_run:
+    # Patch .gitignore to exclude noisy knowledge subfolders (local mode = default)
+    if not external_mode and not dry_run:
         _patch_gitignore_for_local_knowledge(repo_path, json_mode)
 
     # Auto-detect and install tool integrations
@@ -354,7 +356,10 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
     Reports whether the project integration is stale and suggests
     `agent-knowledge refresh-system` when the framework version has changed.
     """
-    from agent_knowledge.runtime.refresh import is_stale, check_cursor_integration, check_claude_integration
+    from agent_knowledge.runtime.refresh import (
+        is_stale, check_cursor_integration, check_claude_integration,
+        check_stale_notes,
+    )
     from agent_knowledge.runtime.history import history_exists
 
     repo_root = Path(project).resolve()
@@ -398,6 +403,30 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
         click.secho(
             "Note: no History/ layer found. Run: agent-knowledge backfill-history",
             fg="cyan",
+            err=True,
+        )
+        click.echo("", err=True)
+
+    # Durable-branch note staleness check
+    stale_notes = check_stale_notes(repo_root)
+    if stale_notes and not json_mode:
+        click.secho(
+            f"Warning: {len(stale_notes)} Memory note(s) may be stale "
+            f"(source changed after note was last updated):",
+            fg="yellow",
+            err=True,
+        )
+        for w in stale_notes:
+            click.secho(
+                f"  {w['path']}  [updated {w['note_updated']}, src last changed {w['last_src_commit']}]",
+                fg="yellow",
+                err=True,
+            )
+            if w.get("update_when"):
+                click.secho(f"    update when: {w['update_when'][:120]}", fg="yellow", err=True)
+        click.secho(
+            "  Review these notes and update with: agent-knowledge sync",
+            fg="yellow",
             err=True,
         )
         click.echo("", err=True)

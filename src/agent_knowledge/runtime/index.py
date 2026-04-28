@@ -56,6 +56,16 @@ def _first_content_lines(text: str, max_chars: int = 200) -> str:
         stripped = line.strip()
         if not stripped or stripped.startswith("#") or stripped == "---":
             continue
+        if stripped.startswith("|") or stripped.startswith("```"):
+            continue
+        # Strip wikilinks, bold, inline code for clean plain-text summary
+        stripped = re.sub(r"\[\[([^\]|]+)\|([^\]]+)\]\]", r"\2", stripped)
+        stripped = re.sub(r"\[\[([^\]]+)\]\]", r"\1", stripped)
+        stripped = re.sub(r"\*\*(.+?)\*\*", r"\1", stripped)
+        stripped = re.sub(r"`([^`]+)`", r"\1", stripped)
+        stripped = stripped.strip()
+        if not stripped:
+            continue
         result.append(stripped)
         if sum(len(s) for s in result) >= max_chars:
             break

@@ -1,11 +1,16 @@
 ---
 note_type: durable-branch
 area: architecture
-updated: 2026-04-23
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - architecture
+update_when: >
+  A new runtime module is added to src/agent_knowledge/runtime/; the vault
+  model or storage modes change; the site generation pipeline gains or loses a
+  step; a new top-level vault folder is introduced; the project config schema
+  version bumps.
 ---
 
 # Architecture
@@ -32,10 +37,10 @@ Two storage modes controlled by `vault_mode` in `.agent-project.yaml`:
 
 | Mode | `./agent-knowledge` | `~/agent-os/projects/<slug>/` |
 |------|--------------------|-----------------------------|
-| `external` (default) | symlink → external vault | real directory (source of truth) |
-| `local` | real directory in repo (git-tracked) | symlink → `./agent-knowledge` |
+| `local` **(default)** | real directory in repo (git-tracked) | symlink → `./agent-knowledge` |
+| `external` | symlink → external vault | real directory (source of truth) |
 
-Use `agent-knowledge init --local` for local mode, or `agent-knowledge migrate-to-local` to convert.
+`agent-knowledge init` defaults to local mode. Use `--external` for external mode, or `agent-knowledge migrate-to-local` to convert an existing external project.
 In local mode, `.gitignore` auto-patched to exclude `Evidence/raw/`, `Sessions/`, `Outputs/site/`, etc.
 
 Vault structure (same in both modes):
@@ -74,6 +79,10 @@ All non-Python assets under `assets/`:
 4. Render single-page `Outputs/site/index.html` with all data embedded
 
 Site views: Overview, Tree/Ontology, Note/Detail, Evidence, Graph (force-directed canvas)
+
+Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's rendered HTML and adds blue `related_to` edges between nodes, giving the graph semantic cross-connections beyond the folder hierarchy.
+
+`_md_to_html()` supports: headings (with inline wikilinks), paragraphs, bullet/ordered lists, blockquotes, fenced code blocks, horizontal rules, and `|pipe|` markdown tables rendered as `<table>` elements.
 
 ## History Layer
 
@@ -117,3 +126,18 @@ Site views: Overview, Tree/Ontology, Note/Detail, Evidence, Graph (force-directe
 - `ship.sh` must use `python -m pytest -q` not bare `pytest`
 - Canvas 2D rendering: reading `clientWidth`/`clientHeight` after `display:none→block` must be deferred with `requestAnimationFrame` (graph fix, 2026-04-11)
 - Evidence/Outputs are non-canonical and must not be auto-promoted to Memory/
+
+## Recent Changes
+
+- 2026-04-28: Local vault mode is now the default (`init` no longer needs `--local`; use `--external` to opt out).
+- 2026-04-28: `site.py` table rendering fixed — markdown tables now render as proper HTML `<table>` elements.
+- 2026-04-28: Graph wikilink edges added — `build_graph_data()` extracts `[[wikilinks]]` and creates blue `related_to` edges.
+- 2026-04-28: Graph node selection dims unrelated nodes and keeps neighbors semi-visible with labels.
+- 2026-04-28: Graph layout spread tuned — `SIM_REPULSION 18000`, `SIM_REST 220`, `SIM_GRAVITY 0.008` for a readable layout.
+- 2026-04-28: Staleness detection added to `doctor` via `check_stale_notes()` in `refresh.py`.
+
+## See Also
+
+- [[stack]] — languages, runtimes, and dependencies
+- [[conventions]] — coding and design conventions
+- [[packaging]] — how the package is built and distributed

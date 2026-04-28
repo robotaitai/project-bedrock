@@ -1,11 +1,14 @@
 ---
 note_type: durable-branch
 area: history-layer
-updated: 2026-04-11
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - history
+update_when: >
+  A new event type is added; the deduplication rules change; new commands
+  interact with History/; the file structure under History/ changes.
 ---
 
 # History Layer

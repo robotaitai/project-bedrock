@@ -1,11 +1,16 @@
 ---
 note_type: durable-branch
 area: integrations
-updated: 2026-04-13
+updated: 2026-04-28
 tags:
   - agent-knowledge
   - memory
   - integrations
+update_when: >
+  A new tool integration is added (detection logic, bridge files); an existing
+  integration gains new hook events or commands; the Cursor rule content
+  (_CURSOR_RULE constant) is updated; a new health-check function is added
+  to refresh.py.
 ---
 
 # Integrations

@@ -2,16 +2,61 @@
 
 from __future__ import annotations
 
+import shutil
 import subprocess
 import sys
+from pathlib import Path
 
 from .paths import get_script
+
+# Common Git-for-Windows bash locations, tried in order on Windows.
+_WINDOWS_BASH_CANDIDATES = [
+    r"C:\Program Files\Git\bin\bash.exe",
+    r"C:\Program Files\Git\usr\bin\bash.exe",
+    r"C:\Program Files (x86)\Git\bin\bash.exe",
+]
+
+_bash_exe: str | None = None
+
+
+def _find_bash() -> str:
+    """Return the bash executable path, raising RuntimeError on Windows if not found."""
+    global _bash_exe
+    if _bash_exe is not None:
+        return _bash_exe
+
+    # Non-Windows: bash must be on PATH.
+    if sys.platform != "win32":
+        _bash_exe = "bash"
+        return _bash_exe
+
+    # Windows: check PATH first (Git Bash, WSL, Cygwin may all put bash there).
+    if shutil.which("bash"):
+        _bash_exe = "bash"
+        return _bash_exe
+
+    # Fall back to known Git-for-Windows install paths.
+    for candidate in _WINDOWS_BASH_CANDIDATES:
+        if Path(candidate).is_file():
+            _bash_exe = candidate
+            return _bash_exe
+
+    raise RuntimeError(
+        "bash not found. bedrock requires bash to run its scripts.\n"
+        "On Windows, install Git for Windows (https://git-scm.com/download/win) "
+        "and ensure 'Git Bash' is added to your PATH, then retry."
+    )
 
 
 def run_bash_script(name: str, args: list[str]) -> int:
     """Run a bundled bash script and return its exit code."""
     script = get_script(name)
-    result = subprocess.run(["bash", str(script)] + args)
+    try:
+        bash = _find_bash()
+    except RuntimeError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 1
+    result = subprocess.run([bash, str(script)] + args)
     return result.returncode
 
 

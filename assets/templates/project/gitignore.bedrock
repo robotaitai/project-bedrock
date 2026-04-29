@@ -1,0 +1,12 @@
+# Recommended ignores for projects using bedrock for knowledge management.
+# Keep or remove the local pointer based on your repo policy.
+
+# If bedrock is a symlink, many teams keep the pointer tracked.
+# If you prefer it untracked, uncomment the next line.
+# bedrock/
+
+# Usually ignore noisy generated or transient knowledge branches.
+bedrock/Evidence/
+bedrock/Outputs/
+bedrock/.obsidian/workspace*.json
+bedrock/.obsidian/cache/

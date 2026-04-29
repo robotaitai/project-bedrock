@@ -4,7 +4,7 @@ project: <project-name>
 status: active
 last_updated: <date>
 tags:
-  - agent-knowledge
+  - bedrock
   - decision
 ---
 

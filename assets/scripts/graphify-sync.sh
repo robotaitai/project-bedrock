@@ -70,9 +70,9 @@ kc_require_knowledge_pointer
 GRAPHIFY_EVIDENCE_DIR="$EVIDENCE_IMPORTS_DIR/graphify"
 GRAPHIFY_OUTPUTS_DIR="$OUTPUTS_DIR/graphify"
 
-kc_ensure_dir "$GRAPHIFY_EVIDENCE_DIR" "agent-knowledge/Evidence/imports/graphify"
-kc_ensure_dir "$GRAPHIFY_OUTPUTS_DIR" "agent-knowledge/Outputs/graphify"
-kc_ensure_dir "$EVIDENCE_CACHE_DIR" "agent-knowledge/Evidence/.cache"
+kc_ensure_dir "$GRAPHIFY_EVIDENCE_DIR" "bedrock/Evidence/imports/graphify"
+kc_ensure_dir "$GRAPHIFY_OUTPUTS_DIR" "bedrock/Outputs/graphify"
+kc_ensure_dir "$EVIDENCE_CACHE_DIR" "bedrock/Evidence/.cache"
 
 normalize_source() {
     local path="$1"
@@ -153,18 +153,18 @@ import_graph_artifact() {
 
     signature="$(kc_signature_from_paths "$src")"
     if kc_cache_is_current "graphify-import" "$rel_src" "$signature" "$dst" "$meta_dst"; then
-        CACHED+=("agent-knowledge/Evidence/imports/graphify/$rel_src")
+        CACHED+=("bedrock/Evidence/imports/graphify/$rel_src")
         return 0
     fi
 
-    kc_copy_file "$src" "$dst" "agent-knowledge/Evidence/imports/graphify/$rel_src"
+    kc_copy_file "$src" "$dst" "bedrock/Evidence/imports/graphify/$rel_src"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
             changed=1
             ;;
     esac
 
-    kc_write_metadata_json "$meta_dst" "agent-knowledge/Evidence/imports/graphify/$rel_src.meta.json" "$rel_src" "graph-artifact" "EXTRACTED" "$GENERATED_AT" "$rel_src" "Imported machine-generated structural artifact. Review before promoting any claim into Memory."
+    kc_write_metadata_json "$meta_dst" "bedrock/Evidence/imports/graphify/$rel_src.meta.json" "$rel_src" "graph-artifact" "EXTRACTED" "$GENERATED_AT" "$rel_src" "Imported machine-generated structural artifact. Review before promoting any claim into Memory."
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
             changed=1
@@ -174,7 +174,7 @@ import_graph_artifact() {
     kc_cache_store "graphify-import" "$rel_src" "$signature"
 
     if [ "$changed" -eq 1 ]; then
-        IMPORTED+=("agent-knowledge/Evidence/imports/graphify/$rel_src")
+        IMPORTED+=("bedrock/Evidence/imports/graphify/$rel_src")
     fi
 }
 
@@ -268,7 +268,7 @@ fi
 IMPORTED_LIST="$(printf '%s\n' "${IMPORTED[@]+"${IMPORTED[@]}"}" | awk 'NF')"
 SKIPPED_LIST="$(printf '%s\n' "${SKIPPED[@]+"${SKIPPED[@]}"}" | awk 'NF')"
 SUMMARY_SIGNATURE="$(kc_signature_from_lines "$(printf '%s\n---\n%s\n---\n%s\n---\n%s\n' "$SOURCE_CANDIDATES" "$IMPORTED_LIST" "$GRAPHIFY_AVAILABLE" "$SKIPPED_LIST")")"
-capture_graphify_note "evidence-summary" "$GRAPHIFY_EVIDENCE_DIR/SUMMARY.md" "agent-knowledge/Evidence/imports/graphify/SUMMARY.md" "imports" "$SUMMARY_SIGNATURE" <<EOF
+capture_graphify_note "evidence-summary" "$GRAPHIFY_EVIDENCE_DIR/SUMMARY.md" "bedrock/Evidence/imports/graphify/SUMMARY.md" "imports" "$SUMMARY_SIGNATURE" <<EOF
 ---
 note_type: structural-evidence
 project: $PROJECT_NAME
@@ -283,7 +283,7 @@ notes:
   - Optional machine-generated structural imports.
   - Evidence only. Do not promote automatically into Memory.
 tags:
-  - agent-knowledge
+  - bedrock
   - evidence
   - graphify
 ---
@@ -302,7 +302,7 @@ tags:
 
 ## Imported Files
 
-$(if [ -n "$IMPORTED_LIST" ]; then printf '%s\n' "$IMPORTED_LIST" | awk 'NF { sub(/^agent-knowledge\/Evidence\/imports\/graphify\//, "", $0); printf "- [%s](%s)\n", $0, $0 }'; else echo "- None."; fi)
+$(if [ -n "$IMPORTED_LIST" ]; then printf '%s\n' "$IMPORTED_LIST" | awk 'NF { sub(/^bedrock/Evidence/imports/graphify//, "", $0); printf "- [%s](%s)\n", $0, $0 }'; else echo "- None."; fi)
 
 ## Promotion Rule
 
@@ -310,7 +310,7 @@ $(if [ -n "$IMPORTED_LIST" ]; then printf '%s\n' "$IMPORTED_LIST" | awk 'NF { su
 - Promote a claim into \`Memory/\` only after agent review confirms it is durable and useful.
 EOF
 
-capture_graphify_note "output-summary" "$GRAPHIFY_OUTPUTS_DIR/structural-summary.md" "agent-knowledge/Outputs/graphify/structural-summary.md" "outputs" "$SUMMARY_SIGNATURE" <<EOF
+capture_graphify_note "output-summary" "$GRAPHIFY_OUTPUTS_DIR/structural-summary.md" "bedrock/Outputs/graphify/structural-summary.md" "outputs" "$SUMMARY_SIGNATURE" <<EOF
 ---
 note_type: generated-output
 project: $PROJECT_NAME
@@ -325,7 +325,7 @@ notes:
   - Derived from optional graph/discovery artifacts.
   - Output only. Do not treat as durable memory without review.
 tags:
-  - agent-knowledge
+  - bedrock
   - outputs
   - graphify
 ---

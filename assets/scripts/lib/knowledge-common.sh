@@ -355,8 +355,8 @@ kc_load_project_context() {
     PROJECT_PROFILE="unknown"
     VAULT_MODE="external"
     AGENT_PROJECT_FILE="$TARGET_PROJECT/.agent-project.yaml"
-    POINTER_PATH="$TARGET_PROJECT/agent-knowledge"
-    POINTER_DISPLAY="./agent-knowledge"
+    POINTER_PATH="$TARGET_PROJECT/bedrock"
+    POINTER_DISPLAY="./bedrock"
     FRAMEWORK_REPO=""
 
     if [ -f "$AGENT_PROJECT_FILE" ]; then
@@ -836,7 +836,7 @@ kc_status_write() {
         fi
     } > "$tmp_file"
 
-    kc_apply_temp_file "$tmp_file" "$STATUS_FILE" "agent-knowledge/STATUS.md"
+    kc_apply_temp_file "$tmp_file" "$STATUS_FILE" "bedrock/STATUS.md"
 }
 
 kc_run_shell_command() {

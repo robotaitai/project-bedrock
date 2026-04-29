@@ -1,4 +1,4 @@
-"""Asset and path resolution for the agent-knowledge package."""
+"""Asset and path resolution for the bedrock package."""
 
 from __future__ import annotations
 
@@ -33,7 +33,7 @@ def get_assets_dir() -> Path:
         return _cached_assets_dir
 
     raise FileNotFoundError(
-        "Cannot locate agent-knowledge assets. "
+        "Cannot locate bedrock assets. "
         "Ensure the package is installed correctly or you are running from the repo checkout."
     )
 

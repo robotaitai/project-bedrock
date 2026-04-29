@@ -5,7 +5,7 @@ area: <area-slug>
 status: active
 last_updated: <date>
 tags:
-  - agent-knowledge
+  - bedrock
   - memory
   - <area-slug>
 ---

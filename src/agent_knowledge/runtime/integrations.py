@@ -45,20 +45,20 @@ def _copy_template(src: Path, dst: Path, replacements: dict[str, str], *, force:
 
 _CURSOR_RULE = """\
 ---
-description: agent-knowledge -- project memory contract, always active
+description: bedrock -- project memory contract, always active
 alwaysApply: true
 ---
 
-This project uses **agent-knowledge** for persistent memory.
-All knowledge lives in `./agent-knowledge/` (symlink to external vault).
+This project uses **bedrock** for persistent memory.
+All knowledge lives in `./bedrock/`.
 
 ## On session start
 
-1. Read `./agent-knowledge/STATUS.md`
+1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` — read `AGENTS.md` and perform First-Time Onboarding
-3. If `onboarding: complete` — read `./agent-knowledge/Memory/MEMORY.md`
+3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`
    - Load branch notes relevant to the current task
-   - Scan `./agent-knowledge/History/history.md` for recent activity if useful
+   - Scan `./bedrock/History/history.md` for recent activity if useful
 
 ## Knowledge layers
 
@@ -72,7 +72,7 @@ All knowledge lives in `./agent-knowledge/` (symlink to external vault).
 
 ## After meaningful work
 
-- Write confirmed facts to `./agent-knowledge/Memory/<branch>.md`
+- Write confirmed facts to `./bedrock/Memory/<branch>.md`
 - Run `/memory-update` — sync, update branches, summarize what changed
 
 ## Periodic (every few sessions)
@@ -87,7 +87,7 @@ def install_cursor(repo: Path, *, dry_run: bool = False, force: bool = False) ->
     """Install Cursor hooks and rules integration."""
     assets = get_assets_dir()
     actions = []
-    repo_abs = str(repo.resolve())
+    repo_abs = repo.resolve().as_posix()
 
     # Hooks
     hooks_src = assets / "templates" / "integrations" / "cursor" / "hooks.json"
@@ -103,15 +103,15 @@ def install_cursor(repo: Path, *, dry_run: bool = False, force: bool = False) ->
         actions.append("  created: .cursor/hooks.json")
 
     # Rule
-    rule_dst = repo / ".cursor" / "rules" / "agent-knowledge.mdc"
+    rule_dst = repo / ".cursor" / "rules" / "bedrock.mdc"
     if rule_dst.exists() and not force:
-        actions.append("  exists: .cursor/rules/agent-knowledge.mdc")
+        actions.append("  exists: .cursor/rules/bedrock.mdc")
     elif dry_run:
-        actions.append("  [dry-run] would create: .cursor/rules/agent-knowledge.mdc")
+        actions.append("  [dry-run] would create: .cursor/rules/bedrock.mdc")
     else:
         rule_dst.parent.mkdir(parents=True, exist_ok=True)
         rule_dst.write_text(_CURSOR_RULE)
-        actions.append("  created: .cursor/rules/agent-knowledge.mdc")
+        actions.append("  created: .cursor/rules/bedrock.mdc")
 
     # Commands
     commands_template_dir = assets / "templates" / "integrations" / "cursor" / "commands"
@@ -136,7 +136,7 @@ def install_claude(repo: Path, *, dry_run: bool = False, force: bool = False) ->
     """Install Claude project-local integration (settings, commands, instructions)."""
     assets = get_assets_dir()
     actions = []
-    repo_abs = str(repo.resolve())
+    repo_abs = repo.resolve().as_posix()
 
     # Settings (hooks)
     settings_src = assets / "templates" / "integrations" / "claude" / "settings.json"

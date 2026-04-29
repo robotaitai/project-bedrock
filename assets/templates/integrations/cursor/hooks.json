@@ -1,6 +1,6 @@
 {
   "version": 1,
-  "description": "Repo-local hooks for agent-knowledge. Hooks stay thin: detect meaningful changes and trigger lightweight capture/update, never rebuild the full ontology.",
+  "description": "Repo-local hooks for bedrock. Hooks stay thin: detect meaningful changes and trigger lightweight capture/update, never rebuild the full ontology.",
   "hooks": [
     {
       "name": "project-knowledge-sync",

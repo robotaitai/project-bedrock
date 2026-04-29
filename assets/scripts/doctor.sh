@@ -78,13 +78,13 @@ fi
 
 if [ "${VAULT_MODE:-external}" = "local" ]; then
     if [ ! -d "$KNOWLEDGE_POINTER_PATH" ] || [ -L "$KNOWLEDGE_POINTER_PATH" ]; then
-        WARNINGS+=("vault_mode is 'local' but agent-knowledge/ is not a real directory in the repo.")
+        WARNINGS+=("vault_mode is 'local' but bedrock/ is not a real directory in the repo.")
     fi
 elif [ ! -L "$KNOWLEDGE_POINTER_PATH" ]; then
     if kc_is_windows_like; then
-        WARNINGS+=("agent-knowledge is not reported as a symlink. If this is a junction, verify it still resolves to the external knowledge folder.")
+        WARNINGS+=("bedrock is not reported as a symlink. If this is a junction, verify it still resolves to the external knowledge folder.")
     else
-        WARNINGS+=("agent-knowledge is not a symlink. Run 'agent-knowledge migrate-to-local' if you intended local mode, or re-run 'agent-knowledge init' to restore the external-vault symlink.")
+        WARNINGS+=("bedrock is not a symlink. Run 'bedrock migrate-to-local' if you intended local mode, or re-run 'bedrock init' to restore the external-vault symlink.")
     fi
 fi
 

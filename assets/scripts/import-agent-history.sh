@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Collect project evidence into agent-knowledge/Evidence/raw/ and imports/.
+# Collect project evidence into bedrock/Evidence/raw/ and imports/.
 #
 
 set -euo pipefail
@@ -63,10 +63,10 @@ fi
 
 kc_load_project_context "$TARGET_PROJECT_ARG"
 kc_require_knowledge_pointer
-kc_ensure_dir "$EVIDENCE_RAW_DIR" "agent-knowledge/Evidence/raw"
-kc_ensure_dir "$EVIDENCE_IMPORTS_DIR" "agent-knowledge/Evidence/imports"
-kc_ensure_dir "$OUTPUTS_DIR" "agent-knowledge/Outputs"
-kc_ensure_dir "$EVIDENCE_CACHE_DIR" "agent-knowledge/Evidence/.cache"
+kc_ensure_dir "$EVIDENCE_RAW_DIR" "bedrock/Evidence/raw"
+kc_ensure_dir "$EVIDENCE_IMPORTS_DIR" "bedrock/Evidence/imports"
+kc_ensure_dir "$OUTPUTS_DIR" "bedrock/Outputs"
+kc_ensure_dir "$EVIDENCE_CACHE_DIR" "bedrock/Evidence/.cache"
 
 PROJECT_LABEL="$(basename "$TARGET_PROJECT")"
 
@@ -107,7 +107,7 @@ list_existing_paths() {
 list_top_level_dirs() {
     find "$TARGET_PROJECT" -mindepth 1 -maxdepth 1 -type d 2>/dev/null \
         | relative_path \
-        | grep -Ev '^(agent-knowledge|node_modules|vendor|\.git|\.cursor|dist|build|\.next|__pycache__|\.venv)$' \
+        | grep -Ev '^(bedrock|node_modules|vendor|\.git|\.cursor|dist|build|\.next|__pycache__|\.venv)$' \
         | kc_filter_relative_lines \
         | sort
 }
@@ -298,7 +298,7 @@ MANIFEST_PATHS="$(list_existing_paths "$TARGET_PROJECT" \
     Cargo.toml Cargo.lock go.mod go.sum CMakeLists.txt Makefile package.xml)"
 DOC_IMPORT_PATHS="$(list_existing_paths "$TARGET_PROJECT" \
     README.md README.rst CLAUDE.md AGENTS.md .agent-project.yaml .cursorrules \
-    agent-knowledge/INDEX.md agent-knowledge/Memory/MEMORY.md docs/README.md)"
+    bedrock/INDEX.md bedrock/Memory/MEMORY.md docs/README.md)"
 CONFIG_PATHS="$(find "$TARGET_PROJECT" -maxdepth 2 \( \
     -name ".editorconfig" -o \
     -name ".clang-format" -o \
@@ -343,7 +343,7 @@ STRUCTURE_PATHS="$(find "$TARGET_PROJECT" \
     -not -path "*/dist/*" \
     -not -path "*/.next/*" \
     -not -path "*/build/*" \
-    | sort | relative_path | grep -Ev '^agent-knowledge($|/)' | kc_filter_relative_lines)"
+    | sort | relative_path | grep -Ev '^bedrock($|/)' | kc_filter_relative_lines)"
 TOP_LEVEL_DIRS="$(list_top_level_dirs)"
 DOC_INDEX_PATHS="$(find_any_relative \
     -name "*.md" \
@@ -352,7 +352,7 @@ DOC_INDEX_PATHS="$(find_any_relative \
     -not -path "*/vendor/*")"
 TASK_PATHS="$(find "$TARGET_PROJECT/tasks" -mindepth 1 -maxdepth 2 -type f 2>/dev/null | relative_path | kc_filter_relative_lines | sort)"
 SESSION_FILE_PATHS="$(find "$SESSIONS_DIR" -mindepth 1 -maxdepth 1 -type f 2>/dev/null | relative_path | kc_filter_relative_lines | sort)"
-TRACE_PATHS="$(for d in agent-traces traces logs/agent agent-knowledge/Outputs/traces; do
+TRACE_PATHS="$(for d in agent-traces traces logs/agent bedrock/Outputs/traces; do
     if [ -d "$TARGET_PROJECT/$d" ] && ! kc_path_is_ignored "$d"; then
         find "$TARGET_PROJECT/$d" -type f 2>/dev/null | relative_path | kc_filter_relative_lines
     fi
@@ -370,17 +370,17 @@ fi
 if kc_git_available; then
     if kc_git_has_commits; then
         GIT_SIGNATURE="$(printf '%s\n%s\n' "$(git -C "$TARGET_PROJECT" rev-parse HEAD)" "$(git -C "$TARGET_PROJECT" rev-list --count HEAD 2>/dev/null || echo 0)" | kc_hash_text)"
-        capture_text_artifact "history-import" "git-log" "$EVIDENCE_RAW_DIR/git-log.txt" "agent-knowledge/Evidence/raw/git-log.txt" "raw" "git" "git-log" "EXTRACTED" ".git" "Last 300 commits in oneline form. Review as evidence, not canonical truth." "$GIT_SIGNATURE" <<EOF
+        capture_text_artifact "history-import" "git-log" "$EVIDENCE_RAW_DIR/git-log.txt" "bedrock/Evidence/raw/git-log.txt" "raw" "git" "git-log" "EXTRACTED" ".git" "Last 300 commits in oneline form. Review as evidence, not canonical truth." "$GIT_SIGNATURE" <<EOF
 $(header "git-log (oneline, last 300)" "git" "git-log" "EXTRACTED")
 $(git -C "$TARGET_PROJECT" log --oneline -300)
 EOF
 
-        capture_text_artifact "history-import" "git-log-detail" "$EVIDENCE_RAW_DIR/git-log-detail.txt" "agent-knowledge/Evidence/raw/git-log-detail.txt" "raw" "git" "git-log-detail" "EXTRACTED" ".git" "Detailed commit evidence with subject and body for the most recent history slice." "$GIT_SIGNATURE" <<EOF
+        capture_text_artifact "history-import" "git-log-detail" "$EVIDENCE_RAW_DIR/git-log-detail.txt" "bedrock/Evidence/raw/git-log-detail.txt" "raw" "git" "git-log-detail" "EXTRACTED" ".git" "Detailed commit evidence with subject and body for the most recent history slice." "$GIT_SIGNATURE" <<EOF
 $(header "git-log-detail (last 50, with body)" "git" "git-log-detail" "EXTRACTED")
 $(git -C "$TARGET_PROJECT" log -50 --pretty=format:"----%ncommit %h%nDate:   %ai%nAuthor: %an%n%n%s%n%b")
 EOF
 
-        capture_text_artifact "history-import" "git-authors" "$EVIDENCE_RAW_DIR/git-authors.txt" "agent-knowledge/Evidence/raw/git-authors.txt" "raw" "git" "git-authors" "EXTRACTED" ".git" "Unique git authors extracted from repository history." "$GIT_SIGNATURE" <<EOF
+        capture_text_artifact "history-import" "git-authors" "$EVIDENCE_RAW_DIR/git-authors.txt" "bedrock/Evidence/raw/git-authors.txt" "raw" "git" "git-authors" "EXTRACTED" ".git" "Unique git authors extracted from repository history." "$GIT_SIGNATURE" <<EOF
 $(header "git-authors" "git" "git-authors" "EXTRACTED")
 $(git -C "$TARGET_PROJECT" log --pretty=format:"%an <%ae>" | sort -u)
 EOF
@@ -394,7 +394,7 @@ else
 fi
 
 STRUCTURE_SIGNATURE="$(kc_signature_from_project_relative_lines "$STRUCTURE_PATHS")"
-capture_text_artifact "history-import" "structure" "$EVIDENCE_RAW_DIR/structure.txt" "agent-knowledge/Evidence/raw/structure.txt" "raw" "repo-scan" "directory-structure" "EXTRACTED" "$TOP_LEVEL_DIRS" "Top-level directories and immediate structural signals from the current repo." "$STRUCTURE_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "structure" "$EVIDENCE_RAW_DIR/structure.txt" "bedrock/Evidence/raw/structure.txt" "raw" "repo-scan" "directory-structure" "EXTRACTED" "$TOP_LEVEL_DIRS" "Top-level directories and immediate structural signals from the current repo." "$STRUCTURE_SIGNATURE" <<EOF
 $(header "structure (top-level and depth 4 overview)" "repo-scan" "directory-structure" "EXTRACTED")
 ## Top-level Directories
 $(if [ -n "$TOP_LEVEL_DIRS" ]; then printf '%s\n' "$TOP_LEVEL_DIRS"; else printf '(none)\n'; fi)
@@ -404,25 +404,25 @@ $(printf '%s\n' "$STRUCTURE_PATHS")
 EOF
 
 MANIFEST_SIGNATURE="$(kc_signature_from_project_relative_lines "$MANIFEST_PATHS")"
-capture_text_artifact "history-import" "manifests" "$EVIDENCE_RAW_DIR/manifests.txt" "agent-knowledge/Evidence/raw/manifests.txt" "raw" "repo-scan" "manifests" "EXTRACTED" "$MANIFEST_PATHS" "Dependency and manifest files copied with truncation for very large files." "$MANIFEST_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "manifests" "$EVIDENCE_RAW_DIR/manifests.txt" "bedrock/Evidence/raw/manifests.txt" "raw" "repo-scan" "manifests" "EXTRACTED" "$MANIFEST_PATHS" "Dependency and manifest files copied with truncation for very large files." "$MANIFEST_SIGNATURE" <<EOF
 $(header "manifests" "repo-scan" "manifests" "EXTRACTED")
 $(if [ -n "$MANIFEST_PATHS" ]; then render_manifest_contents; else echo "(no manifests found)"; fi)
 EOF
 
 CONFIG_SIGNATURE="$(kc_signature_from_project_relative_lines "$CONFIG_PATHS")"
-capture_text_artifact "history-import" "config-files" "$EVIDENCE_RAW_DIR/config-files.txt" "agent-knowledge/Evidence/raw/config-files.txt" "raw" "repo-scan" "config-files" "EXTRACTED" "$CONFIG_PATHS" "Config files that usually define linting, formatting, typing, or build conventions." "$CONFIG_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "config-files" "$EVIDENCE_RAW_DIR/config-files.txt" "bedrock/Evidence/raw/config-files.txt" "raw" "repo-scan" "config-files" "EXTRACTED" "$CONFIG_PATHS" "Config files that usually define linting, formatting, typing, or build conventions." "$CONFIG_SIGNATURE" <<EOF
 $(header "config-files" "repo-scan" "config-files" "EXTRACTED")
 $(if [ -n "$CONFIG_PATHS" ]; then printf '%s\n' "$CONFIG_PATHS"; else echo "(no matching config files found)"; fi)
 EOF
 
 TEST_SIGNATURE="$(kc_signature_from_project_relative_lines "$TEST_PATHS")"
-capture_text_artifact "history-import" "tests" "$EVIDENCE_RAW_DIR/tests.txt" "agent-knowledge/Evidence/raw/tests.txt" "raw" "repo-scan" "test-surfaces" "EXTRACTED" "$TEST_PATHS" "Directories that suggest tests, launches, simulations, datasets, or model assets." "$TEST_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "tests" "$EVIDENCE_RAW_DIR/tests.txt" "bedrock/Evidence/raw/tests.txt" "raw" "repo-scan" "test-surfaces" "EXTRACTED" "$TEST_PATHS" "Directories that suggest tests, launches, simulations, datasets, or model assets." "$TEST_SIGNATURE" <<EOF
 $(header "tests" "repo-scan" "test-surfaces" "EXTRACTED")
 $(if [ -n "$TEST_PATHS" ]; then printf '%s\n' "$TEST_PATHS"; else echo "(no matching test or validation directories found)"; fi)
 EOF
 
 WORKFLOW_SIGNATURE="$(kc_signature_from_project_relative_lines "$WORKFLOW_PATHS")"
-capture_text_artifact "history-import" "ci-workflows" "$EVIDENCE_RAW_DIR/ci-workflows.txt" "agent-knowledge/Evidence/raw/ci-workflows.txt" "raw" "repo-scan" "ci-workflows" "EXTRACTED" "$WORKFLOW_PATHS" "Workflow definitions that shape validation and deployment behavior." "$WORKFLOW_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "ci-workflows" "$EVIDENCE_RAW_DIR/ci-workflows.txt" "bedrock/Evidence/raw/ci-workflows.txt" "raw" "repo-scan" "ci-workflows" "EXTRACTED" "$WORKFLOW_PATHS" "Workflow definitions that shape validation and deployment behavior." "$WORKFLOW_SIGNATURE" <<EOF
 $(header "ci-workflows" "repo-scan" "ci-workflows" "EXTRACTED")
 $(if [ -n "$WORKFLOW_PATHS" ]; then
     while IFS= read -r rel; do
@@ -444,19 +444,19 @@ fi)
 EOF
 
 DOC_SIGNATURE="$(kc_signature_from_project_relative_lines "$DOC_IMPORT_PATHS")"
-capture_text_artifact "history-import" "existing-docs" "$EVIDENCE_IMPORTS_DIR/existing-docs.txt" "agent-knowledge/Evidence/imports/existing-docs.txt" "imports" "repo-scan" "existing-docs" "EXTRACTED" "$DOC_IMPORT_PATHS" "High-signal docs and local project metadata copied for backfill review." "$DOC_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "existing-docs" "$EVIDENCE_IMPORTS_DIR/existing-docs.txt" "bedrock/Evidence/imports/existing-docs.txt" "imports" "repo-scan" "existing-docs" "EXTRACTED" "$DOC_IMPORT_PATHS" "High-signal docs and local project metadata copied for backfill review." "$DOC_SIGNATURE" <<EOF
 $(header "existing-docs" "repo-scan" "existing-docs" "EXTRACTED")
 $(if [ -n "$DOC_IMPORT_PATHS" ]; then render_doc_contents; else echo "(no key doc files found)"; fi)
 EOF
 
 DOC_INDEX_SIGNATURE="$(kc_signature_from_project_relative_lines "$DOC_INDEX_PATHS")"
-capture_text_artifact "history-import" "doc-index" "$EVIDENCE_IMPORTS_DIR/doc-index.txt" "agent-knowledge/Evidence/imports/doc-index.txt" "imports" "repo-scan" "doc-index" "EXTRACTED" "$DOC_INDEX_PATHS" "Markdown path index only. Use this to decide which docs to inspect next." "$DOC_INDEX_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "doc-index" "$EVIDENCE_IMPORTS_DIR/doc-index.txt" "bedrock/Evidence/imports/doc-index.txt" "imports" "repo-scan" "doc-index" "EXTRACTED" "$DOC_INDEX_PATHS" "Markdown path index only. Use this to decide which docs to inspect next." "$DOC_INDEX_SIGNATURE" <<EOF
 $(header "doc-index (paths)" "repo-scan" "doc-index" "EXTRACTED")
 $(if [ -n "$DOC_INDEX_PATHS" ]; then printf '%s\n' "$DOC_INDEX_PATHS"; else echo "(no markdown files found)"; fi)
 EOF
 
 TASK_SIGNATURE="$(kc_signature_from_project_relative_lines "$TASK_PATHS")"
-capture_text_artifact "history-import" "tasks" "$EVIDENCE_IMPORTS_DIR/tasks.txt" "agent-knowledge/Evidence/imports/tasks.txt" "imports" "repo-scan" "tasks" "EXTRACTED" "$TASK_PATHS" "Task files can be useful but may lag behind the true project state." "$TASK_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "tasks" "$EVIDENCE_IMPORTS_DIR/tasks.txt" "bedrock/Evidence/imports/tasks.txt" "imports" "repo-scan" "tasks" "EXTRACTED" "$TASK_PATHS" "Task files can be useful but may lag behind the true project state." "$TASK_SIGNATURE" <<EOF
 $(header "tasks" "repo-scan" "tasks" "EXTRACTED")
 $(if [ -n "$TASK_PATHS" ]; then
     while IFS= read -r rel; do
@@ -477,7 +477,7 @@ fi)
 EOF
 
 SESSION_SIGNATURE="$(kc_signature_from_project_relative_lines "$SESSION_FILE_PATHS")"
-capture_text_artifact "history-import" "session-files" "$EVIDENCE_IMPORTS_DIR/session-files.txt" "agent-knowledge/Evidence/imports/session-files.txt" "imports" "local-knowledge" "session-files" "AMBIGUOUS" "$SESSION_FILE_PATHS" "Session notes are temporary and may contain unresolved or outdated assumptions." "$SESSION_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "session-files" "$EVIDENCE_IMPORTS_DIR/session-files.txt" "bedrock/Evidence/imports/session-files.txt" "imports" "local-knowledge" "session-files" "AMBIGUOUS" "$SESSION_FILE_PATHS" "Session notes are temporary and may contain unresolved or outdated assumptions." "$SESSION_SIGNATURE" <<EOF
 $(header "session-files" "local-knowledge" "session-files" "AMBIGUOUS")
 $(if [ -n "$SESSION_FILE_PATHS" ]; then
     while IFS= read -r rel; do
@@ -509,7 +509,7 @@ CURSOR_SESSION_LIST="$(
     [ -n "$found" ] || true
 )"
 CURSOR_SESSION_SIGNATURE="$(kc_signature_from_paths $CURSOR_SESSION_LIST)"
-capture_text_artifact "history-import" "cursor-sessions" "$EVIDENCE_IMPORTS_DIR/cursor-sessions.txt" "agent-knowledge/Evidence/imports/cursor-sessions.txt" "imports" "cursor" "cursor-session-index" "AMBIGUOUS" "$CURSOR_SESSION_LIST" "Cursor session listings help locate prior work, but session output is not canonical truth." "$CURSOR_SESSION_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "cursor-sessions" "$EVIDENCE_IMPORTS_DIR/cursor-sessions.txt" "bedrock/Evidence/imports/cursor-sessions.txt" "imports" "cursor" "cursor-session-index" "AMBIGUOUS" "$CURSOR_SESSION_LIST" "Cursor session listings help locate prior work, but session output is not canonical truth." "$CURSOR_SESSION_SIGNATURE" <<EOF
 $(header "cursor-sessions" "cursor" "cursor-session-index" "AMBIGUOUS")
 $(found=""
 for d in "$HOME"/.cursor/projects/*/sessions; do
@@ -524,13 +524,13 @@ done
 EOF
 
 TRACE_SIGNATURE="$(kc_signature_from_project_relative_lines "$TRACE_PATHS")"
-capture_text_artifact "history-import" "trace-index" "$EVIDENCE_IMPORTS_DIR/trace-index.txt" "agent-knowledge/Evidence/imports/trace-index.txt" "imports" "project-traces" "trace-index" "AMBIGUOUS" "$TRACE_PATHS" "Imported traces and generated outputs are evidence only and must be curated before promotion to Memory." "$TRACE_SIGNATURE" <<EOF
+capture_text_artifact "history-import" "trace-index" "$EVIDENCE_IMPORTS_DIR/trace-index.txt" "bedrock/Evidence/imports/trace-index.txt" "imports" "project-traces" "trace-index" "AMBIGUOUS" "$TRACE_PATHS" "Imported traces and generated outputs are evidence only and must be curated before promotion to Memory." "$TRACE_SIGNATURE" <<EOF
 $(header "trace-index" "project-traces" "trace-index" "AMBIGUOUS")
 $(if [ -n "$TRACE_PATHS" ]; then printf '%s\n' "$TRACE_PATHS"; else echo "(no imported trace directories found)"; fi)
 EOF
 
 STRUCTURAL_SUMMARY_SIGNATURE="$(kc_signature_from_lines "$(printf '%s\n---\n%s\n---\n%s\n---\n%s\n---\n%s\n' "$TOP_LEVEL_DIRS" "$MANIFEST_PATHS" "$DOC_IMPORT_PATHS" "$CONFIG_PATHS" "$WORKFLOW_PATHS")")"
-capture_markdown_note "history-import" "structural-summary-note" "$EVIDENCE_IMPORTS_DIR/structural-summary.md" "agent-knowledge/Evidence/imports/structural-summary.md" "imports" "import-agent-history.sh" "structural-summary" "EXTRACTED" "$ARCH_SUMMARY_RELATED" "Compact structural evidence note derived from repo surfaces. Evidence only." "$STRUCTURAL_SUMMARY_SIGNATURE" <<EOF
+capture_markdown_note "history-import" "structural-summary-note" "$EVIDENCE_IMPORTS_DIR/structural-summary.md" "bedrock/Evidence/imports/structural-summary.md" "imports" "import-agent-history.sh" "structural-summary" "EXTRACTED" "$ARCH_SUMMARY_RELATED" "Compact structural evidence note derived from repo surfaces. Evidence only." "$STRUCTURAL_SUMMARY_SIGNATURE" <<EOF
 ---
 note_type: structural-evidence
 project: $PROJECT_NAME
@@ -545,7 +545,7 @@ notes:
   - Generated from manifests, docs, config files, and top-level structure.
   - Treat this as evidence first, not durable memory.
 tags:
-  - agent-knowledge
+  - bedrock
   - evidence
   - structural
 ---
@@ -578,7 +578,7 @@ tags:
 EOF
 
 OUTPUT_SUMMARY_SIGNATURE="$(kc_signature_from_lines "$(printf '%s\n---\n%s\n---\n%s\n' "$STRUCTURAL_SUMMARY_SIGNATURE" "$LIKELY_PROFILE" "$ARCH_SUMMARY_RELATED")")"
-capture_markdown_note "history-import" "architecture-summary-output" "$OUTPUTS_DIR/architecture-summary.md" "agent-knowledge/Outputs/architecture-summary.md" "outputs" "Evidence/imports/structural-summary.md" "architecture-summary" "INFERRED" "$ARCH_SUMMARY_RELATED" "Generated discovery output derived from evidence. Promote to Memory intentionally if it proves durable." "$OUTPUT_SUMMARY_SIGNATURE" <<EOF
+capture_markdown_note "history-import" "architecture-summary-output" "$OUTPUTS_DIR/architecture-summary.md" "bedrock/Outputs/architecture-summary.md" "outputs" "Evidence/imports/structural-summary.md" "architecture-summary" "INFERRED" "$ARCH_SUMMARY_RELATED" "Generated discovery output derived from evidence. Promote to Memory intentionally if it proves durable." "$OUTPUT_SUMMARY_SIGNATURE" <<EOF
 ---
 note_type: generated-output
 project: $PROJECT_NAME
@@ -593,7 +593,7 @@ notes:
   - Derived from structural evidence for quick orientation.
   - Not durable project memory unless promoted intentionally.
 tags:
-  - agent-knowledge
+  - bedrock
   - outputs
   - structural
 ---
@@ -624,7 +624,7 @@ tags:
 EOF
 
 STRUCTURAL_MAP_SIGNATURE="$(kc_signature_from_lines "$(printf '%s\n---\n%s\n---\n%s\n---\n%s\n' "$TOP_LEVEL_DIRS" "$MANIFEST_PATHS" "$DOC_IMPORT_PATHS" "$TEST_PATHS")")"
-capture_markdown_note "history-import" "structural-map-output" "$OUTPUTS_DIR/structural-map.md" "agent-knowledge/Outputs/structural-map.md" "outputs" "Evidence/raw/structure.txt" "structural-map" "EXTRACTED" "$ARCH_SUMMARY_RELATED" "Generated structure map for fast navigation. Evidence/output first, not memory." "$STRUCTURAL_MAP_SIGNATURE" <<EOF
+capture_markdown_note "history-import" "structural-map-output" "$OUTPUTS_DIR/structural-map.md" "bedrock/Outputs/structural-map.md" "outputs" "Evidence/raw/structure.txt" "structural-map" "EXTRACTED" "$ARCH_SUMMARY_RELATED" "Generated structure map for fast navigation. Evidence/output first, not memory." "$STRUCTURAL_MAP_SIGNATURE" <<EOF
 ---
 note_type: generated-output
 project: $PROJECT_NAME
@@ -639,7 +639,7 @@ notes:
   - Generated from direct path listings and manifest/doc surfaces.
   - Intended for orientation and navigation, not canonical memory.
 tags:
-  - agent-knowledge
+  - bedrock
   - outputs
   - structure
 ---
@@ -691,11 +691,11 @@ kc_write_json_output "$json_summary"
 if [ "$JSON_MODE" -ne 1 ]; then
     kc_log ""
     kc_log "Evidence collected in:"
-    kc_log "  agent-knowledge/Evidence/raw/"
-    kc_log "  agent-knowledge/Evidence/imports/"
+    kc_log "  bedrock/Evidence/raw/"
+    kc_log "  bedrock/Evidence/imports/"
     kc_log "Generated discovery outputs:"
-    kc_log "  agent-knowledge/Outputs/architecture-summary.md"
-    kc_log "  agent-knowledge/Outputs/structural-map.md"
+    kc_log "  bedrock/Outputs/architecture-summary.md"
+    kc_log "  bedrock/Outputs/structural-map.md"
     if [ ${#CACHED[@]} -gt 0 ]; then
         kc_log ""
         kc_log "Cached:"

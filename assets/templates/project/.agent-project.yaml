@@ -1,4 +1,4 @@
-# Connected project metadata for agent-knowledge.
+# Connected project metadata for bedrock.
 
 version: 4
 ontology_model: 2
@@ -11,14 +11,14 @@ project:
 
 knowledge:
   vault_mode: <vault-mode>
-  pointer_path: ./agent-knowledge
+  pointer_path: ./bedrock
   real_path: <absolute-path-to-dedicated-knowledge-folder>
   ignore_file: ./.agentknowledgeignore
-  memory_root: ./agent-knowledge/Memory/MEMORY.md
-  evidence_raw: ./agent-knowledge/Evidence/raw
-  evidence_imports: ./agent-knowledge/Evidence/imports
-  outputs_root: ./agent-knowledge/Outputs
-  dashboards_root: ./agent-knowledge/Dashboards
+  memory_root: ./bedrock/Memory/MEMORY.md
+  evidence_raw: ./bedrock/Evidence/raw
+  evidence_imports: ./bedrock/Evidence/imports
+  outputs_root: ./bedrock/Outputs
+  dashboards_root: ./bedrock/Dashboards
   obsidian_mode: lightweight
 
 onboarding:
@@ -32,5 +32,5 @@ sync:
 
 hooks:
   cursor_hooks_file: ./.cursor/hooks.json
-  project_sync_command: agent-knowledge update --project .
-  graph_sync_command: agent-knowledge graphify-sync --project .
+  project_sync_command: bedrock update --project .
+  graph_sync_command: bedrock graphify-sync --project .

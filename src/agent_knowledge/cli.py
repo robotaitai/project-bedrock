@@ -39,21 +39,21 @@ def main() -> None:
 # -- helpers --------------------------------------------------------------- #
 
 _LOCAL_GITIGNORE_BLOCK = """\
-# agent-knowledge: noisy auto-generated content excluded from git
+# bedrock: noisy auto-generated content excluded from git
 # Curated knowledge (Memory/, History/, Evidence/imports/, Dashboards/) IS tracked.
-agent-knowledge/Evidence/raw/
-agent-knowledge/Evidence/captures/
-agent-knowledge/Outputs/site/
-agent-knowledge/Outputs/graph.json
-agent-knowledge/Outputs/knowledge-index.json
-agent-knowledge/Outputs/knowledge-index.md
-agent-knowledge/Outputs/absorb-manifest.md
-agent-knowledge/.obsidian/workspace
-agent-knowledge/.obsidian/workspace.json
-agent-knowledge/.obsidian/workspaces.json
+bedrock/Evidence/raw/
+bedrock/Evidence/captures/
+bedrock/Outputs/site/
+bedrock/Outputs/graph.json
+bedrock/Outputs/knowledge-index.json
+bedrock/Outputs/knowledge-index.md
+bedrock/Outputs/absorb-manifest.md
+bedrock/.obsidian/workspace
+bedrock/.obsidian/workspace.json
+bedrock/.obsidian/workspaces.json
 """
 
-_LOCAL_GITIGNORE_SENTINEL = "agent-knowledge/Evidence/raw/"
+_LOCAL_GITIGNORE_SENTINEL = "bedrock/Evidence/raw/"
 
 
 def _patch_gitignore_for_local_knowledge(repo_path: Path, json_mode: bool) -> None:
@@ -78,7 +78,7 @@ def _patch_gitignore_for_local_knowledge(repo_path: Path, json_mode: bool) -> No
 @click.option("--repo", default=".", type=click.Path(exists=True), help="Project repo path (default: cwd).")
 @click.option("--knowledge-home", default=None, help="Knowledge root (default: $AGENT_KNOWLEDGE_HOME or ~/agent-os/projects).")
 @click.option("--real-path", default=None, help="Explicit external knowledge folder path (only used with --external).")
-@click.option("--external", "external_mode", is_flag=True, help="Store knowledge in ~/agent-os/projects/<slug>/ (external vault). ./agent-knowledge becomes a symlink.")
+@click.option("--external", "external_mode", is_flag=True, help="Store knowledge in ~/agent-os/projects/<slug>/ (external vault). ./bedrock becomes a symlink.")
 @click.option("--local", "local_compat", is_flag=True, hidden=True, help="No-op: local is now the default. Kept for backward compatibility.")
 @click.option("--no-integrations", is_flag=True, help="Skip auto-detection and installation of tool integrations.")
 @click.option("--dry-run", is_flag=True, help="Preview changes without writing.")
@@ -103,12 +103,12 @@ def init(
 
     \b
     Storage modes:
-      default   Knowledge lives in ./agent-knowledge/ inside the repo
+      default   Knowledge lives in ./bedrock/ inside the repo
                 (git-tracked). ~/agent-os/projects/<slug>/ is a symlink
                 back to the repo folder. Noisy subfolders are added to
                 .gitignore automatically.
       --external  Knowledge lives in ~/agent-os/projects/<slug>/ (external
-                vault). ./agent-knowledge is a symlink to that folder.
+                vault). ./bedrock is a symlink to that folder.
     """
     from agent_knowledge.runtime.integrations import detect, install_all
 
@@ -165,7 +165,7 @@ def init(
     if not dry_run:
         from agent_knowledge.runtime.history import run_backfill
 
-        vault_dir = repo_path / "agent-knowledge"
+        vault_dir = repo_path / "bedrock"
         if vault_dir.is_dir():
             result = run_backfill(
                 repo_path,
@@ -181,7 +181,7 @@ def init(
                 )
 
     if not json_mode:
-        prompt = "Read AGENTS.md and ./agent-knowledge/STATUS.md, then onboard this project."
+        prompt = "Read AGENTS.md and ./bedrock/STATUS.md, then onboard this project."
         header = "Paste in your agent chat:"
         width = max(len(prompt), len(header)) + 2
         border = "+" + "-" * width + "+"
@@ -197,7 +197,7 @@ def init(
 
 
 _REPO_URL = "https://github.com/robotaitai/agent-knowledge"
-_STAR_MARKER = Path.home() / ".agent-knowledge-starred"
+_STAR_MARKER = Path.home() / ".bedrock-starred"
 
 
 def _maybe_star() -> None:
@@ -209,7 +209,7 @@ def _maybe_star() -> None:
     try:
         click.echo("", err=True)
         if click.confirm(
-            click.style("Like agent-knowledge? Star it on GitHub", fg="yellow"),
+            click.style("Like bedrock? Star it on GitHub", fg="yellow"),
             default=True,
             err=True,
         ):
@@ -241,7 +241,7 @@ def sync(project: str, dry_run: bool, json_mode: bool) -> None:
 
     \b
     Steps:
-      1. Copy agent_docs/memory/*.md -> agent-knowledge/Memory/ (newer only)
+      1. Copy agent_docs/memory/*.md -> bedrock/Memory/ (newer only)
       2. Extract recent git log into Evidence/raw/git-recent.md
       4. Update last_project_sync in STATUS.md
     """
@@ -398,7 +398,7 @@ def doctor(project: str, dry_run: bool, json_mode: bool) -> None:
         click.echo("", err=True)
 
     # History existence check
-    vault_dir = repo_root / "agent-knowledge"
+    vault_dir = repo_root / "bedrock"
     if vault_dir.is_dir() and not history_exists(vault_dir) and not json_mode:
         click.secho(
             "Note: no History/ layer found. Run: bedrock backfill-history",
@@ -572,9 +572,9 @@ def search(query: str, project: str, limit: int, include_all: bool, json_mode: b
 
     from agent_knowledge.runtime.index import search as idx_search
 
-    vault = Path(project).resolve() / "agent-knowledge"
+    vault = Path(project).resolve() / "bedrock"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
+        click.echo("No bedrock vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     if not query:
@@ -619,9 +619,9 @@ def index_cmd(project: str, dry_run: bool, json_mode: bool) -> None:
 
     from agent_knowledge.runtime.index import write_index
 
-    vault = Path(project).resolve() / "agent-knowledge"
+    vault = Path(project).resolve() / "bedrock"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
+        click.echo("No bedrock vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     actions = write_index(vault, dry_run=dry_run)
@@ -669,9 +669,9 @@ def export_html(
 
     from agent_knowledge.runtime.site import generate_site
 
-    vault = Path(project).resolve() / "agent-knowledge"
+    vault = Path(project).resolve() / "bedrock"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
+        click.echo("No bedrock vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     out_dir = Path(output_dir).resolve() if output_dir else None
@@ -715,9 +715,9 @@ def view(project: str, output_dir: str | None) -> None:
 
     from agent_knowledge.runtime.site import generate_site
 
-    vault = Path(project).resolve() / "agent-knowledge"
+    vault = Path(project).resolve() / "bedrock"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
+        click.echo("No bedrock vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     out_dir = Path(output_dir).resolve() if output_dir else None
@@ -759,7 +759,7 @@ def clean_import(
 
     from agent_knowledge.runtime.importer import clean_import as do_import
 
-    vault = Path(project).resolve() / "agent-knowledge"
+    vault = Path(project).resolve() / "bedrock"
     if output_dir:
         out_dir = Path(output_dir).resolve()
     else:
@@ -816,9 +816,9 @@ def export_canvas(project: str, output: str | None, dry_run: bool) -> None:
     """
     from agent_knowledge.runtime.canvas import export_canvas as do_export
 
-    vault = Path(project).resolve() / "agent-knowledge"
+    vault = Path(project).resolve() / "bedrock"
     if not vault.is_dir():
-        click.echo("No agent-knowledge vault found. Run: bedrock init", err=True)
+        click.echo("No bedrock vault found. Run: bedrock init", err=True)
         sys.exit(1)
 
     out_path = Path(output).resolve() if output else None
@@ -859,10 +859,10 @@ def backfill_history(project: str, dry_run: bool, json_mode: bool, force: bool) 
     from agent_knowledge.runtime.history import run_backfill
 
     repo_root = Path(project).resolve()
-    vault_dir = repo_root / "agent-knowledge"
+    vault_dir = repo_root / "bedrock"
 
     if not vault_dir.is_dir():
-        msg = {"error": "No agent-knowledge vault found. Run: bedrock init"}
+        msg = {"error": "No bedrock vault found. Run: bedrock init"}
         if json_mode:
             click.echo(json_mod.dumps(msg))
         else:
@@ -952,16 +952,16 @@ def absorb(project: str, dry_run: bool, json_mode: bool, no_decisions: bool) -> 
     from agent_knowledge.runtime.absorb import run_absorb
 
     repo_path = Path(project).resolve()
-    vault_dir = repo_path / "agent-knowledge"
+    vault_dir = repo_path / "bedrock"
 
     if not vault_dir.exists():
         if json_mode:
             click.echo(
-                __import__("json").dumps({"error": "agent-knowledge vault not found; run: bedrock init"}),
+                __import__("json").dumps({"error": "bedrock vault not found; run: bedrock init"}),
                 err=False,
             )
         else:
-            click.secho("Error: agent-knowledge vault not found. Run: bedrock init", fg="red", err=True)
+            click.secho("Error: bedrock vault not found. Run: bedrock init", fg="red", err=True)
         raise SystemExit(1)
 
     if not json_mode:
@@ -1107,17 +1107,17 @@ def _link(src: Path, dst: Path, label: str, dry_run: bool) -> None:
 
 @main.command(name="migrate-to-local")
 @click.option("--project", default=".", type=click.Path(exists=True), help="Project repo root (default: cwd).")
-@click.option("--knowledge-home", default=None, help="agent-os home for reversed symlink (default: ~/agent-os/projects).")
+@click.option("--knowledge-home", default=None, help="bedrock home for reversed symlink (default: ~/agent-os/projects).")
 @click.option("--dry-run", is_flag=True, help="Preview changes without writing.")
 def migrate_to_local(project: str, knowledge_home: str | None, dry_run: bool) -> None:
     """Convert an existing external-vault project to local (in-repo) knowledge storage.
 
     \b
     What this does:
-      1. Reads the current external vault path from ./agent-knowledge (symlink).
-      2. Copies all vault content into ./agent-knowledge/ (real directory).
+      1. Reads the current external vault path from ./bedrock (symlink).
+      2. Copies all vault content into ./bedrock/ (real directory).
       3. Removes the old symlink and replaces it with the real directory.
-      4. Creates ~/agent-os/projects/<slug>/ as a symlink back to ./agent-knowledge/.
+      4. Creates ~/agent-os/projects/<slug>/ as a symlink back to ./bedrock/.
       5. Updates .agent-project.yaml to set vault_mode: local.
       6. Patches .gitignore with noisy-subfolder exclusions.
     """
@@ -1125,14 +1125,14 @@ def migrate_to_local(project: str, knowledge_home: str | None, dry_run: bool) ->
     import shutil
 
     repo_path = Path(project).resolve()
-    pointer = repo_path / "agent-knowledge"
+    pointer = repo_path / "bedrock"
 
     if not pointer.exists() and not pointer.is_symlink():
-        click.echo("Error: ./agent-knowledge does not exist in this project.", err=True)
+        click.echo("Error: ./bedrock does not exist in this project.", err=True)
         sys.exit(1)
 
     if pointer.exists() and not pointer.is_symlink():
-        click.echo("Already in local mode (./agent-knowledge is a real directory).", err=True)
+        click.echo("Already in local mode (./bedrock is a real directory).", err=True)
         sys.exit(0)
 
     external_vault = pointer.resolve()
@@ -1144,7 +1144,7 @@ def migrate_to_local(project: str, knowledge_home: str | None, dry_run: bool) ->
         return
 
     # Copy external vault content to a temp location, then swap
-    tmp = repo_path / ".agent-knowledge-migrating"
+    tmp = repo_path / ".bedrock-migrating"
     if tmp.exists():
         shutil.rmtree(tmp)
 
@@ -1211,7 +1211,110 @@ def migrate_to_local(project: str, knowledge_home: str | None, dry_run: bool) ->
 
     click.echo("", err=True)
     click.echo("Migration complete. The knowledge folder is now part of the repo.", err=True)
-    click.echo("Commit agent-knowledge/ (excluding the patterns added to .gitignore).", err=True)
+    click.echo("Commit bedrock/ (excluding the patterns added to .gitignore).", err=True)
+
+
+@main.command(name="migrate-vault")
+@click.option("--project", default=".", type=click.Path(exists=True), help="Project repo root (default: cwd).")
+@click.option("--dry-run", is_flag=True, help="Preview changes without writing.")
+def migrate_vault(project: str, dry_run: bool) -> None:
+    """Rename ./agent-knowledge/ to ./bedrock/ for projects created before v0.4.
+
+    \b
+    What this does:
+      1. Renames ./agent-knowledge/ to ./bedrock/.
+      2. Updates .agent-project.yaml paths.
+      3. Updates .gitignore patterns.
+      4. Updates ~/agent-os/projects/<slug> symlink if present.
+
+    Safe to run multiple times. If ./bedrock/ already exists, exits cleanly.
+    """
+    import re as _re
+    import shutil as _shutil
+
+    repo_path = Path(project).resolve()
+    old_vault = repo_path / "agent-knowledge"
+    new_vault = repo_path / "bedrock"
+
+    if not old_vault.exists() and not old_vault.is_symlink():
+        if new_vault.exists():
+            click.echo("Already using ./bedrock/ -- nothing to do.", err=True)
+        else:
+            click.echo("Neither ./agent-knowledge/ nor ./bedrock/ found. Run: bedrock init", err=True)
+        return
+
+    if new_vault.exists():
+        click.echo("./bedrock/ already exists. Remove it or merge manually before migrating.", err=True)
+        sys.exit(1)
+
+    click.echo("Migrating vault: ./agent-knowledge/ -> ./bedrock/", err=True)
+
+    if dry_run:
+        click.echo("(dry-run) would rename: agent-knowledge/ -> bedrock/", err=True)
+        click.echo("(dry-run) would update: .agent-project.yaml", err=True)
+        click.echo("(dry-run) would update: .gitignore", err=True)
+        return
+
+    try:
+        old_vault.rename(new_vault)
+    except OSError:
+        _shutil.copytree(str(old_vault), str(new_vault), symlinks=True)
+        _shutil.rmtree(str(old_vault))
+    click.echo("  renamed: agent-knowledge/ -> bedrock/", err=True)
+
+    # Update ~/agent-os/projects/<slug> symlink
+    project_yaml = repo_path / ".agent-project.yaml"
+    slug = repo_path.name
+    if project_yaml.is_file():
+        try:
+            m = _re.search(r"^\s*slug:\s*(\S+)", project_yaml.read_text(), _re.MULTILINE)
+            if m:
+                slug = m.group(1)
+        except Exception:
+            pass
+
+    agent_os_link = Path.home() / "agent-os" / "projects" / slug
+    if agent_os_link.is_symlink():
+        try:
+            if "agent-knowledge" in str(agent_os_link.resolve()):
+                agent_os_link.unlink()
+                agent_os_link.symlink_to(new_vault)
+                click.echo(f"  updated: {agent_os_link} -> {new_vault}", err=True)
+        except Exception as e:
+            click.echo(f"  warning: could not update {agent_os_link}: {e}", err=True)
+
+    # Update .agent-project.yaml
+    if project_yaml.is_file():
+        try:
+            text = project_yaml.read_text()
+            text = text.replace("./agent-knowledge", "./bedrock")
+            text = text.replace("/agent-knowledge/", "/bedrock/")
+            text = text.replace("agent-knowledge update", "bedrock update")
+            text = text.replace("agent-knowledge graphify-sync", "bedrock graphify-sync")
+            project_yaml.write_text(text)
+            click.echo("  updated: .agent-project.yaml", err=True)
+        except Exception as e:
+            click.echo(f"  warning: could not update .agent-project.yaml: {e}", err=True)
+
+    # Update .gitignore
+    gitignore = repo_path / ".gitignore"
+    if gitignore.is_file():
+        try:
+            text = gitignore.read_text()
+            if "agent-knowledge/" in text:
+                text = text.replace("agent-knowledge/", "bedrock/")
+                gitignore.write_text(text)
+                click.echo("  updated: .gitignore", err=True)
+        except Exception as e:
+            click.echo(f"  warning: could not update .gitignore: {e}", err=True)
+
+    click.echo("", err=True)
+    click.echo("Migration complete.", err=True)
+    click.echo("Next steps:", err=True)
+    click.echo("  1. bedrock refresh-system   (updates AGENTS.md, CLAUDE.md, Cursor rules)", err=True)
+    click.echo("  2. git rm -r --cached agent-knowledge/", err=True)
+    click.echo("  3. git add bedrock/ .agent-project.yaml .gitignore", err=True)
+    click.echo("  4. git commit -m \"chore: migrate vault agent-knowledge -> bedrock\"", err=True)
 
 
 @main.command(name="migrate-from-legacy")
@@ -1234,11 +1337,11 @@ def migrate_from_legacy(project: str, dry_run: bool) -> None:
     from agent_knowledge.runtime.refresh import run_refresh
 
     repo_root = Path(project).resolve()
-    vault_dir = repo_root / "agent-knowledge"
+    vault_dir = repo_root / "bedrock"
 
     if not vault_dir.is_dir():
         click.secho(
-            "No agent-knowledge vault found. Run: bedrock init", fg="red", err=True
+            "No bedrock vault found. Run: bedrock init", fg="red", err=True
         )
         raise SystemExit(1)
 
@@ -1273,7 +1376,7 @@ def setup(dry_run: bool) -> None:
     assets = get_assets_dir()
     home = Path.home()
 
-    click.echo("agent-knowledge: setting up global config", err=True)
+    click.echo("bedrock: setting up global config", err=True)
     if dry_run:
         click.echo("(dry-run mode)", err=True)
     click.echo("", err=True)

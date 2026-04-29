@@ -2,7 +2,7 @@
 
 This project uses bedrock for persistent project memory.
 Read the root `AGENTS.md` for knowledge management instructions.
-Check `./agent-knowledge/STATUS.md` for onboarding state.
+Check `./bedrock/STATUS.md` for onboarding state.
 
 If onboarding is pending, follow the instructions in the root AGENTS.md before other work.
 
@@ -20,10 +20,10 @@ This syncs memory branches, rolls up sessions, refreshes git evidence, updates t
 
 After completing meaningful work in a session:
 
-1. Write updated facts directly to `./agent-knowledge/Memory/<branch>.md`
+1. Write updated facts directly to `./bedrock/Memory/<branch>.md`
    - Update the relevant branch note
    - Add a dated entry to the `Recent Changes` section
-   - Update `./agent-knowledge/Memory/MEMORY.md` if branch summaries changed
+   - Update `./bedrock/Memory/MEMORY.md` if branch summaries changed
 2. Run `bedrock sync --project .` to propagate changes
 
 Write to memory when:
@@ -48,7 +48,7 @@ Do NOT write to memory for:
 
 ## Knowledge Structure
 
-- `./agent-knowledge/Memory/` -- Canonical project knowledge (write here)
-- `./agent-knowledge/Evidence/` -- Non-canonical: imports, extracts
-- `./agent-knowledge/Outputs/` -- Generated views (never canonical)
-- `./agent-knowledge/History/` -- Lightweight diary, events, releases
+- `./bedrock/Memory/` -- Canonical project knowledge (write here)
+- `./bedrock/Evidence/` -- Non-canonical: imports, extracts
+- `./bedrock/Outputs/` -- Generated views (never canonical)
+- `./bedrock/History/` -- Lightweight diary, events, releases

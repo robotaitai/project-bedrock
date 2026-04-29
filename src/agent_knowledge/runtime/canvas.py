@@ -1,4 +1,4 @@
-"""Optional Obsidian Canvas export for agent-knowledge vaults.
+"""Optional Obsidian Canvas export for bedrock vaults.
 
 Generates a .canvas file (Obsidian Canvas JSON) that shows the knowledge
 graph as a spatial canvas. Nodes are memory branch notes; edges are

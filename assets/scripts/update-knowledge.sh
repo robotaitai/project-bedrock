@@ -80,7 +80,7 @@ fi
 kc_load_project_context "$TARGET_PROJECT_ARG"
 
 if [ ! -e "$KNOWLEDGE_POINTER_PATH" ]; then
-    kc_fail "Missing ./agent-knowledge pointer. Run: bedrock init"
+    kc_fail "Missing ./bedrock pointer. Run: bedrock init"
 fi
 
 kc_require_knowledge_pointer
@@ -129,7 +129,7 @@ classify_path() {
     local existing=""
 
     case "$path" in
-        agent-knowledge/*)
+        bedrock/*)
             return 0
             ;;
         .github/workflows/*|deploy/*|deployment/*|infra/*)

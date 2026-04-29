@@ -1,0 +1,14 @@
+{"ts":"2026-04-29T16:50:44Z","type":"project_start","tool":"git","slug":"agent-knowledge","summary":"Project started (first commit: 2026-03-19, 61 total commits)"}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.3.2","tags":["v0.3.2"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.3.1","tags":["v0.3.1"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.3.0","tags":["v0.3.0"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.9","tags":["v0.2.9"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.8","tags":["v0.2.8"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.7","tags":["v0.2.7"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.6","tags":["v0.2.6"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.5","tags":["v0.2.5"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.4","tags":["v0.2.4"]}
+{"ts":"2026-04-29T16:50:44Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.2.3","tags":["v0.2.3"]}
+{"ts":"2026-04-29T16:50:44Z","type":"integration_cursor","tool":"cli","slug":"agent-knowledge","summary":"cursor integration detected"}
+{"ts":"2026-04-29T16:50:44Z","type":"integration_claude","tool":"cli","slug":"agent-knowledge","summary":"claude integration detected"}
+{"ts":"2026-04-29T16:50:44Z","type":"backfill","tool":"cli","slug":"agent-knowledge","summary":"History backfill: 61 commits, 10 releases, 2 integrations","tags":["v0.3.2","v0.3.1","v0.3.0","v0.2.9","v0.2.8"]}

@@ -1,4 +1,4 @@
-"""Local browser viewer for agent-knowledge vaults.
+"""Local browser viewer for bedrock vaults.
 
 Generates a self-contained HTML file that shows:
   - Project summary / STATUS
@@ -154,7 +154,7 @@ _HTML_TEMPLATE = """\
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>agent-knowledge: {project}</title>
+<title>bedrock: {project}</title>
 <style>
 *,*::before,*::after{{box-sizing:border-box;margin:0;padding:0}}
 :root{{
@@ -208,7 +208,7 @@ body{{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacS
 </head>
 <body>
 <div id="topbar">
-  <h1>agent-knowledge</h1>
+  <h1>bedrock</h1>
   <span style="color:var(--muted);font-size:13px">{project}</span>
   <input type="search" id="search" placeholder="Filter notes...">
   <span class="meta">Onboarding: {onboarding} &nbsp;|&nbsp; Generated: {generated}</span>

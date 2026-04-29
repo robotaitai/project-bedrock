@@ -1,0 +1,10 @@
+---
+note_type: capture
+timestamp: 2026-04-29T17:01:44Z
+source_tool: cli
+event_type: sync
+project_slug: agent-knowledge
+confidence: cli-confirmed
+---
+
+summary: Project sync: memory branches updated, git evidence extracted, history updated.

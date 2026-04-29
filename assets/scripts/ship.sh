@@ -169,7 +169,7 @@ if [ -z "$status_lines" ]; then
 fi
 
 if [ -z "$COMMIT_MESSAGE" ]; then
-    scope="$(printf '%s\n' "$changed_files" | awk -F/ 'NF { print $1 }' | grep -v '^agent-knowledge$' | awk '!seen[$0]++' | head -3 | paste -sd ', ' -)"
+    scope="$(printf '%s\n' "$changed_files" | awk -F/ 'NF { print $1 }' | grep -v '^bedrock$' | awk '!seen[$0]++' | head -3 | paste -sd ', ' -)"
     if [ -n "$scope" ]; then
         COMMIT_MESSAGE="chore: ship $scope updates"
     else

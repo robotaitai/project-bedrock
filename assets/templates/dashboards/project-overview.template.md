@@ -4,7 +4,7 @@ dashboard: project-overview
 project: <project-name>
 last_updated: <date>
 tags:
-  - agent-knowledge
+  - bedrock
   - dashboard
 ---
 

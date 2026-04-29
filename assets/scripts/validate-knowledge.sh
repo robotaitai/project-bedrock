@@ -79,7 +79,7 @@ check_required_dir() {
 }
 
 check_required_path "$AGENT_PROJECT_FILE" ".agent-project.yaml"
-check_required_dir "$KNOWLEDGE_POINTER_PATH" "agent-knowledge local handle"
+check_required_dir "$KNOWLEDGE_POINTER_PATH" "bedrock local handle"
 check_required_dir "$KNOWLEDGE_REAL_DIR" "real knowledge dir"
 check_required_path "$STATUS_FILE" "STATUS.md"
 check_required_path "$MEMORY_ROOT" "Memory/MEMORY.md"
@@ -98,19 +98,19 @@ fi
 
 pointer_resolved="$(kc_pointer_resolved_path || true)"
 if [ -z "$pointer_resolved" ]; then
-    ERRORS+=("Unable to resolve ./agent-knowledge as a local handle.")
+    ERRORS+=("Unable to resolve ./bedrock as a local handle.")
 elif [ "${VAULT_MODE:-external}" = "local" ]; then
-    # In local mode agent-knowledge/ is a real directory inside the repo -- OK
+    # In local mode bedrock/ is a real directory inside the repo -- OK
     if [ -L "$KNOWLEDGE_POINTER_PATH" ]; then
-        WARNINGS+=("vault_mode is 'local' but agent-knowledge is still a symlink. Run: bedrock migrate-to-local")
+        WARNINGS+=("vault_mode is 'local' but bedrock is still a symlink. Run: bedrock migrate-to-local")
     fi
 elif [ "$pointer_resolved" != "$KNOWLEDGE_REAL_DIR" ]; then
-    ERRORS+=("agent-knowledge resolves to $pointer_resolved but .agent-project.yaml expects $KNOWLEDGE_REAL_DIR")
+    ERRORS+=("bedrock resolves to $pointer_resolved but .agent-project.yaml expects $KNOWLEDGE_REAL_DIR")
 elif [ ! -L "$KNOWLEDGE_POINTER_PATH" ]; then
     if kc_is_windows_like; then
-        WARNINGS+=("agent-knowledge is not reported as a symlink; if this is a junction, verify it still points to the external knowledge folder.")
+        WARNINGS+=("bedrock is not reported as a symlink; if this is a junction, verify it still points to the external knowledge folder.")
     else
-        ERRORS+=("agent-knowledge must be a symlink to the external knowledge folder in canonical mode. Run: bedrock migrate-to-local to switch to local mode.")
+        ERRORS+=("bedrock must be a symlink to the external knowledge folder in canonical mode. Run: bedrock migrate-to-local to switch to local mode.")
     fi
 fi
 

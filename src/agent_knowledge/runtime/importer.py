@@ -1,4 +1,4 @@
-"""Clean web import for agent-knowledge vaults.
+"""Clean web import for bedrock vaults.
 
 Imports a URL or local HTML file as cleaned markdown evidence into
 Evidence/imports/. Strips navigation, ads, scripts, and boilerplate.

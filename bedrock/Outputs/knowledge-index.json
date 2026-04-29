@@ -1,0 +1,27 @@
+{
+  "generated": "2026-04-29T17:03:43Z",
+  "vault": "/Users/taio/code/agent-knowledge/bedrock",
+  "note_count": 2,
+  "notes": [
+    {
+      "path": "Evidence/raw/git-recent.md",
+      "title": "Recent Git History",
+      "note_type": "evidence",
+      "area": "",
+      "canonical": false,
+      "folder": "Evidence",
+      "is_branch_entry": false,
+      "summary": "Last 30 commits as of 2026-04-29. 5831ab2 docs: add Obsidian graph GIF to README Obsidian-Ready section dc0e73b chore: memory update -- v0.3.1/0.3.2 CLI rename and migration 9f47e48 feat: add migrate-..."
+    },
+    {
+      "path": "Outputs/knowledge-index.md",
+      "title": "Knowledge Index",
+      "note_type": "output",
+      "area": "",
+      "canonical": false,
+      "folder": "Outputs",
+      "is_branch_entry": false,
+      "summary": "> Generated output. Not canonical. Do not treat as Memory. Generated: 2026-04-29T17:01:44Z Total notes: 2 - Recent Git History Evidence/raw/git-recent.md Last 30 commits as of 2026-04-29. 5831ab2 docs..."
+    }
+  ]
+}

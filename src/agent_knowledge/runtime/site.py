@@ -1,4 +1,4 @@
-"""Static site generation for agent-knowledge vaults.
+"""Static site generation for bedrock vaults.
 
 Pipeline:
   1. build_site_data()  -> structured dict (knowledge.json)
@@ -973,7 +973,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <div id="root">
   <aside id="sidebar">
     <div class="sidebar-header">
-      <div class="sidebar-logo"><span class="sidebar-logo-mark">AK</span>agent-knowledge</div>
+      <div class="sidebar-logo"><span class="sidebar-logo-mark">BR</span>bedrock</div>
       <div class="sidebar-project-name">__PROJECT_NAME__</div>
       <div class="sidebar-meta" id="sidebar-meta"></div>
     </div>
@@ -1029,7 +1029,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
         <button class="gcz-btn" onclick="graphZoomOut()" title="Zoom out">−</button>
         <button class="gcz-btn" onclick="resetGraphView()" title="Reset view" style="font-size:10px">⊙</button>
       </div>
-      <div id="gc-empty" style="display:none">No nodes to display.<br>Adjust filters or run agent-knowledge sync first.</div>
+      <div id="gc-empty" style="display:none">No nodes to display.<br>Adjust filters or run bedrock sync first.</div>
     </div>
     </div><!-- /view-wrap -->
   </div><!-- /main -->

@@ -3,7 +3,7 @@ note_type: portfolio-obsidian-index
 status: active
 last_updated: <date>
 tags:
-  - agent-knowledge
+  - bedrock
   - portfolio
   - obsidian
 ---

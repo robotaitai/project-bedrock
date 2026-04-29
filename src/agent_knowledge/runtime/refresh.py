@@ -1,4 +1,4 @@
-"""Framework refresh for agent-knowledge project integrations.
+"""Framework refresh for bedrock project integrations.
 
 Refreshes project-level integration files (hooks, bridge files, AGENTS.md,
 .agent-project.yaml fields, STATUS.md fields) to match the currently installed
@@ -139,9 +139,9 @@ def _refresh_cursor_hooks(repo_root: Path, *, dry_run: bool) -> dict[str, Any]:
         return {"target": ".cursor/hooks.json", "action": "skip", "detail": "bundled template not found"}
 
     if not target.is_file():
-        return {"target": ".cursor/hooks.json", "action": "skip", "detail": "not installed; run: agent-knowledge init"}
+        return {"target": ".cursor/hooks.json", "action": "skip", "detail": "not installed; run: bedrock init"}
 
-    repo_abs = str(repo_root.resolve())
+    repo_abs = repo_root.resolve().as_posix()
     template_content = template_path.read_text().replace("<repo-path>", repo_abs)
     current_content = target.read_text(errors="replace")
 
@@ -159,26 +159,34 @@ def _refresh_cursor_hooks(repo_root: Path, *, dry_run: bool) -> dict[str, Any]:
 
 
 def _refresh_cursor_rule(repo_root: Path, *, dry_run: bool) -> dict[str, Any]:
-    """Refresh .cursor/rules/agent-knowledge.mdc from the bundled template."""
-    target = repo_root / ".cursor" / "rules" / "agent-knowledge.mdc"
-    template_path = get_assets_dir() / "templates" / "integrations" / "cursor" / "agent-knowledge.mdc"
-
-    if not target.is_file():
-        return {"target": ".cursor/rules/agent-knowledge.mdc", "action": "skip", "detail": "not installed; run: agent-knowledge init"}
+    """Refresh .cursor/rules/bedrock.mdc, migrating from agent-knowledge.mdc if needed."""
+    target = repo_root / ".cursor" / "rules" / "bedrock.mdc"
+    legacy = repo_root / ".cursor" / "rules" / "agent-knowledge.mdc"
+    template_path = get_assets_dir() / "templates" / "integrations" / "cursor" / "bedrock.mdc"
 
     if template_path.is_file():
         template = template_path.read_text()
     else:
-        # Fall back to the in-code constant from integrations
         from agent_knowledge.runtime.integrations import _CURSOR_RULE as _fallback
         template = _fallback
 
+    # Migrate legacy filename to bedrock.mdc
+    if legacy.is_file() and not target.is_file():
+        if dry_run:
+            return {"target": ".cursor/rules/bedrock.mdc", "action": "dry-run", "detail": "would rename agent-knowledge.mdc -> bedrock.mdc"}
+        legacy.rename(target)
+        action = _write(target, template, dry_run=False)
+        return {"target": ".cursor/rules/bedrock.mdc", "action": action, "detail": "renamed from agent-knowledge.mdc and refreshed"}
+
+    if not target.is_file():
+        return {"target": ".cursor/rules/bedrock.mdc", "action": "skip", "detail": "not installed; run: bedrock init"}
+
     current = target.read_text(errors="replace")
     if current.strip() == template.strip():
-        return {"target": ".cursor/rules/agent-knowledge.mdc", "action": "up-to-date", "detail": "rule is current"}
+        return {"target": ".cursor/rules/bedrock.mdc", "action": "up-to-date", "detail": "rule is current"}
 
     action = _write(target, template, dry_run=dry_run)
-    return {"target": ".cursor/rules/agent-knowledge.mdc", "action": action, "detail": "refreshed from bundled template"}
+    return {"target": ".cursor/rules/bedrock.mdc", "action": action, "detail": "refreshed from bundled template"}
 
 
 def _refresh_claude_settings(repo_root: Path, *, dry_run: bool) -> dict[str, Any]:
@@ -190,9 +198,9 @@ def _refresh_claude_settings(repo_root: Path, *, dry_run: bool) -> dict[str, Any
         return {"target": ".claude/settings.json", "action": "skip", "detail": "bundled template not found"}
 
     if not target.is_file():
-        return {"target": ".claude/settings.json", "action": "skip", "detail": "not installed; run: agent-knowledge init"}
+        return {"target": ".claude/settings.json", "action": "skip", "detail": "not installed; run: bedrock init"}
 
-    repo_abs = str(repo_root.resolve())
+    repo_abs = repo_root.resolve().as_posix()
     template_content = template_path.read_text().replace("<repo-path>", repo_abs)
     current_content = target.read_text(errors="replace")
 
@@ -218,7 +226,7 @@ def _refresh_claude_md(repo_root: Path, *, dry_run: bool) -> dict[str, Any]:
         return {"target": ".claude/CLAUDE.md", "action": "skip", "detail": "bundled template not found"}
 
     if not target.is_file():
-        return {"target": ".claude/CLAUDE.md", "action": "skip", "detail": "not installed; run: agent-knowledge init"}
+        return {"target": ".claude/CLAUDE.md", "action": "skip", "detail": "not installed; run: bedrock init"}
 
     template = template_path.read_text()
     current = target.read_text(errors="replace")
@@ -316,7 +324,7 @@ def _refresh_codex_agents_md(repo_root: Path, *, dry_run: bool) -> dict[str, Any
         return {"target": ".codex/AGENTS.md", "action": "skip", "detail": "bundled template not found"}
 
     if not target.is_file():
-        return {"target": ".codex/AGENTS.md", "action": "skip", "detail": "not installed; run: agent-knowledge init"}
+        return {"target": ".codex/AGENTS.md", "action": "skip", "detail": "not installed; run: bedrock init"}
 
     template = template_path.read_text()
     current = target.read_text(errors="replace")
@@ -392,7 +400,7 @@ def is_stale(repo_root: Path) -> tuple[bool, str | None, str]:
     Returns (stale, prior_version, current_version).
     `stale` is True when the project was last refreshed with an older version.
     """
-    vault_dir = repo_root / "agent-knowledge"
+    vault_dir = repo_root / "bedrock"
     if not vault_dir.is_dir():
         return False, None, __version__
 
@@ -437,7 +445,8 @@ def _git_latest_commit_date(repo_root: Path, paths: list[str]) -> str | None:
             ["git", "log", "-1", "--format=%cs", "--"] + paths,
             cwd=repo_root,
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             timeout=5,
         )
         date_str = result.stdout.strip()
@@ -457,7 +466,7 @@ def check_stale_notes(repo_root: Path) -> list[dict[str, str]]:
     Returns a list of warning dicts with keys: path, area, note_updated,
     last_src_commit, update_when.
     """
-    vault_dir = repo_root / "agent-knowledge" / "Memory"
+    vault_dir = repo_root / "bedrock" / "Memory"
     if not vault_dir.is_dir():
         return []
 
@@ -487,7 +496,7 @@ def check_stale_notes(repo_root: Path) -> list[dict[str, str]]:
 
         if last_src > note_updated:
             warnings.append({
-                "path": str(md_file.relative_to(repo_root / "agent-knowledge")),
+                "path": str(md_file.relative_to(repo_root / "bedrock")),
                 "area": area,
                 "note_updated": note_updated,
                 "last_src_commit": last_src,
@@ -516,10 +525,10 @@ def check_cursor_integration(repo_root: Path) -> dict[str, Any]:
     info: dict[str, Any] = {}
 
     # Rule
-    rule = repo_root / ".cursor" / "rules" / "agent-knowledge.mdc"
+    rule = repo_root / ".cursor" / "rules" / "bedrock.mdc"
     info["rule_installed"] = rule.is_file()
     if not rule.is_file():
-        issues.append("Missing .cursor/rules/agent-knowledge.mdc -- run: agent-knowledge refresh-system")
+        issues.append("Missing .cursor/rules/bedrock.mdc -- run: bedrock refresh-system")
 
     # Hooks
     hooks_file = repo_root / ".cursor" / "hooks.json"
@@ -534,14 +543,14 @@ def check_cursor_integration(repo_root: Path) -> dict[str, Any]:
             if missing_events:
                 issues.append(
                     f"Hooks missing events: {', '.join(sorted(missing_events))} "
-                    f"-- run: agent-knowledge refresh-system"
+                    f"-- run: bedrock refresh-system"
                 )
         except (json.JSONDecodeError, ValueError):
-            issues.append("Invalid .cursor/hooks.json -- run: agent-knowledge refresh-system")
+            issues.append("Invalid .cursor/hooks.json -- run: bedrock refresh-system")
             info["hook_events"] = []
             info["missing_hook_events"] = sorted(CURSOR_EXPECTED_HOOK_EVENTS)
     else:
-        issues.append("Missing .cursor/hooks.json -- run: agent-knowledge init")
+        issues.append("Missing .cursor/hooks.json -- run: bedrock init")
         info["hook_events"] = []
         info["missing_hook_events"] = sorted(CURSOR_EXPECTED_HOOK_EVENTS)
 
@@ -554,7 +563,7 @@ def check_cursor_integration(repo_root: Path) -> dict[str, Any]:
     if missing_commands:
         issues.append(
             f"Missing Cursor commands: {', '.join(missing_commands)} "
-            f"-- run: agent-knowledge refresh-system"
+            f"-- run: bedrock refresh-system"
         )
 
     return {
@@ -582,7 +591,7 @@ def check_claude_integration(repo_root: Path) -> dict[str, Any]:
     claude_md = repo_root / ".claude" / "CLAUDE.md"
     info["claude_md_installed"] = claude_md.is_file()
     if not claude_md.is_file():
-        issues.append("Missing .claude/CLAUDE.md -- run: agent-knowledge refresh-system")
+        issues.append("Missing .claude/CLAUDE.md -- run: bedrock refresh-system")
 
     # Settings (hooks)
     settings_file = repo_root / ".claude" / "settings.json"
@@ -598,14 +607,14 @@ def check_claude_integration(repo_root: Path) -> dict[str, Any]:
             if missing_events:
                 issues.append(
                     f"Settings missing hook events: {', '.join(sorted(missing_events))} "
-                    f"-- run: agent-knowledge refresh-system"
+                    f"-- run: bedrock refresh-system"
                 )
         except (json.JSONDecodeError, ValueError):
-            issues.append("Invalid .claude/settings.json -- run: agent-knowledge refresh-system")
+            issues.append("Invalid .claude/settings.json -- run: bedrock refresh-system")
             info["hook_events"] = []
             info["missing_hook_events"] = sorted(CLAUDE_EXPECTED_HOOK_EVENTS)
     else:
-        issues.append("Missing .claude/settings.json -- run: agent-knowledge init")
+        issues.append("Missing .claude/settings.json -- run: bedrock init")
         info["hook_events"] = []
         info["missing_hook_events"] = sorted(CLAUDE_EXPECTED_HOOK_EVENTS)
 
@@ -618,7 +627,7 @@ def check_claude_integration(repo_root: Path) -> dict[str, Any]:
     if missing_commands:
         issues.append(
             f"Missing Claude commands: {', '.join(missing_commands)} "
-            f"-- run: agent-knowledge refresh-system"
+            f"-- run: bedrock refresh-system"
         )
 
     return {
@@ -650,7 +659,7 @@ def run_refresh(
     from agent_knowledge.runtime.integrations import detect
 
     version = __version__
-    vault_dir = repo_root / "agent-knowledge"
+    vault_dir = repo_root / "bedrock"
     detected = detect(repo_root)
 
     # Snapshot prior version before any writes

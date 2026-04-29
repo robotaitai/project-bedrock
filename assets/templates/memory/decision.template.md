@@ -6,7 +6,7 @@ decision: <decision-slug>
 status: active
 date: <date>
 tags:
-  - agent-knowledge
+  - bedrock
   - decision
 ---
 

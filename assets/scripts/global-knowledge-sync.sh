@@ -65,9 +65,9 @@ TOOLING_EVIDENCE_DIR="$EVIDENCE_TOOLING_DIR"
 TOOLING_MEMORY_DIR="$MEMORY_DIR/tooling"
 TOOLING_INDEX="$TOOLING_MEMORY_DIR/INDEX.md"
 
-kc_ensure_dir "$TOOLING_EVIDENCE_DIR" "agent-knowledge/Evidence/tooling"
-kc_ensure_dir "$TOOLING_MEMORY_DIR" "agent-knowledge/Memory/tooling"
-kc_ensure_dir "$EVIDENCE_CACHE_DIR" "agent-knowledge/Evidence/.cache"
+kc_ensure_dir "$TOOLING_EVIDENCE_DIR" "bedrock/Evidence/tooling"
+kc_ensure_dir "$TOOLING_MEMORY_DIR" "bedrock/Memory/tooling"
+kc_ensure_dir "$EVIDENCE_CACHE_DIR" "bedrock/Evidence/.cache"
 
 is_allowlisted_tool_file() {
     local path="$1"
@@ -120,7 +120,7 @@ capture_tooling_evidence() {
 
     signature="$(kc_signature_from_paths "$src")"
     if kc_cache_is_current "global-tooling" "$name" "$signature" "$dst" "$meta_dst"; then
-        CACHED+=("agent-knowledge/Evidence/tooling/$name")
+        CACHED+=("bedrock/Evidence/tooling/$name")
         SCANNED+=("$src")
         TOOLING_FAMILIES="${TOOLING_FAMILIES}${family}"$'\n'
         TOOLING_FILES="${TOOLING_FILES}${family}|$name|$src"$'\n'
@@ -137,14 +137,14 @@ capture_tooling_evidence() {
         redact_tool_file "$src"
     } > "$tmp_file"
 
-    kc_apply_temp_file "$tmp_file" "$dst" "agent-knowledge/Evidence/tooling/$name"
+    kc_apply_temp_file "$tmp_file" "$dst" "bedrock/Evidence/tooling/$name"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
             changed=1
             ;;
     esac
 
-    kc_write_metadata_json "$meta_dst" "agent-knowledge/Evidence/tooling/$name.meta.json" "$src" "tooling-import" "EXTRACTED" "$GENERATED_AT" "$src" "Redacted allowlisted tooling surface captured for project-scoped reference."
+    kc_write_metadata_json "$meta_dst" "bedrock/Evidence/tooling/$name.meta.json" "$src" "tooling-import" "EXTRACTED" "$GENERATED_AT" "$src" "Redacted allowlisted tooling surface captured for project-scoped reference."
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
             changed=1
@@ -154,7 +154,7 @@ capture_tooling_evidence() {
     kc_cache_store "global-tooling" "$name" "$signature"
 
     if [ "$changed" -eq 1 ]; then
-        UPDATED+=("agent-knowledge/Evidence/tooling/$name")
+        UPDATED+=("bedrock/Evidence/tooling/$name")
     fi
     SCANNED+=("$src")
     TOOLING_FAMILIES="${TOOLING_FAMILIES}${family}"$'\n'
@@ -187,7 +187,7 @@ EOF
     [ -n "$entries" ] || entries="- No allowlisted sources were captured."
     signature="$(kc_signature_from_lines "$(printf '%s\n---\n%s\n---\n%s\n' "$family" "$title" "$entries")")"
     if kc_cache_is_current "global-tooling-note" "$family" "$signature" "$file_name"; then
-        CACHED+=("agent-knowledge/Memory/tooling/$family.md")
+        CACHED+=("bedrock/Memory/tooling/$family.md")
         return 0
     fi
 
@@ -210,10 +210,10 @@ EOF
         printf '## Subtopics\n\n%s\n' "$entries"
     } > "$tmp_file"
 
-    kc_apply_temp_file "$tmp_file" "$file_name" "agent-knowledge/Memory/tooling/$family.md"
+    kc_apply_temp_file "$tmp_file" "$file_name" "bedrock/Memory/tooling/$family.md"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
-            UPDATED+=("agent-knowledge/Memory/tooling/$family.md")
+            UPDATED+=("bedrock/Memory/tooling/$family.md")
             ;;
     esac
     kc_cache_store "global-tooling-note" "$family" "$signature"
@@ -237,7 +237,7 @@ EOF
     [ -n "$bullets" ] || bullets="- No allowlisted tooling sources were found."
     signature="$(kc_signature_from_lines "$bullets")"
     if kc_cache_is_current "global-tooling-note" "index" "$signature" "$TOOLING_INDEX"; then
-        CACHED+=("agent-knowledge/Memory/tooling/INDEX.md")
+        CACHED+=("bedrock/Memory/tooling/INDEX.md")
         return 0
     fi
 
@@ -258,14 +258,14 @@ EOF
         printf '## Subtopics\n\n%s\n' "$bullets"
     } > "$tmp_file"
 
-    kc_apply_temp_file "$tmp_file" "$TOOLING_INDEX" "agent-knowledge/Memory/tooling/INDEX.md"
+    kc_apply_temp_file "$tmp_file" "$TOOLING_INDEX" "bedrock/Memory/tooling/INDEX.md"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
-            UPDATED+=("agent-knowledge/Memory/tooling/INDEX.md")
+            UPDATED+=("bedrock/Memory/tooling/INDEX.md")
             ;;
     esac
     kc_cache_store "global-tooling-note" "index" "$signature"
-    kc_append_unique_bullet "$MEMORY_ROOT" "Subtopics" "- [Tooling](tooling/INDEX.md) - Redacted local tooling setup relevant to this project." "agent-knowledge/Memory/MEMORY.md"
+    kc_append_unique_bullet "$MEMORY_ROOT" "Subtopics" "- [Tooling](tooling/INDEX.md) - Redacted local tooling setup relevant to this project." "bedrock/Memory/MEMORY.md"
 }
 
 TOOLING_FAMILIES=""

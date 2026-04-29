@@ -1,11 +1,11 @@
 # Agent Knowledge: <project-name>
 
 This project uses **Project Bedrock** for persistent project memory.
-All knowledge is accessed through `./agent-knowledge/` (symlink to external vault).
+All knowledge is accessed through `./bedrock/` (symlink to external vault).
 
 ## First-Time Onboarding
 
-Check `./agent-knowledge/STATUS.md`. If `onboarding: pending`:
+Check `./bedrock/STATUS.md`. If `onboarding: pending`:
 
 1. Inspect project structure: manifests, package files, CI/CD config, docs
 2. Inspect project-local tool config: `.cursor/`, `.claude/`, `.codex/` if present
@@ -18,7 +18,7 @@ Check `./agent-knowledge/STATUS.md`. If `onboarding: pending`:
    and under ~150 lines. Do NOT put the whole system description in one file.
 7. Link related notes to each other with relative markdown links
 8. Update `Memory/MEMORY.md` with links to all new branches
-9. Update `./agent-knowledge/STATUS.md`: set `onboarding: complete`
+9. Update `./bedrock/STATUS.md`: set `onboarding: complete`
 
 ## Branch Convention
 
@@ -71,7 +71,7 @@ bedrock sync --project .
 
 ## Memory Maintenance
 
-After meaningful work, update `./agent-knowledge/Memory/` directly:
+After meaningful work, update `./bedrock/Memory/` directly:
 
 1. Edit the relevant branch note (`Memory/cli.md`, `Memory/architecture.md`, etc.)
    - Update `Current State` with confirmed facts (replace stale entries, no duplicates)

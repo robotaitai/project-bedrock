@@ -1,7 +1,7 @@
 # Evidence/captures/
 
-Lightweight capture stream of project events. Auto-written by `agent-knowledge sync`,
-`agent-knowledge update`, and hook-triggered maintenance flows.
+Lightweight capture stream of project events. Auto-written by `bedrock sync`,
+`bedrock update`, and hook-triggered maintenance flows.
 
 ## What lives here
 
@@ -27,5 +27,5 @@ Each file is a small structured YAML record of one event:
 
 ## Pruning
 
-Captures accumulate over time. Prune periodically with `agent-knowledge compact`.
+Captures accumulate over time. Prune periodically with `bedrock compact`.
 The compact command leaves at least 30 recent captures and removes the rest.

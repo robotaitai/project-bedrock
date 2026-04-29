@@ -26,7 +26,7 @@ def _today() -> str:
 
 
 # ---------------------------------------------------------------------------
-# 1. Memory branch sync: agent_docs/memory/ -> agent-knowledge/Memory/
+# 1. Memory branch sync: agent_docs/memory/ -> bedrock/Memory/
 # ---------------------------------------------------------------------------
 
 def sync_memory_branches(
@@ -45,7 +45,7 @@ def sync_memory_branches(
     Returns a list of action strings for reporting.
     """
     src_dir = repo / "agent_docs" / "memory"
-    dst_dir = repo / "agent-knowledge" / "Memory"
+    dst_dir = repo / "bedrock" / "Memory"
     actions: list[str] = []
 
     if not src_dir.is_dir():
@@ -53,7 +53,7 @@ def sync_memory_branches(
         return actions
 
     if not dst_dir.is_dir():
-        actions.append("skip: agent-knowledge/Memory/ not found")
+        actions.append("skip: bedrock/Memory/ not found")
         return actions
 
     import shutil
@@ -107,14 +107,15 @@ def extract_git_log(
     count: int = 30,
 ) -> list[str]:
     """Run git log and write recent commits to Evidence/raw/git-recent.md."""
-    evidence_dir = repo / "agent-knowledge" / "Evidence" / "raw"
+    evidence_dir = repo / "bedrock" / "Evidence" / "raw"
     actions: list[str] = []
 
     try:
         result = subprocess.run(
             ["git", "log", f"--oneline", f"-{count}", "--no-decorate"],
             capture_output=True,
-            text=True,
+            encoding="utf-8",
+            errors="replace",
             cwd=str(repo),
             timeout=10,
         )
@@ -164,7 +165,7 @@ Last {count} commits as of {_today()}.
 
 def stamp_status(repo: Path, field: str) -> None:
     """Update a timestamp field in STATUS.md frontmatter."""
-    status_path = repo / "agent-knowledge" / "STATUS.md"
+    status_path = repo / "bedrock" / "STATUS.md"
     if not status_path.is_file():
         return
 
@@ -200,7 +201,7 @@ def _record_sync_capture(
     """Record a sync event in Evidence/captures/."""
     from .capture import record as capture_record
 
-    vault = repo / "agent-knowledge"
+    vault = repo / "bedrock"
     captures_dir = vault / "Evidence" / "captures"
 
     # Derive touched branches from memory-sync actions (e.g. "updated: Memory/stack.md")
@@ -242,9 +243,9 @@ def _regenerate_index(repo: Path, *, dry_run: bool = False) -> list[str]:
     """Regenerate Outputs/knowledge-index.json and .md."""
     from .index import write_index
 
-    vault = repo / "agent-knowledge"
+    vault = repo / "bedrock"
     if not vault.is_dir():
-        return ["  skip: agent-knowledge vault not found"]
+        return ["  skip: bedrock vault not found"]
 
     return write_index(vault, dry_run=dry_run)
 
@@ -255,7 +256,7 @@ def _regenerate_index(repo: Path, *, dry_run: bool = False) -> list[str]:
 
 def _update_history(repo: Path, *, dry_run: bool = False) -> list[str]:
     """Run an incremental history backfill. Cheap when nothing is new (dedup by tag)."""
-    vault = repo / "agent-knowledge"
+    vault = repo / "bedrock"
     if not vault.is_dir():
         return ["  skip: vault not found"]
 

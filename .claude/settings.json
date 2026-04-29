@@ -6,7 +6,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agent-knowledge sync --project /home/itai/code/agent-knowledge && agent-knowledge refresh-system --project /home/itai/code/agent-knowledge"
+            "command": "agent-knowledge sync --project /Users/taio/code/agent-knowledge && agent-knowledge refresh-system --project /Users/taio/code/agent-knowledge"
           }
         ]
       }
@@ -17,7 +17,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agent-knowledge sync --project /home/itai/code/agent-knowledge"
+            "command": "agent-knowledge sync --project /Users/taio/code/agent-knowledge"
           }
         ]
       }
@@ -28,7 +28,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "agent-knowledge sync --project /home/itai/code/agent-knowledge"
+            "command": "agent-knowledge sync --project /Users/taio/code/agent-knowledge"
           }
         ]
       }

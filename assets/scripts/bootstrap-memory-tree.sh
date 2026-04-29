@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Bootstrap a minimal project knowledge tree under ./agent-knowledge/.
+# Bootstrap a minimal project knowledge tree under ./bedrock/.
 #
 # Usage:
 #   ./bootstrap-memory-tree.sh [project-dir] [profile]
@@ -27,9 +27,9 @@ AGENTS_RULES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 # shellcheck source=/dev/null
 . "$SCRIPT_DIR/lib/knowledge-common.sh"
 TEMPLATES_DIR="$AGENTS_RULES_DIR/templates/memory"
-PROJECT_TEMPLATE_DIR="$AGENTS_RULES_DIR/templates/project/agent-knowledge"
+PROJECT_TEMPLATE_DIR="$AGENTS_RULES_DIR/templates/project/bedrock"
 DASHBOARD_TEMPLATES_DIR="$AGENTS_RULES_DIR/templates/dashboards"
-STATUS_TEMPLATE="$AGENTS_RULES_DIR/templates/project/agent-knowledge/STATUS.md"
+STATUS_TEMPLATE="$AGENTS_RULES_DIR/templates/project/bedrock/STATUS.md"
 
 TARGET_PROJECT_ARG="."
 PROFILE=""
@@ -82,7 +82,8 @@ fi
 kc_load_project_context "$TARGET_PROJECT_ARG"
 DATE="$(kc_today)"
 
-[ -L "$KNOWLEDGE_POINTER_PATH" ] || kc_fail "Bootstrap requires ./agent-knowledge to already be a pointer to the external knowledge folder. Run: bedrock init"
+{ [ -L "$KNOWLEDGE_POINTER_PATH" ] || [ "${VAULT_MODE:-}" = "local" ] || kc_is_windows_like; } || \
+    kc_fail "Bootstrap requires ./bedrock to already be a pointer to the external knowledge folder. Run: bedrock init"
 
 # ---------------------------------------------------------------------------
 # Profile detection (hint only -- does not drive file creation)
@@ -282,25 +283,25 @@ done
 # Copy static templates (no INDEX.md -- uses STATUS.md + MEMORY.md as entries)
 # ---------------------------------------------------------------------------
 
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/README.md" "$EVIDENCE_DIR/README.md" "agent-knowledge/Evidence/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/raw/README.md" "$EVIDENCE_RAW_DIR/README.md" "agent-knowledge/Evidence/raw/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/imports/README.md" "$EVIDENCE_IMPORTS_DIR/README.md" "agent-knowledge/Evidence/imports/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/captures/README.md" "$EVIDENCE_CAPTURES_DIR/README.md" "agent-knowledge/Evidence/captures/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Outputs/README.md" "$OUTPUTS_DIR/README.md" "agent-knowledge/Outputs/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Templates/README.md" "$LOCAL_TEMPLATES_DIR/README.md" "agent-knowledge/Templates/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/.obsidian/README.md" "$OBSIDIAN_DIR/README.md" "agent-knowledge/.obsidian/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Memory/decisions/decisions.md" "$DECISIONS_DIR/decisions.md" "agent-knowledge/Memory/decisions/decisions.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/README.md" "$EVIDENCE_DIR/README.md" "bedrock/Evidence/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/raw/README.md" "$EVIDENCE_RAW_DIR/README.md" "bedrock/Evidence/raw/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/imports/README.md" "$EVIDENCE_IMPORTS_DIR/README.md" "bedrock/Evidence/imports/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/captures/README.md" "$EVIDENCE_CAPTURES_DIR/README.md" "bedrock/Evidence/captures/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Outputs/README.md" "$OUTPUTS_DIR/README.md" "bedrock/Outputs/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Templates/README.md" "$LOCAL_TEMPLATES_DIR/README.md" "bedrock/Templates/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/.obsidian/README.md" "$OBSIDIAN_DIR/README.md" "bedrock/.obsidian/README.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Memory/decisions/decisions.md" "$DECISIONS_DIR/decisions.md" "bedrock/Memory/decisions/decisions.md"
 
-kc_copy_file "$PROJECT_TEMPLATE_DIR/.obsidian/core-plugins.json" "$OBSIDIAN_DIR/core-plugins.json" "agent-knowledge/.obsidian/core-plugins.json"
+kc_copy_file "$PROJECT_TEMPLATE_DIR/.obsidian/core-plugins.json" "$OBSIDIAN_DIR/core-plugins.json" "bedrock/.obsidian/core-plugins.json"
 case "$KC_LAST_ACTION" in
     created|updated|would-create|would-update)
-        CHANGES+=("agent-knowledge/.obsidian/core-plugins.json")
+        CHANGES+=("bedrock/.obsidian/core-plugins.json")
         ;;
 esac
-kc_copy_file "$PROJECT_TEMPLATE_DIR/.obsidian/app.json" "$OBSIDIAN_DIR/app.json" "agent-knowledge/.obsidian/app.json"
+kc_copy_file "$PROJECT_TEMPLATE_DIR/.obsidian/app.json" "$OBSIDIAN_DIR/app.json" "bedrock/.obsidian/app.json"
 case "$KC_LAST_ACTION" in
     created|updated|would-create|would-update)
-        CHANGES+=("agent-knowledge/.obsidian/app.json")
+        CHANGES+=("bedrock/.obsidian/app.json")
         ;;
 esac
 
@@ -311,13 +312,13 @@ esac
 kc_replace_in_template \
     "$STATUS_TEMPLATE" \
     "$STATUS_FILE" \
-    "agent-knowledge/STATUS.md" \
+    "bedrock/STATUS.md" \
     "<project-name>" "$PROJECT_NAME" \
     "<profile-type>" "$PROFILE" \
     "<absolute-path-to-dedicated-knowledge-folder>" "$KNOWLEDGE_REAL_DIR"
 case "$KC_LAST_ACTION" in
     created|updated|would-create|would-update)
-        CHANGES+=("agent-knowledge/STATUS.md")
+        CHANGES+=("bedrock/STATUS.md")
         ;;
 esac
 
@@ -328,7 +329,7 @@ esac
 render_dashboard_note \
     "$DASHBOARD_TEMPLATES_DIR/project-overview.template.md" \
     "$DASHBOARDS_DIR/project-overview.md" \
-    "agent-knowledge/Dashboards/project-overview.md"
+    "bedrock/Dashboards/project-overview.md"
 # ---------------------------------------------------------------------------
 # Memory/MEMORY.md (minimal -- agent infers branches later)
 # ---------------------------------------------------------------------------
@@ -343,7 +344,7 @@ render_text_template \
     "$(printf -- '- Add branch links here as the agent infers project structure.')"
 case "$KC_LAST_ACTION" in
     created|updated|would-create|would-update)
-        CHANGES+=("agent-knowledge/Memory/MEMORY.md")
+        CHANGES+=("bedrock/Memory/MEMORY.md")
         ;;
 esac
 

@@ -1,0 +1,13 @@
+---
+description: bedrock -- project memory contract, always active
+alwaysApply: true
+---
+
+This project uses **bedrock** for persistent memory.
+All knowledge lives in `./bedrock/`.
+
+## On session start
+
+1. Read `./bedrock/STATUS.md`
+2. If `onboarding: pending`, read `AGENTS.md` and follow the First-Time Onboarding instructions
+3. If `onboarding: complete`, read `./bedrock/Memory/MEMORY.md` for project context

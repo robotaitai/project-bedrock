@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Connect a project repo to a dedicated knowledge folder through ./agent-knowledge.
+# Connect a project repo to a dedicated knowledge folder through ./bedrock.
 #
 # Supported forms:
 #   ./install-project-links.sh --slug <slug> --repo <repo-path>
@@ -25,11 +25,11 @@ Usage:
   scripts/install-project-links.sh --slug <slug> --repo <repo-path> [--external] [--knowledge-home <dir>] [--real-path <dir>] [--install-hooks] [--dry-run] [--json] [--summary-file <file>]
 
 Modes:
-  default (local):  knowledge lives in ./agent-knowledge/ (in the repo,
+  default (local):  knowledge lives in ./bedrock/ (in the repo,
                     git-tracked). ~/agent-os/projects/<slug>/ is a symlink
                     pointing back to the repo folder.
   --external:       knowledge lives in ~/agent-os/projects/<slug>/,
-                    ./agent-knowledge is a symlink to that folder.
+                    ./bedrock is a symlink to that folder.
 
 Notes:
   - Existing valid setup is left alone unless --force is provided.
@@ -133,8 +133,8 @@ TARGET_PROJECT="$REPO_PATH"
 PROJECT_NAME="$(basename "$TARGET_PROJECT")"
 PROJECT_SLUG="$PROJECT_SLUG_ARG"
 KNOWLEDGE_REAL_DIR="$REAL_PATH_ARG"
-KNOWLEDGE_POINTER_PATH="$TARGET_PROJECT/agent-knowledge"
-POINTER_DISPLAY="./agent-knowledge"
+KNOWLEDGE_POINTER_PATH="$TARGET_PROJECT/bedrock"
+POINTER_DISPLAY="./bedrock"
 AGENT_PROJECT_FILE="$TARGET_PROJECT/.agent-project.yaml"
 AGENTS_FILE="$TARGET_PROJECT/AGENTS.md"
 IGNORE_FILE="$TARGET_PROJECT/.agentknowledgeignore"
@@ -146,19 +146,19 @@ kc_log "  slug: $PROJECT_SLUG"
 
 if [ "$LOCAL_MODE" -eq 1 ]; then
     # ── Local mode: knowledge lives in the repo, agent-os symlink points back ──
-    KNOWLEDGE_REAL_DIR="$TARGET_PROJECT/agent-knowledge"
+    KNOWLEDGE_REAL_DIR="$TARGET_PROJECT/bedrock"
     kc_log "  mode: local (knowledge in repo)"
     kc_log "  real knowledge path: $KNOWLEDGE_REAL_DIR"
 
-    # Create ./agent-knowledge/ as a real directory
-    kc_ensure_dir "$KNOWLEDGE_REAL_DIR" "agent-knowledge/"
+    # Create ./bedrock/ as a real directory
+    kc_ensure_dir "$KNOWLEDGE_REAL_DIR" "bedrock/"
     case "$KC_LAST_ACTION" in
         created|would-create)
             CHANGES+=("knowledge-dir")
             ;;
     esac
 
-    # Create the reversed symlink: ~/agent-os/projects/<slug>/ → ./agent-knowledge/
+    # Create the reversed symlink: ~/agent-os/projects/<slug>/ → ./bedrock/
     AGENT_OS_LINK="$KNOWLEDGE_HOME/$PROJECT_SLUG"
     if [ "$DRY_RUN" -eq 0 ]; then
         if [ ! -e "$AGENT_OS_LINK" ] && [ ! -L "$AGENT_OS_LINK" ]; then
@@ -192,7 +192,7 @@ else
         KNOWLEDGE_REAL_DIR="$(cd "$KNOWLEDGE_REAL_DIR" 2>/dev/null && pwd -P)"
     fi
 
-    kc_ensure_symlink "$KNOWLEDGE_REAL_DIR" "$KNOWLEDGE_POINTER_PATH" "agent-knowledge"
+    kc_ensure_symlink "$KNOWLEDGE_REAL_DIR" "$KNOWLEDGE_POINTER_PATH" "bedrock"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
             CHANGES+=("pointer")
@@ -233,7 +233,7 @@ else
 fi
 
 if [ ! -f "$TARGET_PROJECT/.gitignore" ]; then
-    kc_copy_file "$PROJECT_TEMPLATE_DIR/gitignore.agent-knowledge" "$TARGET_PROJECT/.gitignore" ".gitignore"
+    kc_copy_file "$PROJECT_TEMPLATE_DIR/gitignore.bedrock" "$TARGET_PROJECT/.gitignore" ".gitignore"
     case "$KC_LAST_ACTION" in
         created|updated|would-create|would-update)
             CHANGES+=(".gitignore")

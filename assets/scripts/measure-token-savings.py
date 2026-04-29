@@ -208,7 +208,7 @@ def measure_paths(
 
 def resolve_measurement_dir(project: str | None) -> Path:
     project_root = Path(project or ".").expanduser().absolute()
-    knowledge_outputs = project_root / "agent-knowledge" / "Outputs" / "token-measurements"
+    knowledge_outputs = project_root / "bedrock" / "Outputs" / "token-measurements"
     if knowledge_outputs.parent.exists():
         return knowledge_outputs
     return project_root / "token-measurements"
@@ -469,7 +469,7 @@ def build_parser() -> argparse.ArgumentParser:
     log_run.add_argument("--notes", help="Optional note saved with the log entry.")
     log_run.add_argument(
         "--log-file",
-        help="Optional JSONL log path. Defaults to agent-knowledge/Outputs/token-measurements/task-run-log.jsonl when available.",
+        help="Optional JSONL log path. Defaults to bedrock/Outputs/token-measurements/task-run-log.jsonl when available.",
     )
 
     summarize = subparsers.add_parser(
@@ -481,7 +481,7 @@ def build_parser() -> argparse.ArgumentParser:
     summarize.add_argument("--task", help="Optional task filter.")
     summarize.add_argument(
         "--log-file",
-        help="Optional JSONL log path. Defaults to agent-knowledge/Outputs/token-measurements/task-run-log.jsonl when available.",
+        help="Optional JSONL log path. Defaults to bedrock/Outputs/token-measurements/task-run-log.jsonl when available.",
     )
     summarize.add_argument("--report-file", help="Optional JSON report path.")
 

@@ -4,7 +4,7 @@ project: <project-name>
 profile_hint: <profile-type>
 ontology_model: 2
 real_knowledge_path: <absolute-path-to-dedicated-knowledge-folder>
-local_pointer_path: ./agent-knowledge
+local_pointer_path: ./bedrock
 last_bootstrap:
 onboarding: pending
 last_backfill_import:
@@ -22,7 +22,7 @@ last_doctor_result: unknown
 
 - Profile hint: `<profile-type>`
 - Real knowledge path: `<absolute-path-to-dedicated-knowledge-folder>`
-- Local pointer path: `./agent-knowledge`
+- Local pointer path: `./bedrock`
 - Onboarding: `pending`
 
 ## Activity

@@ -256,4 +256,4 @@ All write commands support `--dry-run` and `--json`. Run `bedrock --help` for th
 
 ## Star History
 
-[![Star History Chart](https://api.star-history.com/svg?repos=robotaitai/agent-knowledge&type=Date)](https://star-history.com/#robotaitai/agent-knowledge&Date)
+[![Star History Chart](https://api.star-history.com/svg?repos=robotaitai/project-bedrock&type=Date)](https://star-history.com/#robotaitai/project-bedrock&Date)

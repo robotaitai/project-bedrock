@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: packaging
-updated: 2026-04-29
+updated: 2026-04-30
 tags:
   - agent-knowledge
   - memory
@@ -34,7 +34,7 @@ See [[architecture#Path Resolution]] for how the code finds these at runtime.
 
 ## Version
 
-Current: **0.4.0** (tagged `v0.4.0`). PyPI package name: `project-bedrock`. See [[deployments]].
+Current: **0.4.1** (tagged `v0.4.1`). PyPI package name: `project-bedrock`. See [[deployments]].
 
 Install: `pip install project-bedrock` or `pipx install project-bedrock`. Command: `bedrock`.
 
@@ -52,6 +52,7 @@ See [[stack#Dependencies]] for the full list.
 - 2026-04-28: CLI primary command renamed from `agent-knowledge` to `bedrock`; `agent-knowledge` kept as deprecated alias (v0.3.1).
 - 2026-04-28: `migrate-from-legacy` command added to help existing users migrate (v0.3.2). `pipx install project-bedrock` recommended for global install.
 - 2026-04-29: v0.4.0 — vault folder renamed `agent-knowledge/` → `bedrock/` everywhere. `migrate-vault` command added for existing users. Windows compatibility fixes (bash detection, JSON paths, UTF-8 git output).
+- 2026-04-30: v0.4.1 — `completion`, `upgrade`, `/compact-context` commands added. Specialist commands hidden from `--help`. CI tests fixed for v0.4.0 rename.
 
 ## See Also
 

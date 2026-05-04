@@ -1,16 +1,15 @@
 ---
 note_type: evidence
 source: git-log
-extracted: 2026-05-04T13:17:43Z
+extracted: 2026-05-04T21:53:47Z
 commits: 30
 ---
 
 # Recent Git History
 
-Last 30 commits as of 2026-05-04.
+Last 30 commits as of 2026-05-05.
 
 ```
-a509a8a feat: Mermaid diagram support in site.py + diagrams in memory notes
 59d36e6 fix: unhide migrate-vault/migrate-from-legacy; add migration hint to CLAUDE.md template; bump v0.4.2
 3416010 docs: rework README for Windows support, v0.4.0 vault rename, Codex as first-class
 06600a4 docs: upgrade Windows to full support in compatibility matrix (v0.4.0 fixes)
@@ -40,4 +39,5 @@ edfa361 docs: split README -- move reference sections to docs/reference.md, link
 038cf67 docs: stretch tour GIF to full page width
 c973629 docs: add star history chart to README
 c165a3f fix: graph no longer re-animates when returning to tab; elastic drag restored
+b421cd7 docs: add agent-knowledge-tour.gif demo to README
 ```

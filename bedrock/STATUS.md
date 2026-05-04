@@ -7,15 +7,15 @@ real_knowledge_path: /Users/taio/agent-os/projects/agent-knowledge
 local_pointer_path: ./agent-knowledge
 onboarding: complete
 last_bootstrap: 2026-04-08T19:43:34Z
-last_backfill_import: 2026-05-04
-last_project_sync: 2026-05-04T13:17:43Z
+last_backfill_import: 2026-05-05
+last_project_sync: 2026-05-04T21:53:47Z
 last_compaction: 
 last_validation: 2026-04-23T17:52:35Z
 last_validation_result: warn
 last_doctor: 2026-04-28T08:07:53Z
 last_doctor_result: warn
-framework_version: 0.3.0
-last_system_refresh: 2026-04-28T08:33:04Z
+framework_version: 0.4.1
+last_system_refresh: 2026-04-30T07:57:03Z
 
 ---
 
@@ -33,7 +33,7 @@ last_system_refresh: 2026-04-28T08:33:04Z
 
 - Last bootstrap: `2026-04-08T19:43:34Z`
 - Last backfill/import: `2026-04-26`
-- Last project sync: `2026-05-04T13:17:43Z`
+- Last project sync: `2026-05-04T21:53:47Z`
 - Last compaction: `not-yet`
 - Last validation: `2026-04-23T17:52:35Z` (`warn`)
 - Last doctor: `2026-04-28T08:07:53Z` (`warn`)

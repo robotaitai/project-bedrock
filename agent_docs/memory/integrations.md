@@ -75,6 +75,16 @@ flowchart TD
 
 No manual `next-prompt` command needed.
 
+## Windows Support (v0.4.0+)
+
+Windows is fully supported as of v0.4.0:
+- `shell.py`: auto-detects Git Bash (`git-for-Windows`) on PATH and known install paths
+- `integrations.py`, `refresh.py`: forward-slash paths in all generated JSON (backslash fix)
+- `sync.py`, `history.py`, `refresh.py`: `encoding="utf-8"` on all git subprocess calls
+- `bootstrap-memory-tree.sh`: symlink check skipped on Windows / local vault mode
+
+Not in CI matrix (ubuntu + macos only), but core functionality is covered by these targeted fixes.
+
 ## PATH Conflict Gotcha
 
 Multiple tools can install an `agent-knowledge` binary. Graphify (Node.js) installs one at `~/.nvm/versions/node/<version>/bin/agent-knowledge` which may shadow our Python CLI. Fix: add Python bin to PATH before nvm — `export PATH="/Users/taio/Library/Python/3.13/bin:$PATH"`. Or invoke directly: `python3 -m agent_knowledge`.

@@ -1,6 +1,6 @@
 ---
 note_type: output
-generated: 2026-05-04T13:17:43Z
+generated: 2026-05-04T21:53:47Z
 canonical: false
 ---
 
@@ -8,7 +8,7 @@ canonical: false
 
 > Generated output. Not canonical. Do not treat as Memory.
 
-Generated: 2026-05-04T13:17:43Z  
+Generated: 2026-05-04T21:53:47Z  
 Total notes: 14
 
 ## Memory [canonical]
@@ -41,10 +41,10 @@ Total notes: 14
 ## Evidence [non-canonical]
 
 - **Recent Git History** `Evidence/raw/git-recent.md`
-  Last 30 commits as of 2026-05-04. a509a8a feat: Mermaid diagram support in site.py + diagrams in memory notes 59d36e6 fi...
+  Last 30 commits as of 2026-05-05. 59d36e6 fix: unhide migrate-vault/migrate-from-legacy; add migration hint to CLAUDE.md...
 
 ## Outputs [non-canonical]
 
 - **Knowledge Index** `Outputs/knowledge-index.md`
-  > Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-04T13:14:34Z Total notes: 14 - Memory Memo...
+  > Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-04T21:52:28Z Total notes: 14 - Memory Memo...
 

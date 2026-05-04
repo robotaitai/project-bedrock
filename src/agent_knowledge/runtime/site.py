@@ -1290,7 +1290,7 @@ function _allNotes(){
 function findNoteBySlug(target){
   const slug=target.toLowerCase().trim();
   return _allNotes().find(n=>{
-    const stem=(n.path||'').split('/').pop().replace(/\\.md$/i,'').toLowerCase();
+    const stem=(n.path||'').split('/').pop().replace(/\.md$/i,'').toLowerCase();
     return stem===slug || (n.title||'').toLowerCase()===slug;
   })||null;
 }

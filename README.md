@@ -40,10 +40,10 @@ It works like the operating discipline of a strong team lead:
 - the project becomes easier to understand over time, not harder
 
 With one command, your project gets:
-- structured memory for architecture, decisions, conventions, and history
-- project-local integration for **Claude Code**, **Cursor**, and **Codex**
-- lightweight git-friendly markdown that lives with the repo
-- HTML, graph, and Obsidian-ready views of what the project knows
+- STRUCTURED MEMORY for architecture, decisions, conventions, and history
+- PROJECT-LOCAL integration for **Claude Code**, **Cursor**, and **Codex**
+- lightweight git-friendly markdown that LIVES WITH THE REPO
+- HTML, graph, and Obsidian-ready VIEWS of what the project knows
 
 Under the hood, it is just markdown files and a CLI.  
 No database. No server. No hosted backend. No black box.
@@ -52,8 +52,20 @@ No database. No server. No hosted backend. No black box.
 
 ## 📦 Install
 
+**Option A — let your agent do it** (no pip knowledge needed):
+
+Paste this into Claude Code, Cursor, or any capable agent:
+
+```
+Install the `project-bedrock` CLI on this machine so `bedrock --version` works. Handle Python and pipx installation if missing. Fix any errors along the way. Don't stop until it's working.
+```
+
+The agent detects your OS, installs Python + pipx if needed, installs the package, and verifies it. Works on macOS, Linux, and Windows.
+
+**Option B — manual:**
+
 ```bash
-pip install project-bedrock
+pip install project-bedrock        # or: pipx install project-bedrock
 ```
 
 > **PyPI:** `project-bedrock` &nbsp;&middot;&nbsp; **CLI:** `bedrock` &nbsp;&middot;&nbsp; **alias:** `agent-knowledge` (deprecated)
@@ -62,12 +74,20 @@ pip install project-bedrock
 
 ## 🚀 Quick Start
 
+**1. Initialize the project** (run once in your project folder):
+
 ```bash
 cd your-project
 bedrock init
 ```
 
-**That's it.** Open the project in Claude Code or Cursor and the agent has persistent memory automatically -- no manual prompting, no config, no setup.
+**2. Onboard your agent** — paste this into chat:
+
+```
+Read AGENTS.md and ./bedrock/STATUS.md, then onboard this project.
+```
+
+**That's it.** The agent reads the project structure, writes stable knowledge into `Memory/`, and every future session starts with full context automatically.
 
 <details>
 <summary><b>What <code>init</code> does in one shot</b></summary>

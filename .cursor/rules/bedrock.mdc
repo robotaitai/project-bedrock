@@ -11,3 +11,11 @@ All knowledge lives in `./bedrock/`.
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending`, read `AGENTS.md` and follow the First-Time Onboarding instructions
 3. If `onboarding: complete`, read `./bedrock/Memory/MEMORY.md` for project context
+
+## After meaningful work
+
+- Run `/memory-update` — sync, update branches, summarize what changed
+
+## When the context window is getting long
+
+- Run `/compact-context` — saves memory, then resets the context window

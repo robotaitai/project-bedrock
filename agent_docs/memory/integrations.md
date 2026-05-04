@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: integrations
-updated: 2026-04-28
+updated: 2026-04-29
 tags:
   - agent-knowledge
   - memory
@@ -39,11 +39,11 @@ Called by [[cli#init (zero-arg)|init]] via `detect()` then `install_all()`.
 
 ### Cursor (first-class)
 - `.cursor/hooks.json` -- **4 hooks**: `post-write` (update), `session-start` (sync), `stop` (sync), `preCompact` (sync)
-- `.cursor/rules/agent-knowledge.mdc` -- `alwaysApply` rule: knowledge layers table, onboarding flow, `/memory-update` reference
+- `.cursor/rules/bedrock.mdc` -- `alwaysApply` rule: knowledge layers table, onboarding flow, `/memory-update` reference (was `agent-knowledge.mdc`; auto-renamed by `refresh-system`)
 - `.cursor/commands/memory-update.md` -- `/memory-update` slash command
 - `.cursor/commands/system-update.md` -- `/system-update` slash command
 
-Rule content is **inlined as `_CURSOR_RULE` in `integrations.py`** (no separate template file — refresh.py falls back to this constant if absent).
+Rule content is **inlined as `_CURSOR_RULE` in `integrations.py`** AND available as `assets/templates/integrations/cursor/bedrock.mdc`. `refresh.py` uses the template file if present, falls back to the constant.
 
 Constants in `integrations.py`:
 - `CURSOR_EXPECTED_HOOK_EVENTS = {"session-start", "post-write", "stop", "preCompact"}`
@@ -64,9 +64,14 @@ Constants in `integrations.py`:
 
 ## Onboarding Handoff
 
-Bridge files instruct agents to check [[STATUS|STATUS.md]]:
-- If `onboarding: pending` -> follow `AGENTS.md` first-time instructions
-- If `onboarding: complete` -> read [[MEMORY]] for context
+```mermaid
+flowchart TD
+    A["Agent session starts"] --> B{"STATUS.md\nonboarding:?"}
+    B -->|pending| C["Read AGENTS.md\nfirst-time setup"]
+    B -->|complete| D["Read Memory/MEMORY.md\nfor context"]
+    C --> E["Run bedrock init"]
+    E --> D
+```
 
 No manual `next-prompt` command needed.
 
@@ -76,7 +81,11 @@ Multiple tools can install an `agent-knowledge` binary. Graphify (Node.js) insta
 
 ## Key Decision
 
-Cursor rule content is **inlined as `_CURSOR_RULE`** in `integrations.py` (not a separate template). `refresh.py` falls back to this constant when no file at `assets/templates/integrations/cursor/agent-knowledge.mdc`. See [[decisions]].
+Cursor rule content is **inlined as `_CURSOR_RULE`** in `integrations.py` AND stored at `assets/templates/integrations/cursor/bedrock.mdc`. `refresh.py` prefers the file; falls back to the constant. See [[decisions]].
+
+## Recent Changes
+
+- 2026-04-29: Cursor rule renamed `agent-knowledge.mdc` → `bedrock.mdc`. `refresh-system` auto-migrates existing installs. All bridge file path references updated to `./bedrock/`. `repo_abs` now uses `.as_posix()` to generate forward-slash paths (Windows JSON fix).
 
 ## See Also
 

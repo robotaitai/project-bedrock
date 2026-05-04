@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: cli
-updated: 2026-04-28
+updated: 2026-04-30
 tags:
   - agent-knowledge
   - cli
@@ -19,11 +19,12 @@ Design and implementation of the `bedrock` command-line interface.
 
 Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 
-## Subcommands (23)
+## Subcommands (27)
 
 | Command | Description | Delegates to |
 |---------|-------------|-------------|
 | `init` | Zero-arg project setup + history backfill. Local (in-repo) by default; `--external` for external vault | `install-project-links.sh` + integrations + history.py |
+| `migrate-vault` | Rename `./agent-knowledge/` → `./bedrock/` for projects before v0.4 | pure Python |
 | `migrate-to-local` | Convert existing external-vault project: copy vault, swap pointer, patch .gitignore | pure Python |
 | `sync` | Memory sync, git evidence extraction, update STATUS.md | `runtime/sync.py` |
 | `setup` | Global Cursor rules/skills install | pure Python |
@@ -47,12 +48,15 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 | `refresh-system` | Refresh integration files to current framework version | `runtime/refresh.py` |
 | `backfill-history` | Backfill lightweight history from git | `runtime/history.py` |
 | `migrate-from-legacy` | Migrate from agent-knowledge-cli: runs refresh-system + prints pip uninstall steps | pure Python |
+| `completion` | Print shell tab-completion setup line (zsh/bash/fish); `--install` writes to rc file | pure Python |
+| `upgrade` | Check PyPI for latest version and upgrade (detects pipx vs pip) | pure Python |
+| `compact-context` | (slash command) Save memory then reset context window | slash command template |
 
 ## init
 
 - Infers slug from directory name, detects integrations automatically
-- **Default (local mode)**: creates `./agent-knowledge/` as real directory; creates `~/agent-os/projects/<slug>/` as symlink back; patches `.gitignore` with noisy-subfolder exclusions
-- `--external` flag: creates knowledge in `~/agent-os/projects/<slug>/`; `./agent-knowledge` becomes a symlink to that folder
+- **Default (local mode)**: creates `./bedrock/` as real directory; creates `~/agent-os/projects/<slug>/` as symlink back; patches `.gitignore` with noisy-subfolder exclusions
+- `--external` flag: creates knowledge in `~/agent-os/projects/<slug>/`; `./bedrock` becomes a symlink to that folder
 - `--local` flag: accepted as a no-op for backward compatibility (was previously needed, now the default)
 - After setup: **auto-calls `run_backfill()`** from `history.py` if vault exists
 - Prints cyan-bordered prompt with next-step suggestion
@@ -83,7 +87,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 
 ## refresh-system
 
-- Refreshes `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/agent-knowledge.mdc`, `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
+- Refreshes `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/bedrock.mdc` (auto-renames from `agent-knowledge.mdc` if found), `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
 - Idempotent: returns "up-to-date" if version already matches
 - Never touches `Memory/`, `Evidence/`, `Sessions/`, `Outputs/`, `History/`
 - Supports `--dry-run`, `--json`
@@ -110,6 +114,17 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - Common flags: `--dry-run`, `--json`, `--force`
 - All output to stderr in human mode; stdout is pure JSON in `--json` mode
 
+## Core workflow
+
+```mermaid
+flowchart LR
+    init["bedrock init\n(once per project)"] --> sync
+    sync["bedrock sync\n(after work sessions)"] --> doctor
+    doctor["bedrock doctor\n(health + staleness)"]
+    sync --> view["bedrock view\n(browse knowledge site)"]
+    sync --> ship["bedrock ship\n(commit + push)"]
+```
+
 ## Recent Changes
 
 - 2026-04-28: `init` now defaults to local (in-repo) mode; `--external` flag added to opt out.
@@ -117,6 +132,8 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - 2026-04-28: `absorb` subcommand added (imports external docs/ADRs into Evidence/).
 - 2026-04-28: CLI renamed to `bedrock`; `agent-knowledge` kept as deprecated alias. All help text, templates, skills, hooks updated.
 - 2026-04-28: `migrate-from-legacy` added — runs refresh-system and prints pip migration instructions for agent-knowledge-cli users.
+- 2026-04-29: vault path changed `agent-knowledge/` → `bedrock/` in all CLI commands. `migrate-vault` added (24 total commands). `refresh-system` now auto-renames `agent-knowledge.mdc` → `bedrock.mdc`. Windows: bash auto-detected, JSON paths use forward slashes, git subprocesses use UTF-8.
+- 2026-04-30: `completion` command added (tab completion for zsh/bash/fish, `--install` flag). `upgrade` command added (checks PyPI, detects pipx vs pip). `/compact-context` slash command added for Claude + Cursor. 8 specialist commands hidden from `--help` (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format).
 
 ## See Also
 

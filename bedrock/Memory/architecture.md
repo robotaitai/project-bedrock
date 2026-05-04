@@ -35,20 +35,33 @@ Core design: path resolution, runtime modules, project config, integrations, kno
 
 Two storage modes controlled by `vault_mode` in `.agent-project.yaml`:
 
-| Mode | `./agent-knowledge` | `~/agent-os/projects/<slug>/` |
-|------|--------------------|-----------------------------|
-| `local` **(default)** | real directory in repo (git-tracked) | symlink → `./agent-knowledge` |
-| `external` | symlink → external vault | real directory (source of truth) |
+```mermaid
+flowchart LR
+    subgraph local["local mode (default)"]
+        direction TB
+        L1["./bedrock\n(real dir, git-tracked)"] -->|symlink| L2["~/agent-os/projects/slug/"]
+    end
+    subgraph external["external mode"]
+        direction TB
+        E1["./bedrock\n(symlink)"] -->|points to| E2["~/agent-os/projects/slug/\n(source of truth)"]
+    end
+    init["bedrock init"] -->|default| local
+    init -->|--external| external
+```
 
 `bedrock init` defaults to local mode. Use `--external` for external mode, or `bedrock migrate-to-local` to convert an existing external project.
 In local mode, `.gitignore` auto-patched to exclude `Evidence/raw/`, `Sessions/`, `Outputs/site/`, etc.
 
 Vault structure (same in both modes):
-- `Memory/` — curated, canonical, durable knowledge (MEMORY.md + branch files)
-- `Evidence/` — non-canonical: raw imports, captures, backfills
-- `Outputs/` — generated helper artifacts (site, index, canvas) — never canonical
-- `Sessions/` — temporary working state, rolled up by sync
-- `History/` — lightweight diary: events.ndjson, history.md, timeline/
+
+```mermaid
+flowchart TD
+    V["bedrock/"]
+    V --> M["Memory/\n✅ canonical, curated, durable"]
+    V --> E["Evidence/\n⚠️ raw imports, captures"]
+    V --> O["Outputs/\n🔧 generated — never canonical"]
+    V --> H["History/\n📖 lightweight diary"]
+```
 
 ## Path Resolution
 
@@ -72,13 +85,16 @@ All non-Python assets under `assets/`:
 
 ## Site Generation Pipeline
 
-`vault → knowledge.json → graph.json → index.html`
-1. Read vault (Memory/, Evidence/, Outputs/, STATUS.md)
-2. Build normalized `Outputs/site/data/knowledge.json`
-3. Build `Outputs/site/data/graph.json` with nodes/edges + canonical status
-4. Render single-page `Outputs/site/index.html` with all data embedded
-
-Site views: Overview, Tree/Ontology, Note/Detail, Evidence, Graph (force-directed canvas)
+```mermaid
+flowchart LR
+    Vault["Vault\nMemory/ Evidence/ History/"] --> KJ["knowledge.json\n(normalized notes)"]
+    KJ --> GJ["graph.json\n(nodes + edges)"]
+    GJ --> HTML["index.html\n(single-page app)"]
+    HTML --> V1["Overview"]
+    HTML --> V2["Note detail"]
+    HTML --> V3["Evidence"]
+    HTML --> V4["Graph\n(force-directed)"]
+```
 
 Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's rendered HTML and adds blue `related_to` edges between nodes, giving the graph semantic cross-connections beyond the folder hierarchy.
 

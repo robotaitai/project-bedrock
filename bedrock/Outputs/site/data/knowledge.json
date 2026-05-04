@@ -1,0 +1,508 @@
+{
+  "schema": "1",
+  "generated": "2026-05-04T13:19:45Z",
+  "project": {
+    "name": "agent-knowledge",
+    "slug": "bedrock",
+    "profile": "unknown",
+    "onboarding": "complete",
+    "vault_path": "/home/itai/code/agent-knowledge/bedrock",
+    "last_updated": "2026-05-04T13:17:43Z"
+  },
+  "warnings": [],
+  "branches": [
+    {
+      "path": "Memory/architecture.md",
+      "title": "Architecture",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "architecture",
+      "is_branch_entry": true,
+      "updated": "2026-04-28",
+      "summary": "Core design: path resolution, runtime modules, project config, integrations, knowledge vault model. Two storage modes controlled by vault_mode in .age",
+      "purpose": "Core design: path resolution, runtime modules, project config, integrations, knowledge vault model. Two storage modes controlled by vault_mode in .agent-project.yaml: flowchart LR subgraph local[\"loca...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-28",
+          "text": "Local vault mode is now the default (`init` no longer needs `--local`; use `--external` to opt out)."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "`site.py` table rendering fixed — markdown tables now render as proper HTML `<table>` elements."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Graph wikilink edges added — `build_graph_data()` extracts `[[wikilinks]]` and creates blue `related_to` edges."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Graph node selection dims unrelated nodes and keeps neighbors semi-visible with labels."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Graph layout spread tuned — `SIM_REPULSION 18000`, `SIM_REST 220`, `SIM_GRAVITY 0.008` for a readable layout."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Staleness detection added to `doctor` via `check_stale_notes()` in `refresh.py`."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Architecture</h1>\n\n<p>Core design: path resolution, runtime modules, project config, integrations, knowledge vault model.</p>\n\n<h2>Runtime Modules (<code>src/agent_knowledge/runtime/</code>)</h2>\n\n<table>\n<tr><th>Module</th><th>Purpose</th></tr>\n<tr><td><code>paths.py</code></td><td>Asset directory resolution (installed vs dev checkout)</td></tr>\n<tr><td><code>shell.py</code></td><td><code>run<em>bash</em>script()</code> / <code>run<em>python</em>script()</code> subprocess wrappers</td></tr>\n<tr><td><code>integrations.py</code></td><td>Multi-tool detection and bridge file installation</td></tr>\n<tr><td><code>sync.py</code></td><td><code>bedrock sync</code> implementation (memory, sessions, git, capture, index)</td></tr>\n<tr><td><code>capture.py</code></td><td>Automatic capture layer (Evidence/captures/ YAML files) + clean-import</td></tr>\n<tr><td><code>index.py</code></td><td>Knowledge index generation (knowledge-index.json/md) + search</td></tr>\n<tr><td><code>site.py</code></td><td>Static HTML site export with interactive graph view</td></tr>\n<tr><td><code>refresh.py</code></td><td>System refresh: updates integration files to current framework version</td></tr>\n<tr><td><code>history.py</code></td><td>Lightweight history layer (History/events.ndjson, history.md, timeline/)</td></tr>\n</table>\n\n<h2>Knowledge Vault Model</h2>\n\n<p>Two storage modes controlled by <code>vault_mode</code> in <code>.agent-project.yaml</code>:</p>\n\n<div class=\"mermaid\">flowchart LR\n    subgraph local[\"local mode (default)\"]\n        direction TB\n        L1[\"./bedrock\\n(real dir, git-tracked)\"] -->|symlink| L2[\"~/agent-os/projects/slug/\"]\n    end\n    subgraph external[\"external mode\"]\n        direction TB\n        E1[\"./bedrock\\n(symlink)\"] -->|points to| E2[\"~/agent-os/projects/slug/\\n(source of truth)\"]\n    end\n    init[\"bedrock init\"] -->|default| local\n    init -->|--external| external</div>\n\n<p><code>bedrock init</code> defaults to local mode. Use <code>--external</code> for external mode, or <code>bedrock migrate-to-local</code> to convert an existing external project.</p>\n<p>In local mode, <code>.gitignore</code> auto-patched to exclude <code>Evidence/raw/</code>, <code>Sessions/</code>, <code>Outputs/site/</code>, etc.</p>\n\n<p>Vault structure (same in both modes):</p>\n\n<div class=\"mermaid\">flowchart TD\n    V[\"bedrock/\"]\n    V --> M[\"Memory/\\n✅ canonical, curated, durable\"]\n    V --> E[\"Evidence/\\n⚠️ raw imports, captures\"]\n    V --> O[\"Outputs/\\n🔧 generated — never canonical\"]\n    V --> H[\"History/\\n📖 lightweight diary\"]</div>\n\n<h2>Path Resolution</h2>\n\n<ul>\n<li><code>runtime/paths.py</code> → <code>get<em>assets</em>dir()</code> with dual-mode:</li>\n</ul>\n<p>  1. Installed: <code>assets/</code> sibling of <code>runtime/</code> in site-packages</p>\n<p>  2. Dev: <code>repo_root/assets/</code> (4 parents up from <code>paths.py</code>)</p>\n<ul>\n<li>Marker file for validation: <code>scripts/lib/knowledge-common.sh</code></li>\n<li>Result cached in <code><em>cached</em>assets_dir</code> for the process lifetime</li>\n</ul>\n\n<h2>Asset Layout</h2>\n\n<p>All non-Python assets under <code>assets/</code>:</p>\n<ul>\n<li><code>assets/scripts/</code> — bundled bash scripts</li>\n<li><code>assets/templates/</code> — project, memory, integrations, portfolio templates</li>\n<li><code>assets/rules/</code> — project-level Cursor rules</li>\n<li><code>assets/rules-global/</code> — global Cursor rules</li>\n<li><code>assets/commands/</code> — agent command docs (system-update, ship, etc.)</li>\n<li><code>assets/skills/</code> — composable skill files for agent use</li>\n<li><code>assets/skills-cursor/</code> — Cursor-specific skills</li>\n<li><code>assets/claude/</code> — Claude Code integration files</li>\n</ul>\n\n<h2>Site Generation Pipeline</h2>\n\n<div class=\"mermaid\">flowchart LR\n    Vault[\"Vault\\nMemory/ Evidence/ History/\"] --> KJ[\"knowledge.json\\n(normalized notes)\"]\n    KJ --> GJ[\"graph.json\\n(nodes + edges)\"]\n    GJ --> HTML[\"index.html\\n(single-page app)\"]\n    HTML --> V1[\"Overview\"]\n    HTML --> V2[\"Note detail\"]\n    HTML --> V3[\"Evidence\"]\n    HTML --> V4[\"Graph\\n(force-directed)\"]</div>\n\n<p>Wikilink edges: <code>build<em>graph</em>data()</code> extracts <code><a class=\"wikilink\" data-target=\"wikilinks\">wikilinks</a></code> from each note&#x27;s rendered HTML and adds blue <code>related_to</code> edges between nodes, giving the graph semantic cross-connections beyond the folder hierarchy.</p>\n\n<p><code><em>md</em>to_html()</code> supports: headings (with inline wikilinks), paragraphs, bullet/ordered lists, blockquotes, fenced code blocks, horizontal rules, and <code>|pipe|</code> markdown tables rendered as <code>&lt;table&gt;</code> elements.</p>\n\n<h2>History Layer</h2>\n\n<ul>\n<li><code>History/events.ndjson</code> — append-only machine-readable log</li>\n<li><code>History/history.md</code> — human-readable entrypoint (&lt; 150 lines)</li>\n<li><code>History/timeline/</code> — sparse milestone notes (init, backfill, releases only)</li>\n<li>Dedup: releases once-per-tag, backfill once-per-month, project_start once-ever</li>\n<li>Auto-created by <code>init</code>, refreshable with <code>backfill-history</code></li>\n</ul>\n\n<h2>Project Config (<code>.agent-project.yaml</code>)</h2>\n\n<ul>\n<li>Version 4, <code>ontology<em>model: 2</code>, <code>framework</em>version</code> field</li>\n<li><code>knowledge.vault_mode: local|external</code> — set by <code>init --local</code> or <code>migrate-to-local</code></li>\n<li><code>onboarding: status: pending|complete</code> in STATUS.md</li>\n<li>No <code>root_index</code> — entry points are STATUS.md + Memory/MEMORY.md</li>\n<li>Hooks reference <code>bedrock update --project .</code></li>\n</ul>\n\n<h2>System Refresh (<code>runtime/refresh.py</code>)</h2>\n\n<ul>\n<li>Compares <code>framework_version</code> in STATUS.md to <code><strong>version</strong></code></li>\n<li>Refreshes: <code>AGENTS.md</code>, <code>.cursor/hooks.json</code>, <code>.cursor/rules/agent-knowledge.mdc</code>, <code>CLAUDE.md</code>, <code>.codex/AGENTS.md</code>, <code>STATUS.md</code>, <code>.agent-project.yaml</code></li>\n<li>Idempotent: skips files already at current version</li>\n<li><code>is_stale()</code> used by <code>doctor</code> command for staleness warning</li>\n</ul>\n\n<h2>Capture Layer</h2>\n\n<ul>\n<li><code>Evidence/captures/</code> — YAML event files (timestamp, source<em>tool, event</em>type, touched_branches)</li>\n<li>Idempotent within same UTC minute</li>\n<li>Sources: sync, init, refresh, graph sync, import, ship</li>\n</ul>\n\n<h2>Knowledge Index</h2>\n\n<ul>\n<li><code>Outputs/knowledge-index.json</code> — structured catalog for programmatic retrieval</li>\n<li><code>Outputs/knowledge-index.md</code> — human-readable version</li>\n<li>Search: Memory-first, Evidence/Outputs clearly marked non-canonical</li>\n<li>Used by <code>bedrock search &lt;query&gt;</code></li>\n</ul>\n\n<h2>Gotchas</h2>\n\n<ul>\n<li><code>set -euo pipefail</code> + trailing <code>[</code> test returning false causes exit 1 — fixed with explicit <code>if</code></li>\n<li><code>ship.sh</code> must use <code>python -m pytest -q</code> not bare <code>pytest</code></li>\n<li>Canvas 2D rendering: reading <code>clientWidth</code>/<code>clientHeight</code> after <code>display:none→block</code> must be deferred with <code>requestAnimationFrame</code> (graph fix, 2026-04-11)</li>\n<li>Evidence/Outputs are non-canonical and must not be auto-promoted to Memory/</li>\n</ul>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-28: Local vault mode is now the default (<code>init</code> no longer needs <code>--local</code>; use <code>--external</code> to opt out).</li>\n<li>2026-04-28: <code>site.py</code> table rendering fixed — markdown tables now render as proper HTML <code>&lt;table&gt;</code> elements.</li>\n<li>2026-04-28: Graph wikilink edges added — <code>build<em>graph</em>data()</code> extracts <code><a class=\"wikilink\" data-target=\"wikilinks\">wikilinks</a></code> and creates blue <code>related_to</code> edges.</li>\n<li>2026-04-28: Graph node selection dims unrelated nodes and keeps neighbors semi-visible with labels.</li>\n<li>2026-04-28: Graph layout spread tuned — <code>SIM<em>REPULSION 18000</code>, <code>SIM</em>REST 220</code>, <code>SIM_GRAVITY 0.008</code> for a readable layout.</li>\n<li>2026-04-28: Staleness detection added to <code>doctor</code> via <code>check<em>stale</em>notes()</code> in <code>refresh.py</code>.</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"stack\">stack</a> — languages, runtimes, and dependencies</li>\n<li><a class=\"wikilink\" data-target=\"conventions\">conventions</a> — coding and design conventions</li>\n<li><a class=\"wikilink\" data-target=\"packaging\">packaging</a> — how the package is built and distributed</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/cli.md",
+      "title": "CLI",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "cli",
+      "is_branch_entry": true,
+      "updated": "2026-04-30",
+      "summary": "Design and implementation of the bedrock command-line interface. Built on click >= 8.0 with a @click.group() top-level. - Infers slug from directory n",
+      "purpose": "Design and implementation of the bedrock command-line interface. Built on click >= 8.0 with a @click.group() top-level. - Infers slug from directory name, detects integrations automatically - Default ...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-28",
+          "text": "`init` now defaults to local (in-repo) mode; `--external` flag added to opt out."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "`doctor` now runs Python pre-checks for staleness — compares note `updated` dates against source code commit dates."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "`absorb` subcommand added (imports external docs/ADRs into Evidence/)."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "CLI renamed to `bedrock`; `agent-knowledge` kept as deprecated alias. All help text, templates, skills, hooks updated."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "`migrate-from-legacy` added — runs refresh-system and prints pip migration instructions for agent-knowledge-cli users."
+        },
+        {
+          "date": "2026-04-29",
+          "text": "vault path changed `agent-knowledge/` → `bedrock/` in all CLI commands. `migrate-vault` added (24 total commands). `refresh-system` now auto-renames `agent-knowledge.mdc` → `bedrock.mdc`. Windows: bash auto-detected, JSON paths use forward slashes, git subprocesses use UTF-8."
+        },
+        {
+          "date": "2026-04-30",
+          "text": "`completion` command added (tab completion for zsh/bash/fish, `--install` flag). `upgrade` command added (checks PyPI, detects pipx vs pip). `/compact-context` slash command added for Claude + Cursor. 8 specialist commands hidden from `--help` (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format)."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>CLI</h1>\n\n<p>Design and implementation of the <code>bedrock</code> command-line interface.</p>\n\n<h2>Framework</h2>\n\n<p>Built on <a class=\"wikilink\" data-target=\"stack\">click &amp;gt;= 8.0</a> with a <code>@click.group()</code> top-level.</p>\n\n<h2>Subcommands (27)</h2>\n\n<table>\n<tr><th>Command</th><th>Description</th><th>Delegates to</th></tr>\n<tr><td><code>init</code></td><td>Zero-arg project setup + history backfill. Local (in-repo) by default; <code>--external</code> for external vault</td><td><code>install-project-links.sh</code> + integrations + history.py</td></tr>\n<tr><td><code>migrate-vault</code></td><td>Rename <code>./agent-knowledge/</code> → <code>./bedrock/</code> for projects before v0.4</td><td>pure Python</td></tr>\n<tr><td><code>migrate-to-local</code></td><td>Convert existing external-vault project: copy vault, swap pointer, patch .gitignore</td><td>pure Python</td></tr>\n<tr><td><code>sync</code></td><td>Memory sync, git evidence extraction, update STATUS.md</td><td><code>runtime/sync.py</code></td></tr>\n<tr><td><code>setup</code></td><td>Global Cursor rules/skills install</td><td>pure Python</td></tr>\n<tr><td><code>bootstrap</code></td><td>Repair memory tree</td><td><code>bootstrap-memory-tree.sh</code></td></tr>\n<tr><td><code>import</code></td><td>Import repo evidence</td><td><code>import-agent-history.sh</code></td></tr>\n<tr><td><code>update</code></td><td>Sync project changes</td><td><code>update-knowledge.sh</code></td></tr>\n<tr><td><code>doctor</code></td><td>Validate setup, staleness warnings</td><td><code>doctor.sh</code> + Python pre-checks</td></tr>\n<tr><td><code>validate</code></td><td>Validate knowledge layout</td><td><code>validate-knowledge.sh</code></td></tr>\n<tr><td><code>ship</code></td><td>Validate, sync, commit, push</td><td><code>ship.sh</code></td></tr>\n<tr><td><code>global-sync</code></td><td>Import global tooling config</td><td><code>global-knowledge-sync.sh</code></td></tr>\n<tr><td><code>graphify-sync</code></td><td>Import graph artifacts</td><td><code>graphify-sync.sh</code></td></tr>\n<tr><td><code>compact</code></td><td>Prune stale memory and old captures</td><td><code>compact-memory.sh</code></td></tr>\n<tr><td><code>measure-tokens</code></td><td>Token savings estimation (subcommands: compare, log-run, summarize-log)</td><td><code>measure-token-savings.py</code></td></tr>\n<tr><td><code>index</code></td><td>Regenerate knowledge index JSON + md</td><td><code>runtime/index.py</code></td></tr>\n<tr><td><code>search &lt;query&gt;</code></td><td>Search knowledge index, Memory-first</td><td><code>runtime/index.py</code></td></tr>\n<tr><td><code>export-html</code></td><td>Build polished static HTML site</td><td><code>runtime/site.py</code></td></tr>\n<tr><td><code>view</code></td><td>Build site and open in browser</td><td><code>runtime/site.py</code> + webbrowser</td></tr>\n<tr><td><code>clean-import &lt;url&gt;</code></td><td>Import URL/HTML as cleaned evidence</td><td><code>runtime/capture.py</code></td></tr>\n<tr><td><code>export-canvas</code></td><td>Export vault as Obsidian Canvas</td><td><code>runtime/site.py</code></td></tr>\n<tr><td><code>absorb</code></td><td>Ingest existing project docs into Evidence/imports/, parse ADRs into decisions.md</td><td>pure Python</td></tr>\n<tr><td><code>refresh-system</code></td><td>Refresh integration files to current framework version</td><td><code>runtime/refresh.py</code></td></tr>\n<tr><td><code>backfill-history</code></td><td>Backfill lightweight history from git</td><td><code>runtime/history.py</code></td></tr>\n<tr><td><code>migrate-from-legacy</code></td><td>Migrate from agent-knowledge-cli: runs refresh-system + prints pip uninstall steps</td><td>pure Python</td></tr>\n<tr><td><code>completion</code></td><td>Print shell tab-completion setup line (zsh/bash/fish); <code>--install</code> writes to rc file</td><td>pure Python</td></tr>\n<tr><td><code>upgrade</code></td><td>Check PyPI for latest version and upgrade (detects pipx vs pip)</td><td>pure Python</td></tr>\n<tr><td><code>compact-context</code></td><td>(slash command) Save memory then reset context window</td><td>slash command template</td></tr>\n</table>\n\n<h2>init</h2>\n\n<ul>\n<li>Infers slug from directory name, detects integrations automatically</li>\n<li><strong>Default (local mode)</strong>: creates <code>./bedrock/</code> as real directory; creates <code>~/agent-os/projects/&lt;slug&gt;/</code> as symlink back; patches <code>.gitignore</code> with noisy-subfolder exclusions</li>\n<li><code>--external</code> flag: creates knowledge in <code>~/agent-os/projects/&lt;slug&gt;/</code>; <code>./bedrock</code> becomes a symlink to that folder</li>\n<li><code>--local</code> flag: accepted as a no-op for backward compatibility (was previously needed, now the default)</li>\n<li>After setup: <strong>auto-calls <code>run_backfill()</code></strong> from <code>history.py</code> if vault exists</li>\n<li>Prints cyan-bordered prompt with next-step suggestion</li>\n</ul>\n\n<h2>migrate-to-local</h2>\n\n<ul>\n<li>Detects current external vault from symlink</li>\n<li><code>shutil.copytree</code> to temp dir → unlink symlink → move to real <code>./agent-knowledge/</code></li>\n<li>Creates reversed symlink at <code>~/agent-os/projects/&lt;slug&gt;/</code> (skips if already a real dir)</li>\n<li>Updates <code>.agent-project.yaml</code> vault<em>mode + real</em>path via regex</li>\n<li>Calls <code><em>patch</em>gitignore<em>for</em>local_knowledge()</code> — sentinel-guarded, idempotent</li>\n</ul>\n\n<h2>absorb</h2>\n\n<ul>\n<li>Scans project for docs: <code>ARCHITECTURE.md</code>, <code>CHANGELOG.md</code>, <code>DESIGN.md</code>, ADRs, etc.</li>\n<li>Copies to <code>Evidence/imports/</code> as non-canonical evidence</li>\n<li>Parses ADR/decision files into <code>decisions.md</code> (skippable via <code>--no-decisions</code>)</li>\n<li>Writes <code>Outputs/absorb-manifest.md</code> for agent review and curation</li>\n<li>Mechanical ingestion only — curation to <code>Memory/</code> remains the agent&#x27;s responsibility</li>\n</ul>\n\n<h2>doctor</h2>\n\n<ul>\n<li>Calls <code>doctor.sh</code> (bash)</li>\n<li><strong>Python pre-check 1</strong>: <code>refresh.is_stale()</code> — warns if framework version is behind</li>\n<li><strong>Python pre-check 2</strong>: cursor + claude integration health checks</li>\n<li><strong>Python pre-check 3</strong>: <code>history.history_exists()</code> — warns if History/ missing</li>\n<li><strong>Python pre-check 4</strong>: <code>refresh.check<em>stale</em>notes()</code> — compares each durable-branch note&#x27;s <code>updated</code> date against the most recent git commit on its watched source paths; warns with note path, dates, and <code>update_when</code> hint if source changed after the note was last updated</li>\n</ul>\n\n<h2>refresh-system</h2>\n\n<ul>\n<li>Refreshes <code>AGENTS.md</code>, <code>.cursor/hooks.json</code>, <code>.cursor/rules/bedrock.mdc</code> (auto-renames from <code>agent-knowledge.mdc</code> if found), <code>CLAUDE.md</code>, <code>.codex/AGENTS.md</code>, <code>STATUS.md</code>, <code>.agent-project.yaml</code></li>\n<li>Idempotent: returns &quot;up-to-date&quot; if version already matches</li>\n<li>Never touches <code>Memory/</code>, <code>Evidence/</code>, <code>Sessions/</code>, <code>Outputs/</code>, <code>History/</code></li>\n<li>Supports <code>--dry-run</code>, <code>--json</code></li>\n</ul>\n\n<h2>backfill-history</h2>\n\n<ul>\n<li>Creates <code>History/events.ndjson</code>, <code>History/history.md</code>, <code>History/timeline/</code></li>\n<li>Reads git: first commit date, total commits, tags (releases), integration detection</li>\n<li>One-per-tag for release events; once-per-month for backfill/integration events</li>\n<li>Supports <code>--dry-run</code>, <code>--json</code>, <code>--force</code></li>\n</ul>\n\n<h2>export-html / view</h2>\n\n<ul>\n<li>Reads vault → builds <code>knowledge.json</code> → builds <code>graph.json</code> → renders <code>index.html</code></li>\n<li>All data embedded in HTML (no AJAX, works via <code>file://</code>)</li>\n<li>Views: Overview, Tree/Ontology, Note detail, Evidence, Graph tab</li>\n<li>Graph: interactive force-directed canvas, wikilink edges rendered in accent blue, searchable, filterable by type/canonical status</li>\n<li><code>view</code> = <code>export-html</code> + opens result in browser</li>\n</ul>\n\n<h2>Patterns</h2>\n\n<ul>\n<li>Thin Python wrappers delegate to shell scripts via <code>subprocess</code> for legacy commands</li>\n<li>Pure-Python for newer commands: sync, site, history, refresh, capture, index, absorb</li>\n<li>Common flags: <code>--dry-run</code>, <code>--json</code>, <code>--force</code></li>\n<li>All output to stderr in human mode; stdout is pure JSON in <code>--json</code> mode</li>\n</ul>\n\n<h2>Core workflow</h2>\n\n<div class=\"mermaid\">flowchart LR\n    init[\"bedrock init\\n(once per project)\"] --> sync\n    sync[\"bedrock sync\\n(after work sessions)\"] --> doctor\n    doctor[\"bedrock doctor\\n(health + staleness)\"]\n    sync --> view[\"bedrock view\\n(browse knowledge site)\"]\n    sync --> ship[\"bedrock ship\\n(commit + push)\"]</div>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-28: <code>init</code> now defaults to local (in-repo) mode; <code>--external</code> flag added to opt out.</li>\n<li>2026-04-28: <code>doctor</code> now runs Python pre-checks for staleness — compares note <code>updated</code> dates against source code commit dates.</li>\n<li>2026-04-28: <code>absorb</code> subcommand added (imports external docs/ADRs into Evidence/).</li>\n<li>2026-04-28: CLI renamed to <code>bedrock</code>; <code>agent-knowledge</code> kept as deprecated alias. All help text, templates, skills, hooks updated.</li>\n<li>2026-04-28: <code>migrate-from-legacy</code> added — runs refresh-system and prints pip migration instructions for agent-knowledge-cli users.</li>\n<li>2026-04-29: vault path changed <code>agent-knowledge/</code> → <code>bedrock/</code> in all CLI commands. <code>migrate-vault</code> added (24 total commands). <code>refresh-system</code> now auto-renames <code>agent-knowledge.mdc</code> → <code>bedrock.mdc</code>. Windows: bash auto-detected, JSON paths use forward slashes, git subprocesses use UTF-8.</li>\n<li>2026-04-30: <code>completion</code> command added (tab completion for zsh/bash/fish, <code>--install</code> flag). <code>upgrade</code> command added (checks PyPI, detects pipx vs pip). <code>/compact-context</code> slash command added for Claude + Cursor. 8 specialist commands hidden from <code>--help</code> (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format).</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"architecture\">architecture</a> -- runtime modules</li>\n<li><a class=\"wikilink\" data-target=\"stack\">stack</a> -- click framework, dependencies</li>\n<li><a class=\"wikilink\" data-target=\"testing\">testing</a> -- CLI test coverage</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/conventions.md",
+      "title": "Conventions",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "conventions",
+      "is_branch_entry": true,
+      "updated": "2026-04-28",
+      "summary": "Coding patterns, naming, and design rules. - CLI command names use hyphens: bedrock graphify-sync - Python package uses underscores: agent_knowledge -",
+      "purpose": "Coding patterns, naming, and design rules. - CLI command names use hyphens: bedrock graphify-sync - Python package uses underscores: agent_knowledge - User-facing messages reference CLI commands, neve...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-28",
+          "text": "Added `update_when` convention for all `durable-branch` notes; `doctor` uses it to detect stale notes."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Documented that each area in `refresh._NOTE_AREA_PATHS` must have a matching durable-branch entry."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Conventions</h1>\n\n<p>Coding patterns, naming, and design rules.</p>\n\n<h2>Naming</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"cli\">CLI</a> command names use <strong>hyphens</strong>: <code>bedrock graphify-sync</code></li>\n<li>Python package uses <strong>underscores</strong>: <code>agent_knowledge</code></li>\n<li>User-facing messages reference CLI commands, never script paths</li>\n</ul>\n\n<h2>Code Patterns</h2>\n\n<ul>\n<li>Shell scripts stay in <code>assets/scripts/</code>, invoked via <code>runtime/shell.py</code></li>\n<li>Templates use <code>&lt;placeholder&gt;</code> syntax for substitution</li>\n<li>No emojis or icons in code, logs, or output (see project rules)</li>\n</ul>\n\n<h2>Memory Notes</h2>\n\n<ul>\n<li>Require YAML frontmatter: <code>note_type</code>, <code>area</code>/<code>project</code>, <code>updated</code>, <code>tags</code></li>\n<li><code>durable-branch</code> notes must include an <code>update_when</code> field in frontmatter: a plain-English description of the conditions that should trigger an update to that note. This tells agents when to revisit without requiring them to understand the whole codebase.</li>\n<li><code>doctor</code> automatically detects potentially stale notes by comparing the note&#x27;s <code>updated</code> date against <code>git log</code> on the source paths registered for that area in <code>refresh.<em>NOTE</em>AREA_PATHS</code>. When adding a new durable-branch area, add a corresponding entry there.</li>\n<li>Use wiki-links (<code><a class=\"wikilink\" data-target=\"note-name\">note-name</a></code>) for Obsidian graph connectivity — they become edges in the graph view</li>\n<li><a class=\"wikilink\" data-target=\"MEMORY\">Evidence and Outputs</a> are never treated as curated truth</li>\n</ul>\n\n<h2>Shell Scripts</h2>\n\n<ul>\n<li>Always <code>set -euo pipefail</code></li>\n<li>Avoid <code>[ test ] &amp;&amp; cmd</code> -- use <code>if/then</code> (see <a class=\"wikilink\" data-target=\"gotchas\">gotchas</a>)</li>\n<li>Find assets via <code>SCRIPT_DIR</code>, never hardcode paths</li>\n</ul>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-28: Added <code>update_when</code> convention for all <code>durable-branch</code> notes; <code>doctor</code> uses it to detect stale notes.</li>\n<li>2026-04-28: Documented that each area in <code>refresh.<em>NOTE</em>AREA_PATHS</code> must have a matching durable-branch entry.</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"architecture\">architecture</a> -- how patterns are applied</li>\n<li><a class=\"wikilink\" data-target=\"gotchas\">gotchas</a> -- things that break these conventions</li>\n<li><a class=\"wikilink\" data-target=\"cli\">cli</a> -- CLI naming examples</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/deployments.md",
+      "title": "Deployments",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "deployments",
+      "is_branch_entry": true,
+      "updated": "2026-04-28",
+      "summary": "Release, CI, and distribution strategy. 0.3.2 (tagged v0.3.2). See packaging. GitHub Actions (.github/workflows/ci.yml): - Triggered on push/PR to mai",
+      "purpose": "Release, CI, and distribution strategy. 0.3.2 (tagged v0.3.2). See packaging. GitHub Actions (.github/workflows/ci.yml): - Triggered on push/PR to main - Matrix: ubuntu-latest + macos-latest, Python 3...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-28",
+          "text": "Released v0.3.0 — table rendering, graph neighbor highlight, local-mode default, staleness detection, absorb command, graph spread tuning."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Released v0.3.1 — CLI renamed to `bedrock`; PyPI package renamed to `project-bedrock`; `agent-knowledge` kept as deprecated alias."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Released v0.3.2 — `migrate-from-legacy` command; migration guide in docs/reference.md; cover image and demo GIF in README."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Deployments</h1>\n\n<p>Release, CI, and distribution strategy.</p>\n\n<h2>Version</h2>\n\n<p><strong>0.3.2</strong> (tagged <code>v0.3.2</code>). See <a class=\"wikilink\" data-target=\"packaging\">packaging</a>.</p>\n\n<h2>CI Pipeline</h2>\n\n<p><a class=\"wikilink\" data-target=\"testing\">GitHub Actions</a> (<code>.github/workflows/ci.yml</code>):</p>\n<ul>\n<li>Triggered on push/PR to <code>main</code></li>\n<li>Matrix: <code>ubuntu-latest</code> + <code>macos-latest</code>, Python 3.10/3.12/3.13</li>\n<li><strong>test</strong> job: pytest with editable install</li>\n<li><strong>build</strong> job: wheel build + installed <a class=\"wikilink\" data-target=\"cli\">CLI</a> smoke test</li>\n</ul>\n\n<h2>Distribution</h2>\n\n<ul>\n<li><code>pip install project-bedrock</code> (published to PyPI)</li>\n<li>Build: <code>python -m build</code> produces wheel and sdist</li>\n<li>Local dev: <code>pip install -e &quot;.[dev]&quot;</code> inside a venv (see <a class=\"wikilink\" data-target=\"gotchas\">gotchas</a>)</li>\n</ul>\n\n<h2>No Server Components</h2>\n\n<p>No Docker, no container deployment, no API server. See <a class=\"wikilink\" data-target=\"stack\">stack</a>.</p>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-28: Released v0.3.0 — table rendering, graph neighbor highlight, local-mode default, staleness detection, absorb command, graph spread tuning.</li>\n<li>2026-04-28: Released v0.3.1 — CLI renamed to <code>bedrock</code>; PyPI package renamed to <code>project-bedrock</code>; <code>agent-knowledge</code> kept as deprecated alias.</li>\n<li>2026-04-28: Released v0.3.2 — <code>migrate-from-legacy</code> command; migration guide in docs/reference.md; cover image and demo GIF in README.</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"packaging\">packaging</a> -- build system details</li>\n<li><a class=\"wikilink\" data-target=\"testing\">testing</a> -- what CI runs</li>\n<li><a class=\"wikilink\" data-target=\"stack\">stack</a> -- runtime requirements</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/gotchas.md",
+      "title": "Gotchas",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "gotchas",
+      "is_branch_entry": true,
+      "updated": "2026-04-28",
+      "summary": "Known pitfalls, traps, and non-obvious behaviors. - set -euo pipefail + trailing [ \"$DRY_RUN\" -eq 1 ] && log ... causes exit 1 when test is false. Use",
+      "purpose": "Known pitfalls, traps, and non-obvious behaviors. - set -euo pipefail + trailing [ \"$DRY_RUN\" -eq 1 ] && log ... causes exit 1 when test is false. Use if/then instead. See conventions. - ship.sh uses ...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-28",
+          "text": "Documented f-string backslash `SyntaxError` on Python < 3.12; fixed in `runtime/site.py`."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Gotchas</h1>\n\n<p>Known pitfalls, traps, and non-obvious behaviors.</p>\n\n<h2>Shell Scripts</h2>\n\n<ul>\n<li><code>set -euo pipefail</code> + trailing <code>[ &quot;$DRY_RUN&quot; -eq 1 ] &amp;&amp; log ...</code> causes exit 1 when test is false. Use <code>if/then</code> instead. See <a class=\"wikilink\" data-target=\"conventions\">conventions</a>.</li>\n<li><code>ship.sh</code> uses <code>python -m pytest -q</code> not bare <code>pytest</code> -- bare <code>pytest</code> fails outside venvs. See <a class=\"wikilink\" data-target=\"testing\">testing</a>.</li>\n</ul>\n\n<h2>Python / pip</h2>\n\n<ul>\n<li>macOS system Python refuses <code>pip install</code> (&quot;externally managed&quot;). Use brew python + <code>--user --break-system-packages</code>, or a venv. See <a class=\"wikilink\" data-target=\"stack\">stack</a>.</li>\n<li>Old system pip (e.g. 21.2.4) doesn&#x27;t support PEP 660 editable installs with <code>pyproject.toml</code>. Need pip &gt;= 21.3.</li>\n<li>Venv can get corrupted if multiple Python versions coexist in <code>.venv/lib/</code>. Fix: <code>rm -rf .venv</code> and recreate with explicit version.</li>\n</ul>\n\n<h2><a class=\"wikilink\" data-target=\"packaging\">Packaging</a></h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"architecture\">hatchling</a> editable installs copy <code>src/</code> files to <code>site-packages</code>. Changes to <code>assets/</code> require rebuild to take effect in the wheel. Source Python files update live.</li>\n<li>pip may silently skip extracting <code>.mdc</code> files from wheels. Workaround: <a class=\"wikilink\" data-target=\"integrations\">inline critical content in Python code</a>. See <a class=\"wikilink\" data-target=\"decisions\">decisions</a>.</li>\n</ul>\n\n<h2>Sync</h2>\n\n<ul>\n<li><code>stamp_status</code> regex must use <code>[ \\t]<em></code> not <code>\\s</em></code> to avoid eating newlines across YAML frontmatter fields. Fixed in <code>runtime/sync.py</code>.</li>\n</ul>\n\n<h2>Python Version Compatibility</h2>\n\n<ul>\n<li><strong>f-string backslash (Python &lt; 3.12)</strong>: <code>re.sub(r&#x27;...&#x27;, &#x27;&#x27;, val)</code> cannot be called directly inside an f-string <code>{}</code> on Python 3.10/3.11 — raises <code>SyntaxError: f-string expression part cannot include a backslash</code>. Extract the call to a local variable first. Fixed in <code>runtime/site.py</code> (2026-04-28). Python 3.12+ relaxed this restriction.</li>\n</ul>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-28: Documented f-string backslash <code>SyntaxError</code> on Python &lt; 3.12; fixed in <code>runtime/site.py</code>.</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"conventions\">conventions</a> -- rules designed to avoid these</li>\n<li><a class=\"wikilink\" data-target=\"testing\">testing</a> -- tests that catch regressions</li>\n<li><a class=\"wikilink\" data-target=\"decisions\">Decisions</a> -- why certain workarounds exist</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/history-layer.md",
+      "title": "History Layer",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "history-layer",
+      "is_branch_entry": true,
+      "updated": "2026-04-28",
+      "summary": "Lightweight project diary. Records what happened over time without becoming a second knowledge base. History/ events.ndjson    -- append-only machine-",
+      "purpose": "Lightweight project diary. Records what happened over time without becoming a second knowledge base. History/ events.ndjson    -- append-only machine-readable event log (NDJSON) history.md       -- hu...",
+      "current_state": [],
+      "recent_changes": [],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>History Layer</h1>\n\n<p>Lightweight project diary. Records what happened over time without becoming a second knowledge base.</p>\n\n<h2>Structure</h2>\n\n<pre><code>\nHistory/\n  events.ndjson    -- append-only machine-readable event log (NDJSON)\n  history.md       -- human-readable entrypoint (&lt; 150 lines, auto-generated)\n  timeline/        -- sparse milestone notes (init, backfill, releases only)\n</code></pre>\n\n<h2>Memory vs History</h2>\n\n<table>\n<tr><th>Layer</th><th>Role</th></tr>\n<tr><td><code>Memory/</code></td><td>What is true now (curated, authoritative)</td></tr>\n<tr><td><code>History/</code></td><td>What happened over time (lightweight diary)</td></tr>\n<tr><td><code>Evidence/</code></td><td>Imported/extracted material (non-canonical)</td></tr>\n<tr><td><code>Outputs/</code></td><td>Generated helper artifacts</td></tr>\n<tr><td><code>Sessions/</code></td><td>Temporary working state</td></tr>\n</table>\n\n<p>History is <strong>not</strong> a git replacement, not a full transcript store, not a second source of truth.</p>\n\n<h2>Event Types</h2>\n\n<ul>\n<li><code>project_start</code> — first git commit date + total commits (once ever)</li>\n<li><code>release</code> — one event per git tag (deduplicated by tag name)</li>\n<li><code>integration_cursor/claude/codex</code> — detected tool integration (once per month)</li>\n<li><code>backfill</code> — summary of the backfill run (once per month)</li>\n</ul>\n\n<h2>Deduplication</h2>\n\n<ul>\n<li><code>project_start</code>: once ever</li>\n<li><code>release</code>: once per tag name</li>\n<li><code>backfill</code>, <code>integration_*</code>: once per calendar month</li>\n<li>Safe to re-run: idempotent by design</li>\n</ul>\n\n<h2>Commands</h2>\n\n<ul>\n<li><code>bedrock init</code> — auto-backfills history after setup</li>\n<li><code>bedrock backfill-history</code> — manual refresh, supports <code>--dry-run</code>, <code>--json</code>, <code>--force</code></li>\n<li><code>bedrock doctor</code> — warns if <code>History/</code> is missing</li>\n</ul>\n\n<h2>Implementation</h2>\n\n<ul>\n<li><code>src/agent_knowledge/runtime/history.py</code></li>\n<li>Functions: <code>run<em>backfill()</code>, <code>init</em>history()</code>, <code>append<em>event()</code>, <code>log</em>event()</code>, <code>read<em>events()</code>, <code>history</em>exists()</code></li>\n<li>Git helpers: subprocess calls to <code>git log</code>, <code>git tag</code>, <code>git rev-list</code></li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"architecture\">architecture</a> -- runtime module layout</li>\n<li><a class=\"wikilink\" data-target=\"cli\">cli</a> -- backfill-history and doctor commands</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/integrations.md",
+      "title": "Integrations",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "integrations",
+      "is_branch_entry": true,
+      "updated": "2026-04-29",
+      "summary": "Multi-tool detection and bridge file installation for Cursor, Claude, and Codex. Called by init via detect() then install_all(). As of 0.2.5: Cursor a",
+      "purpose": "Multi-tool detection and bridge file installation for Cursor, Claude, and Codex. Called by init via detect() then install_all(). As of 0.2.5: Cursor and Claude are both first-class. Detection table up...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-29",
+          "text": "Cursor rule renamed `agent-knowledge.mdc` → `bedrock.mdc`. `refresh-system` auto-migrates existing installs. All bridge file path references updated to `./bedrock/`. `repo_abs` now uses `.as_posix()` to generate forward-slash paths (Windows JSON fix)."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Integrations</h1>\n\n<p>Multi-tool detection and bridge file installation for Cursor, Claude, and Codex.</p>\n\n<h2>Detection (<code>runtime/integrations.py</code>)</h2>\n\n<table>\n<tr><th>Tool</th><th>Detection</th><th>Always installed?</th></tr>\n<tr><td>Cursor</td><td><code>.cursor/</code> exists</td><td>Yes (default integration)</td></tr>\n<tr><td>Claude</td><td><code>.claude/</code> exists</td><td>Only if detected</td></tr>\n<tr><td>Codex</td><td><code>.codex/</code> exists</td><td>Only if detected</td></tr>\n</table>\n\n<p>Called by <a class=\"wikilink\" data-target=\"cli\">init</a> via <code>detect()</code> then <code>install_all()</code>.</p>\n\n<p><strong>As of 0.2.5</strong>: Cursor and Claude are both first-class. Detection table updated:</p>\n\n<table>\n<tr><th>Tool</th><th>Detection</th><th>Always installed?</th></tr>\n<tr><td>Cursor</td><td><code>.cursor/</code> exists</td><td>Yes</td></tr>\n<tr><td>Claude</td><td><code>.claude/</code> exists OR <code>CLAUDE.md</code> exists</td><td>Yes (always, like Cursor)</td></tr>\n<tr><td>Codex</td><td><code>.codex/</code> exists</td><td>Only if detected</td></tr>\n</table>\n\n<h2>Bridge Files</h2>\n\n<h3>Cursor (first-class)</h3>\n<ul>\n<li><code>.cursor/hooks.json</code> -- <strong>4 hooks</strong>: <code>post-write</code> (update), <code>session-start</code> (sync), <code>stop</code> (sync), <code>preCompact</code> (sync)</li>\n<li><code>.cursor/rules/bedrock.mdc</code> -- <code>alwaysApply</code> rule: knowledge layers table, onboarding flow, <code>/memory-update</code> reference (was <code>agent-knowledge.mdc</code>; auto-renamed by <code>refresh-system</code>)</li>\n<li><code>.cursor/commands/memory-update.md</code> -- <code>/memory-update</code> slash command</li>\n<li><code>.cursor/commands/system-update.md</code> -- <code>/system-update</code> slash command</li>\n</ul>\n\n<p>Rule content is <strong>inlined as <code><em>CURSOR</em>RULE</code> in <code>integrations.py</code></strong> AND available as <code>assets/templates/integrations/cursor/bedrock.mdc</code>. <code>refresh.py</code> uses the template file if present, falls back to the constant.</p>\n\n<p>Constants in <code>integrations.py</code>:</p>\n<ul>\n<li><code>CURSOR<em>EXPECTED</em>HOOK_EVENTS = {&quot;session-start&quot;, &quot;post-write&quot;, &quot;stop&quot;, &quot;preCompact&quot;}</code></li>\n<li><code>CURSOR<em>EXPECTED</em>COMMANDS = {&quot;memory-update.md&quot;, &quot;system-update.md&quot;}</code></li>\n</ul>\n\n<p><code>check<em>cursor</em>integration(repo_root)</code> in <code>refresh.py</code> validates all 3 components and is called by <code>doctor</code>.</p>\n\n<h3>Claude Code (first-class, added 0.2.5)</h3>\n<ul>\n<li><code>.claude/settings.json</code> -- hooks: SessionStart (sync), Stop (sync), PreCompact (sync)</li>\n<li><code>.claude/CLAUDE.md</code> -- runtime contract: knowledge layers, onboarding flow, <code>/memory-update</code> reference</li>\n<li><code>.claude/commands/memory-update.md</code> -- <code>/memory-update</code> slash command</li>\n<li><code>.claude/commands/system-update.md</code> -- <code>/system-update</code> slash command</li>\n</ul>\n\n<p><code>check<em>claude</em>integration(repo_root)</code> in <code>refresh.py</code> mirrors Cursor&#x27;s health check. Called by <code>doctor</code>.</p>\n\n<h3>Codex</h3>\n<ul>\n<li><code>.codex/AGENTS.md</code> -- directs to root <code>AGENTS.md</code> and <a class=\"wikilink\" data-target=\"STATUS\">STATUS</a></li>\n</ul>\n\n<h2>Onboarding Handoff</h2>\n\n<div class=\"mermaid\">flowchart TD\n    A[\"Agent session starts\"] --> B{\"STATUS.md\\nonboarding:?\"}\n    B -->|pending| C[\"Read AGENTS.md\\nfirst-time setup\"]\n    B -->|complete| D[\"Read Memory/MEMORY.md\\nfor context\"]\n    C --> E[\"Run bedrock init\"]\n    E --> D</div>\n\n<p>No manual <code>next-prompt</code> command needed.</p>\n\n<h2>PATH Conflict Gotcha</h2>\n\n<p>Multiple tools can install an <code>agent-knowledge</code> binary. Graphify (Node.js) installs one at <code>~/.nvm/versions/node/&lt;version&gt;/bin/agent-knowledge</code> which may shadow our Python CLI. Fix: add Python bin to PATH before nvm — <code>export PATH=&quot;/Users/taio/Library/Python/3.13/bin:$PATH&quot;</code>. Or invoke directly: <code>python3 -m agent_knowledge</code>.</p>\n\n<h2>Key Decision</h2>\n\n<p>Cursor rule content is <strong>inlined as <code><em>CURSOR</em>RULE</code></strong> in <code>integrations.py</code> AND stored at <code>assets/templates/integrations/cursor/bedrock.mdc</code>. <code>refresh.py</code> prefers the file; falls back to the constant. See <a class=\"wikilink\" data-target=\"decisions\">decisions</a>.</p>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-29: Cursor rule renamed <code>agent-knowledge.mdc</code> → <code>bedrock.mdc</code>. <code>refresh-system</code> auto-migrates existing installs. All bridge file path references updated to <code>./bedrock/</code>. <code>repo<em>abs</code> now uses <code>.as</em>posix()</code> to generate forward-slash paths (Windows JSON fix).</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"cli\">init command</a> -- orchestrates detection and install</li>\n<li><a class=\"wikilink\" data-target=\"architecture\">architecture</a> -- design overview</li>\n<li><a class=\"wikilink\" data-target=\"testing\">testing</a> -- integration test coverage</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/packaging.md",
+      "title": "Packaging",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "packaging",
+      "is_branch_entry": true,
+      "updated": "2026-04-30",
+      "summary": "Python packaging strategy for making bedrock pip-installable. - Backend: hatchling via pyproject.toml - Layout: src-layout at src/agentknowledge/ - En",
+      "purpose": "Python packaging strategy for making bedrock pip-installable. - Backend: hatchling via pyproject.toml - Layout: src-layout at src/agent_knowledge/ - Entry points: bedrock = agent_knowledge.cli:main, a...",
+      "current_state": [],
+      "recent_changes": [
+        {
+          "date": "2026-04-28",
+          "text": "Bumped to v0.2.9; `docs/` folder added to repo for GitHub/PyPI display assets (GIF, examples) — not included in wheel."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Bumped to v0.3.0 — see deployments for full changelog."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "PyPI package renamed from `agent-knowledge-cli` to `project-bedrock` (v0.3.0)."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "CLI primary command renamed from `agent-knowledge` to `bedrock`; `agent-knowledge` kept as deprecated alias (v0.3.1)."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "`migrate-from-legacy` command added to help existing users migrate (v0.3.2). `pipx install project-bedrock` recommended for global install."
+        },
+        {
+          "date": "2026-04-29",
+          "text": "v0.4.0 — vault folder renamed `agent-knowledge/` → `bedrock/` everywhere. `migrate-vault` command added for existing users. Windows compatibility fixes (bash detection, JSON paths, UTF-8 git output)."
+        },
+        {
+          "date": "2026-04-30",
+          "text": "v0.4.1 — `completion`, `upgrade`, `/compact-context` commands added. Specialist commands hidden from `--help`. CI tests fixed for v0.4.0 rename."
+        }
+      ],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Packaging</h1>\n\n<p>Python <a class=\"wikilink\" data-target=\"stack\">packaging</a> strategy for making bedrock pip-installable.</p>\n\n<h2>Build System</h2>\n\n<ul>\n<li>Backend: <strong>hatchling</strong> via <code>pyproject.toml</code></li>\n<li>Layout: src-layout at <code>src/agent_knowledge/</code></li>\n<li>Entry points: <code>bedrock = agent<em>knowledge.cli:main</code>, <code>agent-knowledge = agent</em>knowledge.cli:main</code> (deprecated alias)</li>\n</ul>\n\n<h2>Asset Bundling</h2>\n\n<p>All non-Python assets consolidated under <code>assets/</code> at repo root. Bundled into wheel via <code>[tool.hatch.build.targets.wheel.force-include]</code>:</p>\n<ul>\n<li><code>assets/scripts</code> -&gt; <code>agent_knowledge/assets/scripts</code></li>\n<li><code>assets/templates</code> -&gt; <code>agent_knowledge/assets/templates</code></li>\n<li><code>assets/rules</code> -&gt; <code>agent_knowledge/assets/rules</code></li>\n<li>(and rules-global, commands, skills, skills-cursor, claude)</li>\n</ul>\n\n<p>See <a class=\"wikilink\" data-target=\"architecture\">architecture</a> for how the code finds these at runtime.</p>\n\n<h2>Version</h2>\n\n<p>Current: <strong>0.4.1</strong> (tagged <code>v0.4.1</code>). PyPI package name: <code>project-bedrock</code>. See <a class=\"wikilink\" data-target=\"deployments\">deployments</a>.</p>\n\n<p>Install: <code>pip install project-bedrock</code> or <code>pipx install project-bedrock</code>. Command: <code>bedrock</code>.</p>\n\n<p><strong>Breaking change in 0.4.0</strong>: vault folder renamed from <code>./agent-knowledge/</code> to <code>./bedrock/</code>. Existing users run <code>bedrock migrate-vault</code> then <code>bedrock refresh-system</code>.</p>\n\n<h2>Dependencies</h2>\n\n<p>See <a class=\"wikilink\" data-target=\"stack\">stack</a> for the full list.</p>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-28: Bumped to v0.2.9; <code>docs/</code> folder added to repo for GitHub/PyPI display assets (GIF, examples) — not included in wheel.</li>\n<li>2026-04-28: Bumped to v0.3.0 — see deployments for full changelog.</li>\n<li>2026-04-28: PyPI package renamed from <code>agent-knowledge-cli</code> to <code>project-bedrock</code> (v0.3.0).</li>\n<li>2026-04-28: CLI primary command renamed from <code>agent-knowledge</code> to <code>bedrock</code>; <code>agent-knowledge</code> kept as deprecated alias (v0.3.1).</li>\n<li>2026-04-28: <code>migrate-from-legacy</code> command added to help existing users migrate (v0.3.2). <code>pipx install project-bedrock</code> recommended for global install.</li>\n<li>2026-04-29: v0.4.0 — vault folder renamed <code>agent-knowledge/</code> → <code>bedrock/</code> everywhere. <code>migrate-vault</code> command added for existing users. Windows compatibility fixes (bash detection, JSON paths, UTF-8 git output).</li>\n<li>2026-04-30: v0.4.1 — <code>completion</code>, <code>upgrade</code>, <code>/compact-context</code> commands added. Specialist commands hidden from <code>--help</code>. CI tests fixed for v0.4.0 rename.</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"stack\">stack</a> -- runtimes and frameworks</li>\n<li><a class=\"wikilink\" data-target=\"architecture\">architecture</a> -- package layout</li>\n<li><a class=\"wikilink\" data-target=\"gotchas\">gotchas</a> -- pip installation pitfalls</li>\n<li><a class=\"wikilink\" data-target=\"decisions\">Decision: hatchling over setuptools</a></li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/stack.md",
+      "title": "Stack",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "stack",
+      "is_branch_entry": true,
+      "updated": "2026-04-28",
+      "summary": "Languages, runtimes, frameworks, and tooling used by agent-knowledge. - Python 3.9+ -- package code, CLI, tests - Bash -- bundled scripts in assets/sc",
+      "purpose": "Languages, runtimes, frameworks, and tooling used by agent-knowledge. - Python 3.9+ -- package code, CLI, tests - Bash -- bundled scripts in assets/scripts/ (see architecture) - hatchling via pyprojec...",
+      "current_state": [],
+      "recent_changes": [],
+      "open_questions": [],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Stack</h1>\n\n<p>Languages, runtimes, frameworks, and tooling used by agent-knowledge.</p>\n\n<h2>Languages &amp; Runtimes</h2>\n\n<ul>\n<li><strong>Python 3.9+</strong> -- package code, <a class=\"wikilink\" data-target=\"cli\">CLI</a>, <a class=\"wikilink\" data-target=\"testing\">tests</a></li>\n<li><strong>Bash</strong> -- bundled scripts in <code>assets/scripts/</code> (see <a class=\"wikilink\" data-target=\"architecture\">architecture</a>)</li>\n</ul>\n\n<h2>Build &amp; Packaging</h2>\n\n<ul>\n<li><strong><a class=\"wikilink\" data-target=\"packaging\">hatchling</a></strong> via <code>pyproject.toml</code>, src-layout at <code>src/agent_knowledge/</code></li>\n<li>Wheel includes all non-Python assets via <code>force-include</code></li>\n</ul>\n\n<h2>Dependencies</h2>\n\n<ul>\n<li><strong>click &gt;= 8.0</strong> -- <a class=\"wikilink\" data-target=\"cli\">CLI framework</a></li>\n<li><strong>tiktoken</strong> (optional) -- token measurement</li>\n<li><strong>pytest &gt;= 7.0</strong> (dev) -- <a class=\"wikilink\" data-target=\"testing\">testing</a></li>\n<li><strong>python-build</strong> (dev) -- wheel/sdist building</li>\n</ul>\n\n<h2>CI/CD</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"deployments\">GitHub Actions</a> -- Python 3.10, 3.12, 3.13 on Ubuntu + macOS</li>\n</ul>\n\n<h2>What This Is Not</h2>\n\n<ul>\n<li>No frontend, no database, no API server, no Docker</li>\n</ul>\n\n<h2>See Also</h2>\n\n<ul>\n<li><a class=\"wikilink\" data-target=\"packaging\">packaging</a> -- how the package is built and distributed</li>\n<li><a class=\"wikilink\" data-target=\"architecture\">architecture</a> -- how the code is structured</li>\n<li><a class=\"wikilink\" data-target=\"deployments\">deployments</a> -- CI pipeline details</li>\n</ul>\n"
+    },
+    {
+      "path": "Memory/testing.md",
+      "title": "Testing",
+      "folder": "Memory",
+      "canonical": true,
+      "note_type": "durable-branch",
+      "area": "testing",
+      "is_branch_entry": true,
+      "updated": "2026-04-30",
+      "summary": "Test strategy for packaging validation and CLI correctness.",
+      "purpose": "Test strategy for packaging validation and CLI correctness.",
+      "current_state": [
+        "Framework: `pytest` (dev dependency).",
+        "**151 tests** across 2 files: `tests/test_packaging.py` (23) and `tests/test_cli.py` (~128).",
+        "CI: GitHub Actions (`.github/workflows/ci.yml`) -- ubuntu-latest + macos-latest, Python 3.9/3.12/3.13.",
+        "`test` job: runs `pytest` with editable install.",
+        "`build` job: builds wheel, installs from wheel, runs CLI smoke tests (`--help`, `--version`, subcommand `--help`)."
+      ],
+      "recent_changes": [
+        {
+          "date": "2026-04-08",
+          "text": "Initial test suite created (27 tests)."
+        },
+        {
+          "date": "2026-04-08",
+          "text": "Added 11 new tests for zero-arg init, integrations, onboarding (total: 38)."
+        },
+        {
+          "date": "2026-04-08",
+          "text": "Added GitHub Actions CI workflow."
+        },
+        {
+          "date": "2026-04-10",
+          "text": "Added 31 new tests for capture, index, search, export-html, hooks, naming (total: 69)."
+        },
+        {
+          "date": "2026-04-10",
+          "text": "Added 22 new tests for skills, clean-import, export-canvas, core CLI stability (total: 91)."
+        },
+        {
+          "date": "2026-04-10",
+          "text": "Added 6 new tests for site generator (export-html), replaced old viewer tests (total: 97)."
+        },
+        {
+          "date": "2026-04-10",
+          "text": "Added 11 new tests for refresh-system command (total: 108)."
+        },
+        {
+          "date": "2026-04-10",
+          "text": "Added 10 new tests for graph view in site export (total: 118)."
+        },
+        {
+          "date": "2026-04-11",
+          "text": "Added 9 new tests for backfill-history / history layer, +1 for new subcommand help (total: 128)."
+        },
+        {
+          "date": "2026-04-23",
+          "text": "Added Claude integration tests (total: ~143)."
+        },
+        {
+          "date": "2026-04-28",
+          "text": "Added absorb tests (total: 153)."
+        },
+        {
+          "date": "2026-04-30",
+          "text": "Fixed all CI failures from v0.4.0 rename: updated ~80 path refs (`agent-knowledge` → `bedrock`), `is_symlink()` → `is_dir()` for local mode, content string checks, STATUS.md timestamp regex. CI now green (151 passing)."
+        }
+      ],
+      "open_questions": [
+        "None currently."
+      ],
+      "decision_links": [],
+      "leaves": [],
+      "html": "<h1>Testing</h1>\n\n<h2>Purpose</h2>\n\n<p>Test strategy for packaging validation and CLI correctness.</p>\n\n<h2>Current State</h2>\n\n<ul>\n<li>Framework: <code>pytest</code> (dev dependency).</li>\n<li><strong>151 tests</strong> across 2 files: <code>tests/test<em>packaging.py</code> (23) and <code>tests/test</em>cli.py</code> (~128).</li>\n<li>CI: GitHub Actions (<code>.github/workflows/ci.yml</code>) -- ubuntu-latest + macos-latest, Python 3.9/3.12/3.13.</li>\n</ul>\n<p>  - <code>test</code> job: runs <code>pytest</code> with editable install.</p>\n<p>  - <code>build</code> job: builds wheel, installs from wheel, runs CLI smoke tests (<code>--help</code>, <code>--version</code>, subcommand <code>--help</code>).</p>\n\n<h3>test_packaging.py</h3>\n\n<ul>\n<li>Verifies package is importable and <code><strong>version</strong></code> exists.</li>\n<li>Verifies <code>get<em>assets</em>dir()</code> resolves without error.</li>\n<li>Checks all bundled scripts, common lib, templates, rules, and commands exist at expected paths under assets.</li>\n<li>Verifies <code>get_script()</code> returns valid paths and raises <code>FileNotFoundError</code> for missing scripts.</li>\n<li>Verifies <code>capture</code>, <code>index</code>, and <code>viewer</code> modules are importable.</li>\n<li>Verifies <code>Evidence/captures/README.md</code> template is bundled.</li>\n</ul>\n\n<h3>test_cli.py</h3>\n\n<ul>\n<li>Top-level <code>--help</code> and <code>--version</code>.</li>\n<li>Parametrized <code>--help</code> for all 23 subcommands (including <code>absorb</code>, <code>migrate-to-local</code>, <code>search</code>, <code>index</code>, <code>export-html</code>, <code>view</code>, <code>clean-import</code>, <code>export-canvas</code>, <code>refresh-system</code>, <code>backfill-history</code>).</li>\n<li><code>init --help</code> contains <code>--slug</code>.</li>\n<li><code>init --dry-run</code> exits 0 and does not create files.</li>\n<li><code>doctor --json</code> output is valid JSON with <code>&quot;script&quot;: &quot;doctor&quot;</code>.</li>\n<li>Smoke test: <code>init</code> in tmp repo -&gt; verifies symlink and <code>.agent-project.yaml</code> created -&gt; <code>doctor --json</code> returns clean result.</li>\n<li><code>measure-tokens</code> with no args shows help text.</li>\n<li>All sync tests: copies memory branches, extracts git log, stamps STATUS.md, JSON output.</li>\n<li>Capture: sync creates <code>.yaml</code> in <code>Evidence/captures/</code>, not in <code>Memory/</code>, idempotent within same minute, dry-run safe.</li>\n<li>Index: sync creates <code>Outputs/knowledge-index.json</code> and <code>.md</code>, Memory notes marked canonical, Evidence/Outputs non-canonical.</li>\n<li>Search: returns results, prefers Memory/ over other folders.</li>\n<li>Export-HTML: creates standalone HTML with badges and non-canonical warnings, idempotent, dry-run safe.</li>\n<li>Hooks: <code>.cursor/hooks.json</code> uses CLI commands (not raw script paths), has required fields.</li>\n<li>Package naming: <code>pyproject.toml</code> name is <code>project-bedrock</code>, scripts entry is <code>agent-knowledge</code>.</li>\n<li>Skills: all expected skill files exist, have frontmatter, and <code>SKILLS.md</code> index is present.</li>\n<li><code>clean-import</code>: imports HTML file, strips nav, does not write to Memory/, dry-run safe, JSON output.</li>\n<li><code>export-canvas</code>: creates valid Canvas JSON in Outputs/, dry-run safe, includes Memory/ nodes, not in Memory/.</li>\n<li>Core CLI flow: <code>init -&gt; sync -&gt; doctor</code> still works; new commands do not create non-markdown files in Memory/.</li>\n<li><code>refresh-system</code>: runs without error, produces clean JSON, dry-run safe, idempotent, never touches Memory/, updates STATUS.md/project-yaml version fields, bundled <code>system-update.md</code> exists and is discoverable.</li>\n<li><code>export-html</code> graph: <code>graph.json</code> created, project node present, canonical distinction enforced, edges reference valid nodes, graph tab in HTML, GRAPH_DATA embedded and parseable, dry-run safe, JSON mode includes graph counts.</li>\n<li><strong>Claude integration</strong>: <code>init</code> installs Claude settings, hooks, commands, and CLAUDE.md; refresh-system updates Claude config; doctor reports Claude health; smoke test <code>init -&gt; doctor</code> with Claude.</li>\n<li><strong>absorb</strong>: help, dry-run no mutation, imports docs and docs/ dir, metadata header present, ADRs parsed into decisions.md, idempotent, manifest created and not in Memory/, JSON mode, exits nonzero without vault, skips vault files itself.</li>\n</ul>\n\n<h3>Running tests</h3>\n\n<ul>\n<li>All tests run via the installed package (<code>python -m agent_knowledge</code> or editable install).</li>\n<li><code>BIN = [sys.executable, &quot;-m&quot;, &quot;agent_knowledge&quot;]</code> ensures tests use the current Python interpreter.</li>\n<li>Helper <code><em>init</em>repo(tmp_path)</code> creates a git-initialized temp directory for test isolation.</li>\n</ul>\n\n<h2>Recent Changes</h2>\n\n<ul>\n<li>2026-04-08: Initial test suite created (27 tests).</li>\n<li>2026-04-08: Added 11 new tests for zero-arg init, integrations, onboarding (total: 38).</li>\n<li>2026-04-08: Added GitHub Actions CI workflow.</li>\n<li>2026-04-10: Added 31 new tests for capture, index, search, export-html, hooks, naming (total: 69).</li>\n<li>2026-04-10: Added 22 new tests for skills, clean-import, export-canvas, core CLI stability (total: 91).</li>\n<li>2026-04-10: Added 6 new tests for site generator (export-html), replaced old viewer tests (total: 97).</li>\n<li>2026-04-10: Added 11 new tests for refresh-system command (total: 108).</li>\n<li>2026-04-10: Added 10 new tests for graph view in site export (total: 118).</li>\n<li>2026-04-11: Added 9 new tests for backfill-history / history layer, +1 for new subcommand help (total: 128).</li>\n<li>2026-04-23: Added Claude integration tests (total: ~143).</li>\n<li>2026-04-28: Added absorb tests (total: 153).</li>\n<li>2026-04-30: Fixed all CI failures from v0.4.0 rename: updated ~80 path refs (<code>agent-knowledge</code> → <code>bedrock</code>), <code>is<em>symlink()</code> → <code>is</em>dir()</code> for local mode, content string checks, STATUS.md timestamp regex. CI now green (151 passing).</li>\n</ul>\n\n<h2>Open Questions</h2>\n\n<ul>\n<li>None currently.</li>\n</ul>\n"
+    }
+  ],
+  "decisions": [],
+  "recent_changes_global": [
+    {
+      "date": "2026-04-30",
+      "text": "`completion` command added (tab completion for zsh/bash/fish, `--install` flag). `upgrade` command added (checks PyPI, detects pipx vs pip). `/compact-context` slash command added for Claude + Cursor. 8 specialist commands hidden from `--help` (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format).",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-30",
+      "text": "v0.4.1 — `completion`, `upgrade`, `/compact-context` commands added. Specialist commands hidden from `--help`. CI tests fixed for v0.4.0 rename.",
+      "branch": "Packaging",
+      "branch_path": "Memory/packaging.md"
+    },
+    {
+      "date": "2026-04-30",
+      "text": "Fixed all CI failures from v0.4.0 rename: updated ~80 path refs (`agent-knowledge` → `bedrock`), `is_symlink()` → `is_dir()` for local mode, content string checks, STATUS.md timestamp regex. CI now green (151 passing).",
+      "branch": "Testing",
+      "branch_path": "Memory/testing.md"
+    },
+    {
+      "date": "2026-04-29",
+      "text": "vault path changed `agent-knowledge/` → `bedrock/` in all CLI commands. `migrate-vault` added (24 total commands). `refresh-system` now auto-renames `agent-knowledge.mdc` → `bedrock.mdc`. Windows: bash auto-detected, JSON paths use forward slashes, git subprocesses use UTF-8.",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-29",
+      "text": "Cursor rule renamed `agent-knowledge.mdc` → `bedrock.mdc`. `refresh-system` auto-migrates existing installs. All bridge file path references updated to `./bedrock/`. `repo_abs` now uses `.as_posix()` to generate forward-slash paths (Windows JSON fix).",
+      "branch": "Integrations",
+      "branch_path": "Memory/integrations.md"
+    },
+    {
+      "date": "2026-04-29",
+      "text": "v0.4.0 — vault folder renamed `agent-knowledge/` → `bedrock/` everywhere. `migrate-vault` command added for existing users. Windows compatibility fixes (bash detection, JSON paths, UTF-8 git output).",
+      "branch": "Packaging",
+      "branch_path": "Memory/packaging.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Local vault mode is now the default (`init` no longer needs `--local`; use `--external` to opt out).",
+      "branch": "Architecture",
+      "branch_path": "Memory/architecture.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "`site.py` table rendering fixed — markdown tables now render as proper HTML `<table>` elements.",
+      "branch": "Architecture",
+      "branch_path": "Memory/architecture.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Graph wikilink edges added — `build_graph_data()` extracts `[[wikilinks]]` and creates blue `related_to` edges.",
+      "branch": "Architecture",
+      "branch_path": "Memory/architecture.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Graph node selection dims unrelated nodes and keeps neighbors semi-visible with labels.",
+      "branch": "Architecture",
+      "branch_path": "Memory/architecture.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Graph layout spread tuned — `SIM_REPULSION 18000`, `SIM_REST 220`, `SIM_GRAVITY 0.008` for a readable layout.",
+      "branch": "Architecture",
+      "branch_path": "Memory/architecture.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Staleness detection added to `doctor` via `check_stale_notes()` in `refresh.py`.",
+      "branch": "Architecture",
+      "branch_path": "Memory/architecture.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "`init` now defaults to local (in-repo) mode; `--external` flag added to opt out.",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "`doctor` now runs Python pre-checks for staleness — compares note `updated` dates against source code commit dates.",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "`absorb` subcommand added (imports external docs/ADRs into Evidence/).",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "CLI renamed to `bedrock`; `agent-knowledge` kept as deprecated alias. All help text, templates, skills, hooks updated.",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "`migrate-from-legacy` added — runs refresh-system and prints pip migration instructions for agent-knowledge-cli users.",
+      "branch": "CLI",
+      "branch_path": "Memory/cli.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Added `update_when` convention for all `durable-branch` notes; `doctor` uses it to detect stale notes.",
+      "branch": "Conventions",
+      "branch_path": "Memory/conventions.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Documented that each area in `refresh._NOTE_AREA_PATHS` must have a matching durable-branch entry.",
+      "branch": "Conventions",
+      "branch_path": "Memory/conventions.md"
+    },
+    {
+      "date": "2026-04-28",
+      "text": "Released v0.3.0 — table rendering, graph neighbor highlight, local-mode default, staleness detection, absorb command, graph spread tuning.",
+      "branch": "Deployments",
+      "branch_path": "Memory/deployments.md"
+    }
+  ],
+  "evidence": [],
+  "outputs": [
+    {
+      "path": "Outputs/knowledge-index.md",
+      "title": "Knowledge Index",
+      "folder": "Outputs",
+      "canonical": false,
+      "note_type": "output",
+      "summary": "> Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-04T13:17:43Z Total notes: 14 - Memory Memory/MEMORY.md (branch entry) - [packaging](packaging.md) -- PyPI: project-bedrock..."
+    }
+  ],
+  "stats": {
+    "branch_count": 10,
+    "decision_count": 0,
+    "evidence_count": 0,
+    "output_count": 1,
+    "note_count": 14
+  }
+}

@@ -64,9 +64,14 @@ Constants in `integrations.py`:
 
 ## Onboarding Handoff
 
-Bridge files instruct agents to check [[STATUS|STATUS.md]]:
-- If `onboarding: pending` -> follow `AGENTS.md` first-time instructions
-- If `onboarding: complete` -> read [[MEMORY]] for context
+```mermaid
+flowchart TD
+    A["Agent session starts"] --> B{"STATUS.md\nonboarding:?"}
+    B -->|pending| C["Read AGENTS.md\nfirst-time setup"]
+    B -->|complete| D["Read Memory/MEMORY.md\nfor context"]
+    C --> E["Run bedrock init"]
+    E --> D
+```
 
 No manual `next-prompt` command needed.
 

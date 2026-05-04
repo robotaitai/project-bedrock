@@ -978,7 +978,7 @@ body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSy
 <script type="module">
 import mermaid from 'https://cdn.jsdelivr.net/npm/mermaid@11/dist/mermaid.esm.min.mjs';
 mermaid.initialize({
-  startOnLoad: true,
+  startOnLoad: false,
   theme: 'dark',
   themeVariables: {
     background: '#161b22',
@@ -993,6 +993,7 @@ mermaid.initialize({
     fontSize: '13px'
   }
 });
+window._mermaid = mermaid;
 </script>
 </head>
 <body>
@@ -1308,6 +1309,23 @@ function resolveWikilinks(container){
   });
 }
 
+function renderMermaid(container){
+  const els = Array.from(container.querySelectorAll('.mermaid')).filter(el=>!el.getAttribute('data-processed'));
+  if(!els.length) return;
+  if(window._mermaid){
+    window._mermaid.run({nodes: els});
+  } else {
+    let tries = 0;
+    const retry = () => {
+      const live = els.filter(el=>document.body.contains(el)&&!el.getAttribute('data-processed'));
+      if(!live.length) return;
+      if(window._mermaid){ window._mermaid.run({nodes: live}); }
+      else if(++tries < 20){ setTimeout(retry, 150); }
+    };
+    setTimeout(retry, 150);
+  }
+}
+
 function showNote(path){
   _hideGraph();
   _view='note'; _notePath=path;
@@ -1357,6 +1375,7 @@ function showNote(path){
   h += `</div>`;
   content.innerHTML = h;
   resolveWikilinks(content);
+  renderMermaid(content);
   setTopbar('note', note);
   setSidebarActive(path);
   document.getElementById('content').scrollTop=0;

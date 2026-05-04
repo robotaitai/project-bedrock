@@ -12,3 +12,8 @@
 {"ts":"2026-04-29T16:50:44Z","type":"integration_cursor","tool":"cli","slug":"agent-knowledge","summary":"cursor integration detected"}
 {"ts":"2026-04-29T16:50:44Z","type":"integration_claude","tool":"cli","slug":"agent-knowledge","summary":"claude integration detected"}
 {"ts":"2026-04-29T16:50:44Z","type":"backfill","tool":"cli","slug":"agent-knowledge","summary":"History backfill: 61 commits, 10 releases, 2 integrations","tags":["v0.3.2","v0.3.1","v0.3.0","v0.2.9","v0.2.8"]}
+{"ts":"2026-05-04T13:14:34Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.4.2","tags":["v0.4.2"]}
+{"ts":"2026-05-04T13:14:34Z","type":"release","tool":"git","slug":"agent-knowledge","summary":"Release v0.4.1","tags":["v0.4.1"]}
+{"ts":"2026-05-04T13:14:34Z","type":"integration_cursor","tool":"cli","slug":"agent-knowledge","summary":"cursor integration detected"}
+{"ts":"2026-05-04T13:14:34Z","type":"integration_claude","tool":"cli","slug":"agent-knowledge","summary":"claude integration detected"}
+{"ts":"2026-05-04T13:14:34Z","type":"backfill","tool":"cli","slug":"agent-knowledge","summary":"History backfill: 76 commits, 10 releases, 2 integrations","tags":["v0.4.2","v0.4.1","v0.3.2","v0.3.0","v0.2.9"]}

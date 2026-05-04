@@ -114,6 +114,17 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - Common flags: `--dry-run`, `--json`, `--force`
 - All output to stderr in human mode; stdout is pure JSON in `--json` mode
 
+## Core workflow
+
+```mermaid
+flowchart LR
+    init["bedrock init\n(once per project)"] --> sync
+    sync["bedrock sync\n(after work sessions)"] --> doctor
+    doctor["bedrock doctor\n(health + staleness)"]
+    sync --> view["bedrock view\n(browse knowledge site)"]
+    sync --> ship["bedrock ship\n(commit + push)"]
+```
+
 ## Recent Changes
 
 - 2026-04-28: `init` now defaults to local (in-repo) mode; `--external` flag added to opt out.

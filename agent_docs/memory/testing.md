@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: testing
-updated: 2026-04-28
+updated: 2026-04-30
 tags:
   - agent-knowledge
   - testing
@@ -21,8 +21,8 @@ Test strategy for packaging validation and CLI correctness.
 ## Current State
 
 - Framework: `pytest` (dev dependency).
-- **153 tests** across 2 files: `tests/test_packaging.py` (23) and `tests/test_cli.py` (130).
-- CI: GitHub Actions (`.github/workflows/ci.yml`) -- ubuntu-latest + macos-latest, Python 3.10/3.12/3.13.
+- **151 tests** across 2 files: `tests/test_packaging.py` (23) and `tests/test_cli.py` (~128).
+- CI: GitHub Actions (`.github/workflows/ci.yml`) -- ubuntu-latest + macos-latest, Python 3.9/3.12/3.13.
   - `test` job: runs `pytest` with editable install.
   - `build` job: builds wheel, installs from wheel, runs CLI smoke tests (`--help`, `--version`, subcommand `--help`).
 
@@ -79,6 +79,7 @@ Test strategy for packaging validation and CLI correctness.
 - 2026-04-11: Added 9 new tests for backfill-history / history layer, +1 for new subcommand help (total: 128).
 - 2026-04-23: Added Claude integration tests (total: ~143).
 - 2026-04-28: Added absorb tests (total: 153).
+- 2026-04-30: Fixed all CI failures from v0.4.0 rename: updated ~80 path refs (`agent-knowledge` → `bedrock`), `is_symlink()` → `is_dir()` for local mode, content string checks, STATUS.md timestamp regex. CI now green (151 passing).
 
 ## Open Questions
 

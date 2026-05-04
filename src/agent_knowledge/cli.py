@@ -1467,6 +1467,167 @@ def completion(shell: str | None, install: bool) -> None:
         click.echo(f"Or run: bedrock completion --install", err=True)
 
 
+_GLOBAL_SENTINEL_CURSOR = "# bedrock-global"
+_GLOBAL_SENTINEL_CLAUDE = "<!-- bedrock-global -->"
+_GLOBAL_SENTINEL_CODEX = "<!-- bedrock-global -->"
+
+_GLOBAL_CURSOR_RULE = """\
+---
+description: bedrock -- load project memory if present in any project
+alwaysApply: true
+---
+
+If this project has `./bedrock/STATUS.md`:
+
+1. Read `./bedrock/STATUS.md`
+2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
+3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+
+At end of session with meaningful work:
+- Update relevant notes in `./bedrock/Memory/`
+- Run: `bedrock sync --project .`
+"""
+
+_GLOBAL_CLAUDE_SECTION = """\
+
+<!-- bedrock-global -->
+## Project Bedrock (if present)
+
+If this project has `./bedrock/STATUS.md`:
+
+1. Read `./bedrock/STATUS.md`
+2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
+3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+
+At end of session with meaningful work, update `./bedrock/Memory/` and run `bedrock sync --project .`
+<!-- /bedrock-global -->
+"""
+
+_GLOBAL_CODEX_AGENTS_MD = """\
+<!-- bedrock-global -->
+# Project Bedrock (global)
+
+If this project has `./bedrock/STATUS.md`:
+
+1. Read `./bedrock/STATUS.md`
+2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
+3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+
+At end of session with meaningful work:
+- Update relevant notes in `./bedrock/Memory/`
+- Run: `bedrock sync --project .`
+<!-- /bedrock-global -->
+"""
+
+
+@main.command("install-global")
+@click.option("--uninstall", is_flag=True, help="Remove bedrock from global config files.")
+@click.option("--dry-run", is_flag=True, help="Show what would change without writing.")
+def install_global(uninstall: bool, dry_run: bool) -> None:
+    """Install bedrock into global agent config (~/.cursor, ~/.claude, ~/.codex).
+
+    Adds a lightweight conditional rule to each tool's global config so
+    any project with a bedrock vault is picked up automatically — no per-project
+    setup needed.
+
+    Safe to run multiple times (idempotent). Use --uninstall to remove.
+    """
+    home = Path.home()
+    actions: list[str] = []
+
+    # ── Cursor: ~/.cursor/rules/bedrock-global.mdc ────────────────────────────
+    cursor_rule = home / ".cursor" / "rules" / "bedrock-global.mdc"
+    if uninstall:
+        if cursor_rule.exists():
+            if not dry_run:
+                cursor_rule.unlink()
+            actions.append(f"  removed: {cursor_rule}")
+        else:
+            actions.append(f"  skip (not installed): {cursor_rule}")
+    else:
+        cursor_rule.parent.mkdir(parents=True, exist_ok=True)
+        if cursor_rule.exists() and _GLOBAL_SENTINEL_CURSOR in cursor_rule.read_text(encoding="utf-8"):
+            actions.append(f"  up-to-date: {cursor_rule}")
+        else:
+            if not dry_run:
+                cursor_rule.write_text(_GLOBAL_CURSOR_RULE, encoding="utf-8")
+            actions.append(f"  {'[dry-run] would write' if dry_run else 'wrote'}: {cursor_rule}")
+
+    # ── Claude Code: append section to ~/.claude/CLAUDE.md ────────────────────
+    claude_md = home / ".claude" / "CLAUDE.md"
+    if uninstall:
+        if claude_md.exists():
+            text = claude_md.read_text(encoding="utf-8")
+            if _GLOBAL_SENTINEL_CLAUDE in text:
+                import re as _re
+                cleaned = _re.sub(
+                    r"\n<!-- bedrock-global -->.*?<!-- /bedrock-global -->\n",
+                    "",
+                    text,
+                    flags=_re.DOTALL,
+                )
+                if not dry_run:
+                    claude_md.write_text(cleaned, encoding="utf-8")
+                actions.append(f"  removed section from: {claude_md}")
+            else:
+                actions.append(f"  skip (not installed): {claude_md}")
+        else:
+            actions.append(f"  skip (file not found): {claude_md}")
+    else:
+        existing = claude_md.read_text(encoding="utf-8") if claude_md.exists() else ""
+        if _GLOBAL_SENTINEL_CLAUDE in existing:
+            actions.append(f"  up-to-date: {claude_md}")
+        else:
+            if not dry_run:
+                claude_md.parent.mkdir(parents=True, exist_ok=True)
+                with claude_md.open("a", encoding="utf-8") as f:
+                    f.write(_GLOBAL_CLAUDE_SECTION)
+            actions.append(f"  {'[dry-run] would append' if dry_run else 'appended'}: {claude_md}")
+
+    # ── Codex: ~/.codex/AGENTS.md ─────────────────────────────────────────────
+    codex_agents = home / ".codex" / "AGENTS.md"
+    if uninstall:
+        if codex_agents.exists():
+            text = codex_agents.read_text(encoding="utf-8")
+            if _GLOBAL_SENTINEL_CODEX in text:
+                import re as _re2
+                cleaned = _re2.sub(
+                    r"<!-- bedrock-global -->.*?<!-- /bedrock-global -->\n?",
+                    "",
+                    text,
+                    flags=_re2.DOTALL,
+                ).strip()
+                if not dry_run:
+                    if cleaned:
+                        codex_agents.write_text(cleaned + "\n", encoding="utf-8")
+                    else:
+                        codex_agents.unlink()
+                actions.append(f"  removed section from: {codex_agents}")
+            else:
+                actions.append(f"  skip (not installed): {codex_agents}")
+        else:
+            actions.append(f"  skip (not installed): {codex_agents}")
+    else:
+        existing = codex_agents.read_text(encoding="utf-8") if codex_agents.exists() else ""
+        if _GLOBAL_SENTINEL_CODEX in existing:
+            actions.append(f"  up-to-date: {codex_agents}")
+        else:
+            if not dry_run:
+                codex_agents.parent.mkdir(parents=True, exist_ok=True)
+                with codex_agents.open("a", encoding="utf-8") as f:
+                    f.write(_GLOBAL_CODEX_AGENTS_MD)
+            actions.append(f"  {'[dry-run] would write' if dry_run else 'wrote'}: {codex_agents}")
+
+    verb = "Uninstalled" if uninstall else "Installed"
+    click.echo(f"{verb} bedrock global config:", err=True)
+    for a in actions:
+        click.echo(a, err=True)
+
+    if not uninstall and not dry_run:
+        click.echo("", err=True)
+        click.echo("Bedrock will now activate in any project that has a ./bedrock/ vault.", err=True)
+
+
 @main.command()
 @click.option("--yes", "-y", is_flag=True, help="Skip confirmation prompt.")
 @click.option("--check", is_flag=True, help="Only check for updates, do not install.")

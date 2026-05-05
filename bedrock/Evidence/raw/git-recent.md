@@ -1,7 +1,7 @@
 ---
 note_type: evidence
 source: git-log
-extracted: 2026-05-05T19:40:46Z
+extracted: 2026-05-05T20:38:30Z
 commits: 30
 ---
 
@@ -10,6 +10,8 @@ commits: 30
 Last 30 commits as of 2026-05-05.
 
 ```
+2b9fde9 feat: emoji on every decision entry + clean up starter templates
+c32f3b9 feat: emoji section headers in memory branch notes (v0.4.9)
 e3ebc01 fix: add decisions step to every memory-update template (v0.4.8)
 802d16e memory: add decisions 011-014 (bedrock rename, mermaid, gemini/antigravity, install-global)
 b15c19d memory: update packaging, integrations, cli, gotchas for v0.4.3–v0.4.7
@@ -38,6 +40,4 @@ fddebe9 feat: add bedrock upgrade command (checks PyPI, detects pipx vs pip)
 74a76e1 Create CONTRIBUTING.md
 5831ab2 docs: add Obsidian graph GIF to README Obsidian-Ready section
 dc0e73b chore: memory update -- v0.3.1/0.3.2 CLI rename and migration
-9f47e48 feat: add migrate-from-legacy command and migration guide (v0.3.2)
-0efb000 docs: add high-quality demo GIF (800px, 12fps, 7.5MB)
 ```

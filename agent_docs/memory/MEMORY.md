@@ -3,9 +3,9 @@ project: agent-knowledge
 updated: 2026-04-30
 ---
 
-# Memory
+# 🧠 Memory
 
-## Areas
+## 🗂️ Areas
 
 - [packaging](packaging.md) -- PyPI: project-bedrock, CLI: bedrock (alias: agent-knowledge deprecated), v0.4.1, pipx install recommended
 - [cli](cli.md) -- CLI, 27 subcommands + /compact-context; completion, upgrade commands added; specialist cmds hidden from --help; v0.4.1

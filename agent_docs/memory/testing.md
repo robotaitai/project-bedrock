@@ -12,13 +12,13 @@ update_when: >
   live count.
 ---
 
-# Testing
+# 🧪 Testing
 
-## Purpose
+## 🎯 Purpose
 
 Test strategy for packaging validation and CLI correctness.
 
-## Current State
+## 📊 Current State
 
 - Framework: `pytest` (dev dependency).
 - **151 tests** across 2 files: `tests/test_packaging.py` (23) and `tests/test_cli.py` (~128).
@@ -26,7 +26,7 @@ Test strategy for packaging validation and CLI correctness.
   - `test` job: runs `pytest` with editable install.
   - `build` job: builds wheel, installs from wheel, runs CLI smoke tests (`--help`, `--version`, subcommand `--help`).
 
-### test_packaging.py
+### 📦 test_packaging.py
 
 - Verifies package is importable and `__version__` exists.
 - Verifies `get_assets_dir()` resolves without error.
@@ -35,7 +35,7 @@ Test strategy for packaging validation and CLI correctness.
 - Verifies `capture`, `index`, and `viewer` modules are importable.
 - Verifies `Evidence/captures/README.md` template is bundled.
 
-### test_cli.py
+### 🛠️ test_cli.py
 
 - Top-level `--help` and `--version`.
 - Parametrized `--help` for all 23 subcommands (including `absorb`, `migrate-to-local`, `search`, `index`, `export-html`, `view`, `clean-import`, `export-canvas`, `refresh-system`, `backfill-history`).
@@ -60,13 +60,13 @@ Test strategy for packaging validation and CLI correctness.
 - **Claude integration**: `init` installs Claude settings, hooks, commands, and CLAUDE.md; refresh-system updates Claude config; doctor reports Claude health; smoke test `init -> doctor` with Claude.
 - **absorb**: help, dry-run no mutation, imports docs and docs/ dir, metadata header present, ADRs parsed into decisions.md, idempotent, manifest created and not in Memory/, JSON mode, exits nonzero without vault, skips vault files itself.
 
-### Running tests
+### ▶️ Running tests
 
 - All tests run via the installed package (`python -m agent_knowledge` or editable install).
 - `BIN = [sys.executable, "-m", "agent_knowledge"]` ensures tests use the current Python interpreter.
 - Helper `_init_repo(tmp_path)` creates a git-initialized temp directory for test isolation.
 
-## Recent Changes
+## 🕓 Recent Changes
 
 - 2026-04-08: Initial test suite created (27 tests).
 - 2026-04-08: Added 11 new tests for zero-arg init, integrations, onboarding (total: 38).
@@ -81,6 +81,6 @@ Test strategy for packaging validation and CLI correctness.
 - 2026-04-28: Added absorb tests (total: 153).
 - 2026-04-30: Fixed all CI failures from v0.4.0 rename: updated ~80 path refs (`agent-knowledge` → `bedrock`), `is_symlink()` → `is_dir()` for local mode, content string checks, STATUS.md timestamp regex. CI now green (151 passing).
 
-## Open Questions
+## ❓ Open Questions
 
 - None currently.

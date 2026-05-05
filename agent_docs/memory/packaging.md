@@ -12,17 +12,17 @@ update_when: >
   Check `git tag --list` and pyproject.toml for the source of truth.
 ---
 
-# Packaging
+# 📦 Packaging
 
 Python [[stack|packaging]] strategy for making bedrock pip-installable.
 
-## Build System
+## ⚙️ Build System
 
 - Backend: **hatchling** via `pyproject.toml`
 - Layout: src-layout at `src/agent_knowledge/`
 - Entry points: `bedrock = agent_knowledge.cli:main`, `agent-knowledge = agent_knowledge.cli:main` (deprecated alias)
 
-## Asset Bundling
+## 🗂️ Asset Bundling
 
 All non-Python assets consolidated under `assets/` at repo root. Bundled into wheel via `[tool.hatch.build.targets.wheel.force-include]`:
 - `assets/scripts` -> `agent_knowledge/assets/scripts`
@@ -32,7 +32,7 @@ All non-Python assets consolidated under `assets/` at repo root. Bundled into wh
 
 See [[architecture#Path Resolution]] for how the code finds these at runtime.
 
-## Version
+## 🏷️ Version
 
 Current: **0.4.7** (tagged `v0.4.7`). PyPI package name: `project-bedrock`. See [[deployments]].
 
@@ -40,7 +40,7 @@ Install: `pip install project-bedrock` or `pipx install project-bedrock`. Comman
 
 **Breaking change in 0.4.0**: vault folder renamed from `./agent-knowledge/` to `./bedrock/`. Existing users run `bedrock migrate-vault` then `bedrock refresh-system`.
 
-## PyPI Publish
+## 🚀 PyPI Publish
 
 CI trusted publishing (OIDC) is currently broken — the PyPI trusted publisher config doesn't match the workflow. Publishing is done locally via twine from a temp venv:
 ```bash
@@ -49,11 +49,11 @@ python3 -m venv /tmp/build-venv && /tmp/build-venv/bin/pip install build twine
 ```
 Fix: go to PyPI project settings → Publishing → update trusted publisher to match `publish.yml` (no environment field).
 
-## Dependencies
+## 🧩 Dependencies
 
 See [[stack#Dependencies]] for the full list.
 
-## Recent Changes
+## 🕓 Recent Changes
 
 - 2026-04-28: Bumped to v0.2.9; `docs/` folder added to repo for GitHub/PyPI display assets (GIF, examples) — not included in wheel.
 - 2026-04-28: Bumped to v0.3.0 — see deployments for full changelog.
@@ -68,7 +68,7 @@ See [[stack#Dependencies]] for the full list.
 - 2026-05-05: v0.4.6 — `install-global` command added; writes to `~/.cursor/rules/`, `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`.
 - 2026-05-05: v0.4.7 — Gemini CLI + Antigravity support; `GEMINI.md` template; `~/.gemini/GEMINI.md` in `install-global`.
 
-## See Also
+## 🔗 See Also
 
 - [[stack]] -- runtimes and frameworks
 - [[architecture]] -- package layout

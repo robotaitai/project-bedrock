@@ -12,15 +12,15 @@ update_when: >
   Check `git tag --list` for the latest tag.
 ---
 
-# Deployments
+# 🚀 Deployments
 
 Release, CI, and distribution strategy.
 
-## Version
+## 🏷️ Version
 
 **0.3.2** (tagged `v0.3.2`). See [[packaging]].
 
-## CI Pipeline
+## 🔁 CI Pipeline
 
 [[testing|GitHub Actions]] (`.github/workflows/ci.yml`):
 - Triggered on push/PR to `main`
@@ -28,23 +28,23 @@ Release, CI, and distribution strategy.
 - **test** job: pytest with editable install
 - **build** job: wheel build + installed [[cli|CLI]] smoke test
 
-## Distribution
+## 📦 Distribution
 
 - `pip install project-bedrock` (published to PyPI)
 - Build: `python -m build` produces wheel and sdist
 - Local dev: `pip install -e ".[dev]"` inside a venv (see [[gotchas]])
 
-## No Server Components
+## 🚫 No Server Components
 
 No Docker, no container deployment, no API server. See [[stack]].
 
-## Recent Changes
+## 🕓 Recent Changes
 
 - 2026-04-28: Released v0.3.0 — table rendering, graph neighbor highlight, local-mode default, staleness detection, absorb command, graph spread tuning.
 - 2026-04-28: Released v0.3.1 — CLI renamed to `bedrock`; PyPI package renamed to `project-bedrock`; `agent-knowledge` kept as deprecated alias.
 - 2026-04-28: Released v0.3.2 — `migrate-from-legacy` command; migration guide in docs/reference.md; cover image and demo GIF in README.
 
-## See Also
+## 🔗 See Also
 
 - [[packaging]] -- build system details
 - [[testing]] -- what CI runs

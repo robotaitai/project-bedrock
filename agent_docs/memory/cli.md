@@ -11,15 +11,15 @@ update_when: >
   existing command. Run `bedrock --help` and diff against the table below.
 ---
 
-# CLI
+# 🛠️ CLI
 
 Design and implementation of the `bedrock` command-line interface.
 
-## Framework
+## ⚙️ Framework
 
 Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 
-## Subcommands (28)
+## 📋 Subcommands (28)
 
 | Command | Description | Delegates to |
 |---------|-------------|-------------|
@@ -53,7 +53,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 | `install-global` | Write conditional bedrock rules to `~/.cursor/`, `~/.claude/`, `~/.codex/`, `~/.gemini/`; `--uninstall` to remove | pure Python |
 | `compact-context` | (slash command) Save memory then reset context window | slash command template |
 
-## init
+## 🚀 init
 
 - Infers slug from directory name, detects integrations automatically
 - **Default (local mode)**: creates `./bedrock/` as real directory; creates `~/agent-os/projects/<slug>/` as symlink back; patches `.gitignore` with noisy-subfolder exclusions
@@ -62,7 +62,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - After setup: **auto-calls `run_backfill()`** from `history.py` if vault exists
 - Prints cyan-bordered prompt with next-step suggestion
 
-## migrate-to-local
+## 🔀 migrate-to-local
 
 - Detects current external vault from symlink
 - `shutil.copytree` to temp dir → unlink symlink → move to real `./agent-knowledge/`
@@ -70,7 +70,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - Updates `.agent-project.yaml` vault_mode + real_path via regex
 - Calls `_patch_gitignore_for_local_knowledge()` — sentinel-guarded, idempotent
 
-## absorb
+## 📥 absorb
 
 - Scans project for docs: `ARCHITECTURE.md`, `CHANGELOG.md`, `DESIGN.md`, ADRs, etc.
 - Copies to `Evidence/imports/` as non-canonical evidence
@@ -78,7 +78,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - Writes `Outputs/absorb-manifest.md` for agent review and curation
 - Mechanical ingestion only — curation to `Memory/` remains the agent's responsibility
 
-## doctor
+## 🩺 doctor
 
 - Calls `doctor.sh` (bash)
 - **Python pre-check 1**: `refresh.is_stale()` — warns if framework version is behind
@@ -86,21 +86,21 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - **Python pre-check 3**: `history.history_exists()` — warns if History/ missing
 - **Python pre-check 4**: `refresh.check_stale_notes()` — compares each durable-branch note's `updated` date against the most recent git commit on its watched source paths; warns with note path, dates, and `update_when` hint if source changed after the note was last updated
 
-## refresh-system
+## 🔁 refresh-system
 
 - Refreshes `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/bedrock.mdc` (auto-renames from `agent-knowledge.mdc` if found), `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
 - Idempotent: returns "up-to-date" if version already matches
 - Never touches `Memory/`, `Evidence/`, `Sessions/`, `Outputs/`, `History/`
 - Supports `--dry-run`, `--json`
 
-## backfill-history
+## 📅 backfill-history
 
 - Creates `History/events.ndjson`, `History/history.md`, `History/timeline/`
 - Reads git: first commit date, total commits, tags (releases), integration detection
 - One-per-tag for release events; once-per-month for backfill/integration events
 - Supports `--dry-run`, `--json`, `--force`
 
-## export-html / view
+## 🌐 export-html / view
 
 - Reads vault → builds `knowledge.json` → builds `graph.json` → renders `index.html`
 - All data embedded in HTML (no AJAX, works via `file://`)
@@ -108,14 +108,14 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - Graph: interactive force-directed canvas, wikilink edges rendered in accent blue, searchable, filterable by type/canonical status
 - `view` = `export-html` + opens result in browser
 
-## Patterns
+## 🧩 Patterns
 
 - Thin Python wrappers delegate to shell scripts via `subprocess` for legacy commands
 - Pure-Python for newer commands: sync, site, history, refresh, capture, index, absorb
 - Common flags: `--dry-run`, `--json`, `--force`
 - All output to stderr in human mode; stdout is pure JSON in `--json` mode
 
-## Core workflow
+## 🔄 Core workflow
 
 ```mermaid
 flowchart LR
@@ -126,7 +126,7 @@ flowchart LR
     sync --> ship["bedrock ship\n(commit + push)"]
 ```
 
-## Recent Changes
+## 🕓 Recent Changes
 
 - 2026-04-28: `init` now defaults to local (in-repo) mode; `--external` flag added to opt out.
 - 2026-04-28: `doctor` now runs Python pre-checks for staleness — compares note `updated` dates against source code commit dates.
@@ -137,7 +137,7 @@ flowchart LR
 - 2026-04-30: `completion` command added (tab completion for zsh/bash/fish, `--install` flag). `upgrade` command added (checks PyPI, detects pipx vs pip). `/compact-context` slash command added for Claude + Cursor. 8 specialist commands hidden from `--help` (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format).
 - 2026-05-05: `install-global` command added (v0.4.6) — writes conditional bedrock rules to global agent config dirs for Cursor, Claude, Codex, Gemini CLI, Antigravity. Idempotent, `--uninstall` supported. Total: 28 commands.
 
-## See Also
+## 🔗 See Also
 
 - [[architecture]] -- runtime modules
 - [[stack]] -- click framework, dependencies

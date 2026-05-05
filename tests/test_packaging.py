@@ -112,7 +112,7 @@ def test_bundled_captures_readme_exists():
     from agent_knowledge.runtime.paths import get_assets_dir
 
     assets = get_assets_dir()
-    captures_readme = assets / "templates" / "project" / "agent-knowledge" / "Evidence" / "captures" / "README.md"
+    captures_readme = assets / "templates" / "project" / "bedrock" / "Evidence" / "captures" / "README.md"
     assert captures_readme.is_file(), "Evidence/captures/README.md template must be bundled"
 
 

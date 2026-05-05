@@ -1,11 +1,11 @@
 {
-  "generated": "2026-05-05T19:40:46Z",
+  "generated": "2026-05-05T20:38:30Z",
   "vault": "/Users/taio/code/agent-knowledge/bedrock",
   "note_count": 14,
   "notes": [
     {
       "path": "Memory/MEMORY.md",
-      "title": "Memory",
+      "title": "\ud83e\udde0 Memory",
       "note_type": "unknown",
       "area": "agent-knowledge",
       "canonical": true,
@@ -15,7 +15,7 @@
     },
     {
       "path": "Memory/architecture.md",
-      "title": "Architecture",
+      "title": "\ud83c\udfd7\ufe0f Architecture",
       "note_type": "durable-branch",
       "area": "architecture",
       "canonical": true,
@@ -25,7 +25,7 @@
     },
     {
       "path": "Memory/cli.md",
-      "title": "CLI",
+      "title": "\ud83d\udee0\ufe0f CLI",
       "note_type": "durable-branch",
       "area": "cli",
       "canonical": true,
@@ -35,7 +35,7 @@
     },
     {
       "path": "Memory/conventions.md",
-      "title": "Conventions",
+      "title": "\ud83d\udcd0 Conventions",
       "note_type": "durable-branch",
       "area": "conventions",
       "canonical": true,
@@ -45,7 +45,7 @@
     },
     {
       "path": "Memory/decisions/decisions.md",
-      "title": "Decision Log",
+      "title": "\ud83d\udccb Decision Log",
       "note_type": "decisions-index",
       "area": "",
       "canonical": true,
@@ -55,7 +55,7 @@
     },
     {
       "path": "Memory/deployments.md",
-      "title": "Deployments",
+      "title": "\ud83d\ude80 Deployments",
       "note_type": "durable-branch",
       "area": "deployments",
       "canonical": true,
@@ -65,7 +65,7 @@
     },
     {
       "path": "Memory/gotchas.md",
-      "title": "Gotchas",
+      "title": "\u26a0\ufe0f Gotchas",
       "note_type": "durable-branch",
       "area": "gotchas",
       "canonical": true,
@@ -75,7 +75,7 @@
     },
     {
       "path": "Memory/history-layer.md",
-      "title": "History Layer",
+      "title": "\ud83d\udcc5 History Layer",
       "note_type": "durable-branch",
       "area": "history-layer",
       "canonical": true,
@@ -85,7 +85,7 @@
     },
     {
       "path": "Memory/integrations.md",
-      "title": "Integrations",
+      "title": "\ud83d\udd0c Integrations",
       "note_type": "durable-branch",
       "area": "integrations",
       "canonical": true,
@@ -95,7 +95,7 @@
     },
     {
       "path": "Memory/packaging.md",
-      "title": "Packaging",
+      "title": "\ud83d\udce6 Packaging",
       "note_type": "durable-branch",
       "area": "packaging",
       "canonical": true,
@@ -105,7 +105,7 @@
     },
     {
       "path": "Memory/stack.md",
-      "title": "Stack",
+      "title": "\ud83d\udcda Stack",
       "note_type": "durable-branch",
       "area": "stack",
       "canonical": true,
@@ -115,7 +115,7 @@
     },
     {
       "path": "Memory/testing.md",
-      "title": "Testing",
+      "title": "\ud83e\uddea Testing",
       "note_type": "durable-branch",
       "area": "testing",
       "canonical": true,
@@ -131,7 +131,7 @@
       "canonical": false,
       "folder": "Evidence",
       "is_branch_entry": false,
-      "summary": "Last 30 commits as of 2026-05-05. e3ebc01 fix: add decisions step to every memory-update template (v0.4.8) 802d16e memory: add decisions 011-014 (bedrock rename, mermaid, gemini/antigravity, install-g..."
+      "summary": "Last 30 commits as of 2026-05-05. 2b9fde9 feat: emoji on every decision entry + clean up starter templates c32f3b9 feat: emoji section headers in memory branch notes (v0.4.9) e3ebc01 fix: add decision..."
     },
     {
       "path": "Outputs/knowledge-index.md",
@@ -141,7 +141,7 @@
       "canonical": false,
       "folder": "Outputs",
       "is_branch_entry": false,
-      "summary": "> Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-05T19:39:37Z Total notes: 14 - Memory Memory/MEMORY.md (branch entry) - [packaging](packaging.md) -- PyPI: project-bedrock..."
+      "summary": "> Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-05T19:40:46Z Total notes: 14 - Memory Memory/MEMORY.md (branch entry) - [packaging](packaging.md) -- PyPI: project-bedrock..."
     }
   ]
 }

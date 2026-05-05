@@ -13,11 +13,11 @@ update_when: >
   version bumps.
 ---
 
-# Architecture
+# 🏗️ Architecture
 
 Core design: path resolution, runtime modules, project config, integrations, knowledge vault model.
 
-## Runtime Modules (`src/agent_knowledge/runtime/`)
+## ⚙️ Runtime Modules (`src/agent_knowledge/runtime/`)
 
 | Module | Purpose |
 |--------|---------|
@@ -31,7 +31,7 @@ Core design: path resolution, runtime modules, project config, integrations, kno
 | `refresh.py` | System refresh: updates integration files to current framework version |
 | `history.py` | Lightweight history layer (History/events.ndjson, history.md, timeline/) |
 
-## Knowledge Vault Model
+## 🗄️ Knowledge Vault Model
 
 Two storage modes controlled by `vault_mode` in `.agent-project.yaml`:
 
@@ -63,7 +63,7 @@ flowchart TD
     V --> H["History/\n📖 lightweight diary"]
 ```
 
-## Path Resolution
+## 📂 Path Resolution
 
 - `runtime/paths.py` → `get_assets_dir()` with dual-mode:
   1. Installed: `assets/` sibling of `runtime/` in site-packages
@@ -71,7 +71,7 @@ flowchart TD
 - Marker file for validation: `scripts/lib/knowledge-common.sh`
 - Result cached in `_cached_assets_dir` for the process lifetime
 
-## Asset Layout
+## 🗂️ Asset Layout
 
 All non-Python assets under `assets/`:
 - `assets/scripts/` — bundled bash scripts
@@ -83,7 +83,7 @@ All non-Python assets under `assets/`:
 - `assets/skills-cursor/` — Cursor-specific skills
 - `assets/claude/` — Claude Code integration files
 
-## Site Generation Pipeline
+## 🌐 Site Generation Pipeline
 
 ```mermaid
 flowchart LR
@@ -100,7 +100,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 
 `_md_to_html()` supports: headings (with inline wikilinks), paragraphs, bullet/ordered lists, blockquotes, fenced code blocks, horizontal rules, and `|pipe|` markdown tables rendered as `<table>` elements.
 
-## History Layer
+## 📅 History Layer
 
 - `History/events.ndjson` — append-only machine-readable log
 - `History/history.md` — human-readable entrypoint (< 150 lines)
@@ -108,7 +108,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - Dedup: releases once-per-tag, backfill once-per-month, project_start once-ever
 - Auto-created by `init`, refreshable with `backfill-history`
 
-## Project Config (`.agent-project.yaml`)
+## ⚙️ Project Config (`.agent-project.yaml`)
 
 - Version 4, `ontology_model: 2`, `framework_version` field
 - `knowledge.vault_mode: local|external` — set by `init --local` or `migrate-to-local`
@@ -116,34 +116,34 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - No `root_index` — entry points are STATUS.md + Memory/MEMORY.md
 - Hooks reference `bedrock update --project .`
 
-## System Refresh (`runtime/refresh.py`)
+## 🔁 System Refresh (`runtime/refresh.py`)
 
 - Compares `framework_version` in STATUS.md to `__version__`
 - Refreshes: `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/agent-knowledge.mdc`, `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
 - Idempotent: skips files already at current version
 - `is_stale()` used by `doctor` command for staleness warning
 
-## Capture Layer
+## 📸 Capture Layer
 
 - `Evidence/captures/` — YAML event files (timestamp, source_tool, event_type, touched_branches)
 - Idempotent within same UTC minute
 - Sources: sync, init, refresh, graph sync, import, ship
 
-## Knowledge Index
+## 🔍 Knowledge Index
 
 - `Outputs/knowledge-index.json` — structured catalog for programmatic retrieval
 - `Outputs/knowledge-index.md` — human-readable version
 - Search: Memory-first, Evidence/Outputs clearly marked non-canonical
 - Used by `bedrock search <query>`
 
-## Gotchas
+## ⚠️ Gotchas
 
 - `set -euo pipefail` + trailing `[` test returning false causes exit 1 — fixed with explicit `if`
 - `ship.sh` must use `python -m pytest -q` not bare `pytest`
 - Canvas 2D rendering: reading `clientWidth`/`clientHeight` after `display:none→block` must be deferred with `requestAnimationFrame` (graph fix, 2026-04-11)
 - Evidence/Outputs are non-canonical and must not be auto-promoted to Memory/
 
-## Recent Changes
+## 🕓 Recent Changes
 
 - 2026-04-28: Local vault mode is now the default (`init` no longer needs `--local`; use `--external` to opt out).
 - 2026-04-28: `site.py` table rendering fixed — markdown tables now render as proper HTML `<table>` elements.
@@ -152,7 +152,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - 2026-04-28: Graph layout spread tuned — `SIM_REPULSION 18000`, `SIM_REST 220`, `SIM_GRAVITY 0.008` for a readable layout.
 - 2026-04-28: Staleness detection added to `doctor` via `check_stale_notes()` in `refresh.py`.
 
-## See Also
+## 🔗 See Also
 
 - [[stack]] — languages, runtimes, and dependencies
 - [[conventions]] — coding and design conventions

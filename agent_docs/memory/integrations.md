@@ -13,11 +13,11 @@ update_when: >
   to refresh.py.
 ---
 
-# Integrations
+# 🔌 Integrations
 
 Multi-tool detection and bridge file installation for Cursor, Claude, Codex, Gemini CLI, and Antigravity.
 
-## Detection (`runtime/integrations.py`)
+## 🔍 Detection (`runtime/integrations.py`)
 
 | Tool | Detection | Always installed? |
 |------|-----------|-------------------|
@@ -28,7 +28,7 @@ Multi-tool detection and bridge file installation for Cursor, Claude, Codex, Gem
 
 Called by [[cli#init|init]] via `detect()` then `install_all()`.
 
-## Bridge Files
+## 🌉 Bridge Files
 
 ### Cursor (first-class)
 - `.cursor/hooks.json` -- 4 hooks: `post-write`, `session-start`, `stop`, `preCompact`
@@ -48,7 +48,7 @@ Called by [[cli#init|init]] via `detect()` then `install_all()`.
 - Both tools share `~/.gemini/GEMINI.md` as global config (`install-global` writes there)
 - Antigravity also reads `AGENTS.md` (already covered by root AGENTS.md)
 
-## Global Install (`bedrock install-global`)
+## 🌐 Global Install (`bedrock install-global`)
 
 New in v0.4.6. Writes conditional rules to user-global config dirs so bedrock activates in any project with a `./bedrock/` vault — no per-project setup needed.
 
@@ -61,7 +61,7 @@ New in v0.4.6. Writes conditional rules to user-global config dirs so bedrock ac
 
 All writes are sentinel-guarded (idempotent). `--uninstall` removes them. `--dry-run` previews.
 
-## Onboarding Handoff
+## 🤝 Onboarding Handoff
 
 ```mermaid
 flowchart TD
@@ -74,7 +74,7 @@ flowchart TD
 
 No manual `next-prompt` command needed.
 
-## Windows Support (v0.4.0+)
+## 🪟 Windows Support (v0.4.0+)
 
 Windows is fully supported as of v0.4.0:
 - `shell.py`: auto-detects Git Bash (`git-for-Windows`) on PATH and known install paths
@@ -84,22 +84,22 @@ Windows is fully supported as of v0.4.0:
 
 Not in CI matrix (ubuntu + macos only), but core functionality is covered by these targeted fixes.
 
-## PATH Conflict Gotcha
+## ⚠️ PATH Conflict Gotcha
 
 Multiple tools can install an `agent-knowledge` binary. Graphify (Node.js) installs one at `~/.nvm/versions/node/<version>/bin/agent-knowledge` which may shadow our Python CLI. Fix: add Python bin to PATH before nvm — `export PATH="/Users/taio/Library/Python/3.13/bin:$PATH"`. Or invoke directly: `python3 -m agent_knowledge`.
 
-## Key Decision
+## 📌 Key Decision
 
 Cursor rule content is **inlined as `_CURSOR_RULE`** in `integrations.py` AND stored at `assets/templates/integrations/cursor/bedrock.mdc`. `refresh.py` prefers the file; falls back to the constant. See [[decisions]].
 
-## Recent Changes
+## 🕓 Recent Changes
 
 - 2026-04-29: Cursor rule renamed `agent-knowledge.mdc` → `bedrock.mdc`. `refresh-system` auto-migrates existing installs. All bridge file path references updated to `./bedrock/`. `repo_abs` now uses `.as_posix()` to generate forward-slash paths (Windows JSON fix).
 - 2026-05-05: v0.4.5 — `.codex/AGENTS.md` rewritten to be fully self-contained; removed dependency on root AGENTS.md.
 - 2026-05-05: v0.4.6 — `install-global` command added; installs conditional rules in `~/.cursor/`, `~/.claude/`, `~/.codex/`.
 - 2026-05-05: v0.4.7 — Gemini CLI + Antigravity added; `GEMINI.md` template; detection via `.gemini/` or `GEMINI.md`; `install-global` writes `~/.gemini/GEMINI.md`.
 
-## See Also
+## 🔗 See Also
 
 - [[cli#init (zero-arg)|init command]] -- orchestrates detection and install
 - [[architecture#Integration System]] -- design overview

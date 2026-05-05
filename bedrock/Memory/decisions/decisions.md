@@ -1,6 +1,6 @@
 ---
 note_type: decisions-index
-updated: 2026-04-18
+updated: 2026-05-05
 tags:
   - agent-knowledge
   - memory
@@ -79,6 +79,34 @@ Architectural and process decisions for agent-knowledge.
 - **Date**: 2026-04-13
 - **Context**: Claude Code adoption growing; was previously optional/detected-only
 - **Decision**: `init` always installs `.claude/` integration (settings.json, CLAUDE.md, commands/); `refresh-system` keeps it current
+- **Status**: Active
+
+## 011 - Rename vault folder to `bedrock/` {#011}
+
+- **Date**: 2026-04-29
+- **Context**: Folder was named `agent-knowledge/` which was tied to the old package name. Confusing after CLI rename to `bedrock`.
+- **Decision**: Rename vault folder `agent-knowledge/` → `bedrock/` everywhere (v0.4.0). `migrate-vault` command added for existing users. All bridge files, templates, and path references updated.
+- **Status**: Active
+
+## 012 - Mermaid diagrams in site viewer {#012}
+
+- **Date**: 2026-05-04
+- **Context**: Memory notes use Mermaid for flowcharts (e.g. onboarding flow in integrations.md). The static HTML site rendered them as raw code blocks.
+- **Decision**: Load `mermaid.min.js` in the site viewer and render diagram blocks automatically. SPA retry-on-load pattern used to handle Mermaid initialization timing.
+- **Status**: Active
+
+## 013 - Gemini CLI + Antigravity as first-class integrations {#013}
+
+- **Date**: 2026-05-05
+- **Context**: Users asked about Gemini CLI and Google Antigravity IDE. Both use `GEMINI.md` for agent context (Antigravity also reads `AGENTS.md`). Both share `~/.gemini/GEMINI.md` as global config.
+- **Decision**: Add `GEMINI.md` template and detection (`.gemini/` dir or `GEMINI.md` present). Wire into `init`, `refresh-system`, and `install-global`. One template covers both tools since they share the same config path.
+- **Status**: Active
+
+## 014 - `install-global` for zero-config global activation {#014}
+
+- **Date**: 2026-05-05
+- **Context**: Users without per-project bedrock setup had no way to get memory context automatically. Each tool has a user-global config dir that all projects inherit.
+- **Decision**: Add `bedrock install-global` that writes conditional rules to `~/.cursor/rules/`, `~/.claude/CLAUDE.md`, `~/.codex/AGENTS.md`, `~/.gemini/GEMINI.md`. Rules are sentinel-guarded (idempotent) and activate only when `./bedrock/STATUS.md` exists in the project.
 - **Status**: Active
 
 ## See Also

@@ -38,7 +38,7 @@ When skipping, state it: **Memory writeback: none needed.**
 
 | Fact type | Target |
 |-----------|--------|
-| Architectural decision | `Memory/decisions/YYYY-MM-DD-slug.md` + link from the relevant branch |
+| Architectural decision | `Memory/decisions/decisions.md` (append numbered entry) + optionally `Memory/decisions/YYYY-MM-DD-slug.md` for a deep-dive |
 | New pattern or convention | relevant branch note -> Current State |
 | Gotcha or constraint | relevant branch note -> Current State |
 | Stack change | relevant branch note -> Current State + Recent Changes |

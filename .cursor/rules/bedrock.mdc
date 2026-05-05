@@ -14,7 +14,7 @@ All knowledge lives in `./bedrock/`.
 
 ## After meaningful work
 
-- Run `/memory-update` — sync, update branches, summarize what changed
+- Run `/memory-update` — sync, update branches, log any decisions, summarize what changed
 
 ## When the context window is getting long
 

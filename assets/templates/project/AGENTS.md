@@ -76,8 +76,9 @@ After meaningful work, update `./bedrock/Memory/` directly:
 1. Edit the relevant branch note (`Memory/cli.md`, `Memory/architecture.md`, etc.)
    - Update `Current State` with confirmed facts (replace stale entries, no duplicates)
    - Add a `YYYY-MM-DD -- what changed` line to `Recent Changes`
-2. Update `Memory/MEMORY.md` if branch one-line summaries changed
-3. Run `bedrock sync --project .` to propagate and refresh indexes
+2. If any architectural, design, or tooling decisions were made, add them to `Memory/decisions/decisions.md` using the existing numbered format
+3. Update `Memory/MEMORY.md` if branch one-line summaries changed
+4. Run `bedrock sync --project .` to propagate and refresh indexes
 
 Write to memory when:
 - A new feature, command, or module was completed

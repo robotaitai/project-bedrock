@@ -22,8 +22,9 @@ After meaningful work:
 1. Edit the relevant branch note(s) in `./bedrock/Memory/`
    - Update `## Current State` with confirmed facts
    - Add a `YYYY-MM-DD — what changed` line to `## Recent Changes`
-2. Update `./bedrock/Memory/MEMORY.md` if branch summaries changed
-3. Run `bedrock sync --project .`
+2. If any architectural, design, or tooling decisions were made, add them to `./bedrock/Memory/decisions/decisions.md` using the existing numbered format
+3. Update `./bedrock/Memory/MEMORY.md` if branch summaries changed
+4. Run `bedrock sync --project .`
 
 Write to memory when: a feature was completed, a decision was made, a gotcha was found.
 Skip for read-only sessions or speculative work.

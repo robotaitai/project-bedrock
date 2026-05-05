@@ -60,8 +60,9 @@ Run this mentally at the end of any session with meaningful work:
 1. Edit the relevant branch note(s) in `./bedrock/Memory/`
    - Update `## Current State` with confirmed facts (replace stale entries)
    - Add a `YYYY-MM-DD — what changed` line to `## Recent Changes`
-2. Update `./bedrock/Memory/MEMORY.md` if branch one-line summaries changed
-3. Run `bedrock sync --project .` to propagate
+2. If any architectural, design, or tooling decisions were made, add them to `./bedrock/Memory/decisions/decisions.md` using the existing numbered format
+3. Update `./bedrock/Memory/MEMORY.md` if branch one-line summaries changed
+4. Run `bedrock sync --project .` to propagate
 
 Write to memory when:
 - A new feature, command, or module was completed

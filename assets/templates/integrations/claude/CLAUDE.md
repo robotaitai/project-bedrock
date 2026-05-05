@@ -30,7 +30,8 @@ Otherwise:
 ## After meaningful work
 
 - Write confirmed facts to `./bedrock/Memory/<branch>.md`
-- Run `/memory-update` — sync, update branches, summarize what changed
+- If any architectural, design, or tooling decisions were made, add them to `./bedrock/Memory/decisions/decisions.md`
+- Run `/memory-update` — sync, update branches, log any decisions, summarize what changed
 
 ## Periodic (every few sessions)
 

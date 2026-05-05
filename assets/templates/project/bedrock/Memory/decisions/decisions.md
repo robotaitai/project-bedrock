@@ -1,31 +1,16 @@
 ---
 note_type: decisions-index
 project: <project-name>
-status: active
-last_updated: <date>
+updated: <date>
 tags:
   - bedrock
   - decision
 ---
 
-# Decisions
+# 📋 Decision Log
 
-## Purpose
+Architectural and process decisions for <project-name>.
 
-Architectural and process decisions that affect this project.
+## 🔗 See Also
 
-## Current State
-
-- No decisions recorded yet.
-
-## Recent Changes
-
-- <date> - Created decision log.
-
-## Decisions
-
-- None recorded yet.
-
-## Open Questions
-
-- Which existing choices should be captured as explicit decisions?
+- (link to relevant branch notes)

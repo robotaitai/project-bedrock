@@ -69,7 +69,7 @@ def read_events(vault_dir: Path, *, limit: int | None = None) -> list[dict[str, 
     if not events_path.is_file():
         return []
     events: list[dict[str, Any]] = []
-    for line in events_path.read_text(errors="replace").splitlines():
+    for line in events_path.read_text(encoding="utf-8", errors="replace").splitlines():
         s = line.strip()
         if not s:
             continue
@@ -87,7 +87,7 @@ def _event_exists_for_day(vault_dir: Path, event_type: str, date: str) -> bool:
     if not events_path.is_file():
         return False
     prefix = date[:10]
-    for line in events_path.read_text(errors="replace").splitlines():
+    for line in events_path.read_text(encoding="utf-8", errors="replace").splitlines():
         s = line.strip()
         if not s:
             continue
@@ -106,7 +106,7 @@ def _event_exists_for_month(vault_dir: Path, event_type: str) -> bool:
     if not events_path.is_file():
         return False
     month = _this_month()
-    for line in events_path.read_text(errors="replace").splitlines():
+    for line in events_path.read_text(encoding="utf-8", errors="replace").splitlines():
         s = line.strip()
         if not s:
             continue
@@ -124,7 +124,7 @@ def _event_exists_ever(vault_dir: Path, event_type: str) -> bool:
     events_path = vault_dir / _EVENTS_FILE
     if not events_path.is_file():
         return False
-    for line in events_path.read_text(errors="replace").splitlines():
+    for line in events_path.read_text(encoding="utf-8", errors="replace").splitlines():
         s = line.strip()
         if not s:
             continue
@@ -142,7 +142,7 @@ def _release_exists(vault_dir: Path, tag_name: str) -> bool:
     events_path = vault_dir / _EVENTS_FILE
     if not events_path.is_file():
         return False
-    for line in events_path.read_text(errors="replace").splitlines():
+    for line in events_path.read_text(encoding="utf-8", errors="replace").splitlines():
         s = line.strip()
         if not s:
             continue

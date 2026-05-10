@@ -873,7 +873,7 @@ def backfill_history(project: str, dry_run: bool, json_mode: bool, force: bool) 
     slug = repo_root.name
     yaml_path = repo_root / ".agent-project.yaml"
     if yaml_path.is_file():
-        for line in yaml_path.read_text(errors="replace").splitlines():
+        for line in yaml_path.read_text(encoding="utf-8", errors="replace").splitlines():
             m = __import__("re").match(r"^slug:\s*(.+)$", line.strip())
             if m:
                 slug = m.group(1).strip().strip("\"'")

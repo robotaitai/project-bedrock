@@ -256,7 +256,7 @@ def clean_import(
         p = Path(source)
         if not p.is_file():
             raise FileNotFoundError(f"Source file not found: {source}")
-        html_content = p.read_text(errors="replace")
+        html_content = p.read_text(encoding="utf-8", errors="replace")
         source_label = p.name
 
     title, body = html_to_markdown(html_content)
@@ -277,7 +277,7 @@ def clean_import(
     # Idempotency: if same output path exists, check content hash
     content_id = hashlib.sha256(body.encode()).hexdigest()[:12]
     if not dry_run and output_path.exists():
-        existing = output_path.read_text(errors="replace")
+        existing = output_path.read_text(encoding="utf-8", errors="replace")
         if content_id in existing:
             return output_path, "exists", title
 

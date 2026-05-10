@@ -113,7 +113,7 @@ def list_captures(captures_dir: Path, *, limit: int = 20) -> list[dict]:
     results = []
     for f in files:
         try:
-            text = f.read_text(errors="replace")
+            text = f.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
         item: dict = {"path": f.name}

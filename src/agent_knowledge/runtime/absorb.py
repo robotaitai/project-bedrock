@@ -203,7 +203,7 @@ def _import_to_evidence(
     if dry_run:
         return {"path": str(rel_path), "action": "would-import", "dest": str(dst.relative_to(vault_dir))}
 
-    content = src_path.read_text(errors="replace")
+    content = src_path.read_text(encoding="utf-8", errors="replace")
     header = _EVIDENCE_FRONT.format(
         rel_path=rel_path,
         category=category,
@@ -388,7 +388,7 @@ def run_absorb(
         # For decision/ADR files, also parse into decisions.md
         if include_decisions and category == "decision":
             try:
-                content = path.read_text(errors="replace")
+                content = path.read_text(encoding="utf-8", errors="replace")
             except Exception:
                 continue
             if _looks_like_adr(content):

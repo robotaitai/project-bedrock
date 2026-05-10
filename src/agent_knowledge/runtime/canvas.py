@@ -138,7 +138,7 @@ def build_canvas(vault_dir: Path) -> dict[str, Any]:
         if not md_path.is_file():
             continue
         try:
-            text = md_path.read_text(errors="replace")
+            text = md_path.read_text(encoding="utf-8", errors="replace")
         except OSError:
             continue
 

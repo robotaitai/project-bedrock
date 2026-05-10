@@ -92,7 +92,7 @@ def build_index(vault_dir: Path) -> dict[str, Any]:
                 continue
             rel = md_file.relative_to(vault_dir).as_posix()
             try:
-                text = md_file.read_text(errors="replace")
+                text = md_file.read_text(encoding="utf-8", errors="replace")
             except OSError:
                 continue
 
@@ -237,6 +237,6 @@ def load_note(vault_dir: Path, rel_path: str) -> str | None:
     if not p.is_file():
         return None
     try:
-        return p.read_text(errors="replace")
+        return p.read_text(encoding="utf-8", errors="replace")
     except OSError:
         return None

@@ -116,7 +116,7 @@ def _read_status(vault_dir: Path) -> dict[str, str]:
     status_file = vault_dir / "STATUS.md"
     if not status_file.is_file():
         return {}
-    fm = _extract_frontmatter(status_file.read_text(errors="replace"))
+    fm = _extract_frontmatter(status_file.read_text(encoding="utf-8", errors="replace"))
     return fm
 
 
@@ -129,7 +129,7 @@ def _collect_notes(vault_dir: Path) -> list[dict[str, Any]]:
         rel = meta["path"]
         p = vault_dir / rel
         try:
-            raw = p.read_text(errors="replace")
+            raw = p.read_text(encoding="utf-8", errors="replace")
         except OSError:
             raw = ""
         result.append(

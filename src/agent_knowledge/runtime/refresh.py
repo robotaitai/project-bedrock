@@ -368,7 +368,7 @@ def _refresh_status_md(vault_dir: Path, version: str, *, dry_run: bool) -> dict[
     if not target.is_file():
         return {"target": "STATUS.md", "action": "skip", "detail": "file not found"}
 
-    current = target.read_text(errors="replace")
+    current = target.read_text(encoding="utf-8", errors="replace")
     prior = _fm_get(current, "framework_version")
 
     # If version is already set correctly, this is a no-op
@@ -393,7 +393,7 @@ def _refresh_project_yaml(repo_root: Path, version: str, *, dry_run: bool) -> di
     if not target.is_file():
         return {"target": ".agent-project.yaml", "action": "skip", "detail": "file not found"}
 
-    current = target.read_text(errors="replace")
+    current = target.read_text(encoding="utf-8", errors="replace")
     prior = ""
     m = re.search(r'^framework_version:\s*(.+)$', current, re.MULTILINE)
     if m:

@@ -285,13 +285,13 @@ def _read_status(vault_dir: Path) -> dict[str, str]:
     status_file = vault_dir / "STATUS.md"
     if not status_file.is_file():
         return {}
-    return _extract_frontmatter(status_file.read_text(errors="replace"))
+    return _extract_frontmatter(status_file.read_text(encoding="utf-8", errors="replace"))
 
 
 def _read_note(vault_dir: Path, rel_path: str) -> str:
     p = vault_dir / rel_path
     try:
-        return p.read_text(errors="replace") if p.is_file() else ""
+        return p.read_text(encoding="utf-8", errors="replace") if p.is_file() else ""
     except OSError:
         return ""
 

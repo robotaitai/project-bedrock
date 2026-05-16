@@ -31,3 +31,8 @@ agent-knowledge/Outputs/absorb-manifest.md
 agent-knowledge/.obsidian/workspace
 agent-knowledge/.obsidian/workspace.json
 agent-knowledge/.obsidian/workspaces.json
+
+# Beads / Dolt files (added by bd init)
+.dolt/
+*.db
+.beads-credential-key

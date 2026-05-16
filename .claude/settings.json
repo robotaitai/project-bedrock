@@ -1,36 +1,54 @@
 {
   "hooks": {
-    "SessionStart": [
+    "PreCompact": [
       {
-        "matcher": "",
         "hooks": [
           {
-            "type": "command",
-            "command": "bedrock sync --project /Users/taio/code/agent-knowledge && bedrock refresh-system --project /Users/taio/code/agent-knowledge"
+            "command": "bedrock sync --project /Users/taio/code/agent-knowledge",
+            "type": "command"
           }
-        ]
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "command": "bd prime",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      }
+    ],
+    "SessionStart": [
+      {
+        "hooks": [
+          {
+            "command": "bedrock sync --project /Users/taio/code/agent-knowledge \u0026\u0026 bedrock refresh-system --project /Users/taio/code/agent-knowledge",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
+      },
+      {
+        "hooks": [
+          {
+            "command": "bd prime",
+            "type": "command"
+          }
+        ],
+        "matcher": ""
       }
     ],
     "Stop": [
       {
-        "matcher": "",
         "hooks": [
           {
-            "type": "command",
-            "command": "bedrock sync --project /Users/taio/code/agent-knowledge"
+            "command": "bedrock sync --project /Users/taio/code/agent-knowledge",
+            "type": "command"
           }
-        ]
-      }
-    ],
-    "PreCompact": [
-      {
-        "matcher": "",
-        "hooks": [
-          {
-            "type": "command",
-            "command": "bedrock sync --project /Users/taio/code/agent-knowledge"
-          }
-        ]
+        ],
+        "matcher": ""
       }
     ]
   }

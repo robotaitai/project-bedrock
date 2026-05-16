@@ -298,7 +298,7 @@ MANIFEST_PATHS="$(list_existing_paths "$TARGET_PROJECT" \
     Cargo.toml Cargo.lock go.mod go.sum CMakeLists.txt Makefile package.xml)"
 DOC_IMPORT_PATHS="$(list_existing_paths "$TARGET_PROJECT" \
     README.md README.rst CLAUDE.md AGENTS.md .agent-project.yaml .cursorrules \
-    bedrock/INDEX.md bedrock/Memory/MEMORY.md docs/README.md)"
+    bedrock/INDEX.md bedrock/Memory/PROJECT.md bedrock/Memory/MEMORY.md docs/README.md)"
 CONFIG_PATHS="$(find "$TARGET_PROJECT" -maxdepth 2 \( \
     -name ".editorconfig" -o \
     -name ".clang-format" -o \

@@ -12,7 +12,7 @@ tags:
 
 ## Current State
 
-- Memory root: [../Memory/MEMORY.md](../Memory/MEMORY.md)
+- Memory root: [../Memory/PROJECT.md](../Memory/PROJECT.md)
 - Evidence roots: [../Evidence/raw/README.md](../Evidence/raw/README.md), [../Evidence/imports/README.md](../Evidence/imports/README.md)
 
 ## Durable Changes

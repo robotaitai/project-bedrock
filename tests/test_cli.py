@@ -101,6 +101,15 @@ def test_init_infers_slug_from_dirname(tmp_path: Path):
     r = _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     assert r.returncode == 0, f"init failed: {r.stderr}"
     assert (repo / "bedrock").is_dir()
+    assert (repo / "bedrock" / "Memory" / "PROJECT.md").is_file()
+    assert (repo / "bedrock" / "Memory" / "decisions.md").is_file()
+    assert (repo / "bedrock" / "Memory" / "glossary.md").is_file()
+    assert (repo / "bedrock" / "Work" / "NOW.md").is_file()
+    assert (repo / "bedrock" / "Work" / "backlog.md").is_file()
+    assert (repo / "bedrock" / "Work" / "open-questions.md").is_file()
+    assert (repo / "bedrock" / "Work" / "risks.md").is_file()
+    assert (repo / "bedrock" / "Views" / "site").is_dir()
+    assert (repo / "bedrock" / "Views" / "graph").is_dir()
 
 
 def test_init_zero_arg_from_cwd(tmp_path: Path):
@@ -146,7 +155,12 @@ def test_init_installs_codex_bridge_when_detected(tmp_path: Path):
     kh = tmp_path / "kh"
     r = _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     assert r.returncode == 0, f"init failed: {r.stderr}"
-    assert (repo / ".codex" / "AGENTS.md").is_file()
+    agents = repo / ".codex" / "AGENTS.md"
+    assert agents.is_file()
+    content = agents.read_text()
+    assert "Memory/" in content
+    assert "Work/" in content
+    assert "Views/" in content
 
 
 def test_init_multi_tool_detection(tmp_path: Path):
@@ -249,7 +263,7 @@ def test_sync_dry_run(tmp_path: Path):
     # Create agent_docs/memory with a file
     mem_dir = repo / "agent_docs" / "memory"
     mem_dir.mkdir(parents=True)
-    (mem_dir / "MEMORY.md").write_text("---\nproject: test\n---\n# Memory\n")
+    (mem_dir / "PROJECT.md").write_text("---\nproject: test\n---\n# Project\n")
 
     r = _run("sync", "--project", str(repo), "--dry-run")
     assert r.returncode == 0
@@ -500,7 +514,7 @@ def test_search_prefers_memory(tmp_path: Path):
 
 
 def test_export_html_creates_site(tmp_path: Path):
-    """export-html must create Outputs/site/index.html and data/knowledge.json."""
+    """export-html must create Views/site/index.html and data/knowledge.json."""
     repo = _init_repo(tmp_path, "html-test")
     kh = tmp_path / "kh"
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
@@ -509,14 +523,14 @@ def test_export_html_creates_site(tmp_path: Path):
     r = _run("export-html", "--project", str(repo))
     assert r.returncode == 0, f"export-html failed: {r.stderr}"
 
-    site_dir = repo / "bedrock" / "Outputs" / "site"
-    assert site_dir.is_dir(), "Outputs/site/ must be created"
+    site_dir = repo / "bedrock" / "Views" / "site"
+    assert site_dir.is_dir(), "Views/site/ must be created"
 
     index_html = site_dir / "index.html"
-    assert index_html.is_file(), "Outputs/site/index.html must exist"
+    assert index_html.is_file(), "Views/site/index.html must exist"
 
     knowledge_json = site_dir / "data" / "knowledge.json"
-    assert knowledge_json.is_file(), "Outputs/site/data/knowledge.json must exist"
+    assert knowledge_json.is_file(), "Views/site/data/knowledge.json must exist"
 
     # HTML sanity checks
     html = index_html.read_text()
@@ -569,7 +583,7 @@ def test_export_html_non_canonical_distinction(tmp_path: Path):
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    html = (repo / "bedrock" / "Outputs" / "site" / "index.html").read_text()
+    html = (repo / "bedrock" / "Views" / "site" / "index.html").read_text()
     # CSS badge classes for canonical/non-canonical distinction
     assert "badge-Memory" in html
     assert "badge-Evidence" in html
@@ -617,7 +631,7 @@ def test_export_html_knowledge_json_structure(tmp_path: Path):
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    kj = repo / "bedrock" / "Outputs" / "site" / "data" / "knowledge.json"
+    kj = repo / "bedrock" / "Views" / "site" / "data" / "knowledge.json"
     data = json.loads(kj.read_text())
 
     # Required top-level keys
@@ -662,7 +676,7 @@ def test_export_html_memory_is_primary(tmp_path: Path):
 
     _run("export-html", "--project", str(repo))
 
-    kj = repo / "bedrock" / "Outputs" / "site" / "data" / "knowledge.json"
+    kj = repo / "bedrock" / "Views" / "site" / "data" / "knowledge.json"
     data = json.loads(kj.read_text())
 
     # Branches from Memory/ are canonical
@@ -683,22 +697,22 @@ def test_export_html_external_vault_pointer(tmp_path: Path):
 
     r = _run("export-html", "--project", str(repo))
     assert r.returncode == 0, f"export-html failed through pointer: {r.stderr}"
-    assert (repo / "bedrock" / "Outputs" / "site" / "index.html").is_file()
+    assert (repo / "bedrock" / "Views" / "site" / "index.html").is_file()
 
 
 # -- graph tests ----------------------------------------------------------- #
 
 
 def test_export_html_creates_graph_json(tmp_path: Path):
-    """export-html must produce Outputs/site/data/graph.json alongside knowledge.json."""
+    """export-html must produce Views/site/data/graph.json alongside knowledge.json."""
     repo = _init_repo(tmp_path, "graph-exists")
     kh = tmp_path / "kh"
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    graph_json = repo / "bedrock" / "Outputs" / "site" / "data" / "graph.json"
-    assert graph_json.is_file(), "Outputs/site/data/graph.json must be created by export-html"
+    graph_json = repo / "bedrock" / "Views" / "site" / "data" / "graph.json"
+    assert graph_json.is_file(), "Views/site/data/graph.json must be created by export-html"
 
     data = json.loads(graph_json.read_text())
     assert "nodes" in data
@@ -716,7 +730,7 @@ def test_graph_json_has_project_node(tmp_path: Path):
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    gj = json.loads((repo / "bedrock" / "Outputs" / "site" / "data" / "graph.json").read_text())
+    gj = json.loads((repo / "bedrock" / "Views" / "site" / "data" / "graph.json").read_text())
     project_nodes = [n for n in gj["nodes"] if n["type"] == "project"]
     assert len(project_nodes) >= 1, "graph.json must have at least one project node"
     project_node = project_nodes[0]
@@ -740,7 +754,7 @@ def test_graph_json_canonical_distinction(tmp_path: Path):
 
     _run("export-html", "--project", str(repo))
 
-    gj = json.loads((repo / "bedrock" / "Outputs" / "site" / "data" / "graph.json").read_text())
+    gj = json.loads((repo / "bedrock" / "Views" / "site" / "data" / "graph.json").read_text())
 
     # All Memory/branch/note nodes must be canonical
     mem_types = {"project", "branch", "note", "decision"}
@@ -762,7 +776,7 @@ def test_graph_json_edges_have_required_fields(tmp_path: Path):
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    gj = json.loads((repo / "bedrock" / "Outputs" / "site" / "data" / "graph.json").read_text())
+    gj = json.loads((repo / "bedrock" / "Views" / "site" / "data" / "graph.json").read_text())
     for edge in gj["edges"]:
         assert "source" in edge, f"Edge missing 'source': {edge}"
         assert "target" in edge, f"Edge missing 'target': {edge}"
@@ -779,7 +793,7 @@ def test_graph_json_edges_reference_valid_nodes(tmp_path: Path):
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    gj = json.loads((repo / "bedrock" / "Outputs" / "site" / "data" / "graph.json").read_text())
+    gj = json.loads((repo / "bedrock" / "Views" / "site" / "data" / "graph.json").read_text())
     node_ids = {n["id"] for n in gj["nodes"]}
     for edge in gj["edges"]:
         assert edge["source"] in node_ids, f"Edge source {edge['source']} not in nodes"
@@ -794,7 +808,7 @@ def test_graph_view_in_site_html(tmp_path: Path):
     _run("sync", "--project", str(repo))
     _run("export-html", "--project", str(repo))
 
-    html = (repo / "bedrock" / "Outputs" / "site" / "index.html").read_text()
+    html = (repo / "bedrock" / "Views" / "site" / "index.html").read_text()
 
     # Graph tab button in topbar
     assert 'data-view="graph"' in html, "Graph tab button must be present"
@@ -815,7 +829,7 @@ def test_graph_json_in_html_data(tmp_path: Path):
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     _run("export-html", "--project", str(repo))
 
-    html = (repo / "bedrock" / "Outputs" / "site" / "index.html").read_text()
+    html = (repo / "bedrock" / "Views" / "site" / "index.html").read_text()
 
     # Find and parse the embedded GRAPH_DATA constant
     m = re.search(r'const GRAPH_DATA\s*=\s*(\{.*?\});', html, re.DOTALL)
@@ -1085,7 +1099,7 @@ def test_clean_import_json_mode(tmp_path: Path):
 
 
 def test_export_canvas_creates_file(tmp_path: Path):
-    """export-canvas must produce a valid .canvas JSON file in Outputs/."""
+    """export-canvas must produce a valid .canvas JSON file in Views/graph/."""
     repo = _init_repo(tmp_path, "canvas-test")
     kh = tmp_path / "kh"
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
@@ -1093,7 +1107,7 @@ def test_export_canvas_creates_file(tmp_path: Path):
     r = _run("export-canvas", "--project", str(repo))
     assert r.returncode == 0
 
-    canvas_path = repo / "bedrock" / "Outputs" / "knowledge-export.canvas"
+    canvas_path = repo / "bedrock" / "Views" / "graph" / "knowledge-export.canvas"
     assert canvas_path.is_file(), "export-canvas should create knowledge-export.canvas"
 
     data = json.loads(canvas_path.read_text())
@@ -1112,7 +1126,7 @@ def test_export_canvas_dry_run(tmp_path: Path):
     r = _run("export-canvas", "--project", str(repo), "--dry-run")
     assert r.returncode == 0
 
-    canvas_path = repo / "bedrock" / "Outputs" / "knowledge-export.canvas"
+    canvas_path = repo / "bedrock" / "Views" / "graph" / "knowledge-export.canvas"
     assert not canvas_path.exists(), "dry-run must not create the canvas file"
 
 
@@ -1123,7 +1137,7 @@ def test_export_canvas_memory_nodes_present(tmp_path: Path):
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     _run("export-canvas", "--project", str(repo))
 
-    canvas_path = repo / "bedrock" / "Outputs" / "knowledge-export.canvas"
+    canvas_path = repo / "bedrock" / "Views" / "graph" / "knowledge-export.canvas"
     data = json.loads(canvas_path.read_text())
     node_files = [n.get("file", "") for n in data["nodes"]]
     assert any("Memory" in f for f in node_files), "Canvas must include Memory/ nodes"
@@ -1379,7 +1393,7 @@ def test_refresh_system_idempotent(tmp_path: Path):
 
 
 def test_refresh_system_never_touches_memory(tmp_path: Path):
-    """refresh-system must never modify Memory/, Evidence/, or Sessions/."""
+    """refresh-system must never modify user Memory/ or Work/ content."""
     repo = _init_repo(tmp_path, "refresh-memory")
     kh = tmp_path / "kh"
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
@@ -1389,10 +1403,13 @@ def test_refresh_system_never_touches_memory(tmp_path: Path):
     test_note = memory_dir / "test-branch.md"
     test_note.write_text("---\nnote_type: branch-entry\narea: test\n---\n\n# Test\n\nContent.\n")
     original_content = test_note.read_text()
+    work_now = repo / "bedrock" / "Work" / "NOW.md"
+    original_work = work_now.read_text()
 
     _run("refresh-system", "--project", str(repo))
 
     assert test_note.read_text() == original_content, "refresh-system must not modify Memory/ notes"
+    assert work_now.read_text() == original_work, "refresh-system must not modify Work/ files"
 
 
 def test_refresh_system_updates_status_md_version(tmp_path: Path):
@@ -1507,6 +1524,7 @@ def test_memory_update_command_covers_sync(tmp_path: Path):
     content = (repo / ".cursor" / "commands" / "memory-update.md").read_text()
     assert "sync" in content.lower(), "memory-update must mention sync"
     assert "Memory" in content, "memory-update must mention Memory/"
+    assert "Work" in content, "memory-update must mention Work/"
 
 
 def test_hooks_have_all_expected_events(tmp_path: Path):
@@ -1646,6 +1664,8 @@ def test_cursor_rule_contains_knowledge_layers(tmp_path: Path):
 
     rule = (repo / ".cursor" / "rules" / "bedrock.mdc").read_text()
     assert "Memory/" in rule
+    assert "Work/" in rule
+    assert "Views/" in rule
     assert "Evidence/" in rule
     assert "Outputs/" in rule
     assert "Sessions/" in rule
@@ -1773,6 +1793,8 @@ def test_init_installs_claude_md(tmp_path: Path):
     content = claude_md.read_text()
     assert "bedrock" in content
     assert "Memory/" in content
+    assert "Work/" in content
+    assert "Views/" in content
     assert "Evidence/" in content
     assert "STATUS.md" in content
     assert "onboarding" in content.lower()
@@ -1905,6 +1927,7 @@ def test_bundled_claude_templates_exist():
         assert path.is_file(), f"Bundled Claude command missing: {path}"
         content = path.read_text()
         assert "bedrock" in content
+    assert "Work/" in claude_md.read_text()
 
 
 def test_claude_expected_hook_events():
@@ -2038,7 +2061,7 @@ def test_absorb_adr_parsed_into_decisions(tmp_path: Path):
     )
     r = _run("absorb", "--project", str(repo))
     assert r.returncode == 0
-    decisions_path = repo / "bedrock" / "Memory" / "decisions" / "decisions.md"
+    decisions_path = repo / "bedrock" / "Memory" / "decisions.md"
     assert decisions_path.is_file()
     content = decisions_path.read_text()
     assert "adr/001-use-postgres.md" in content
@@ -2096,7 +2119,7 @@ def test_absorb_skips_vault_files(tmp_path: Path):
     repo = _init_with_vault(tmp_path)
     # Write a file inside the vault -- should not be re-imported
     vault = repo / "bedrock"
-    (vault / "Memory" / "MEMORY.md").write_text("# Memory\n\nContent.\n")
+    (vault / "Memory" / "PROJECT.md").write_text("# Project\n\nContent.\n")
     r = _run("absorb", "--project", str(repo), "--json")
     assert r.returncode == 0
     data = json.loads(r.stdout)
@@ -2104,4 +2127,4 @@ def test_absorb_skips_vault_files(tmp_path: Path):
     imports_dir = vault / "Evidence" / "imports"
     if imports_dir.exists():
         files = [f.name for f in imports_dir.glob("*.md")]
-        assert not any("MEMORY" in f for f in files)
+        assert not any("PROJECT" in f or "MEMORY" in f for f in files)

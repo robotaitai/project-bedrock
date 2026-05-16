@@ -1,6 +1,6 @@
 ---
 note_type: output
-generated: 2026-05-05T20:38:30Z
+generated: 2026-05-16T17:54:11Z
 canonical: false
 ---
 
@@ -8,7 +8,7 @@ canonical: false
 
 > Generated output. Not canonical. Do not treat as Memory.
 
-Generated: 2026-05-05T20:38:30Z  
+Generated: 2026-05-16T17:54:11Z  
 Total notes: 14
 
 ## Memory [canonical]
@@ -41,10 +41,10 @@ Total notes: 14
 ## Evidence [non-canonical]
 
 - **Recent Git History** `Evidence/raw/git-recent.md`
-  Last 30 commits as of 2026-05-05. 2b9fde9 feat: emoji on every decision entry + clean up starter templates c32f3b9 feat:...
+  Last 30 commits as of 2026-05-16. e1cc79c bd init: initialize beads issue tracking e9a3b83 fix: add encoding=utf-8 to al...
 
 ## Outputs [non-canonical]
 
 - **Knowledge Index** `Outputs/knowledge-index.md`
-  > Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-05T19:40:46Z Total notes: 14 - Memory Memo...
+  > Generated output. Not canonical. Do not treat as Memory. Generated: 2026-05-16T17:12:36Z Total notes: 14 - 🧠 Memory Me...
 

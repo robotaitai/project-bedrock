@@ -2,7 +2,7 @@
 
 <img src="docs/cover.png" width="100%" alt="project-bedrock cover" />
 
-# project-bedrock: A team lead for your AI agents.
+# project-bedrock: A project cockpit for your AI agents.
 
 ### Every session starts with context.  
 ### Every important decision leaves a trail.  
@@ -31,7 +31,8 @@ Architecture gets rediscovered.
 New sessions start from zero.  
 And the next developer, human or AI, has to figure out again what changed, where, and why.
 
-**Project Bedrock** gives every repo a shared memory layer for humans and AI developers.
+**Project Bedrock** turns your repo into a project cockpit for AI agents:
+what we know, what matters now, and what to load next.
 
 It works like the operating discipline of a strong team lead:
 - every session starts with context
@@ -40,10 +41,11 @@ It works like the operating discipline of a strong team lead:
 - the project becomes easier to understand over time, not harder
 
 With one command, your project gets:
-- STRUCTURED MEMORY for architecture, decisions, conventions, and history
+- PROJECT-SHAPED MEMORY for architecture, decisions, conventions, and domain context
+- A SMALL WORK LAYER for current focus, open loops, and recommended next actions
 - PROJECT-LOCAL integration for **Claude Code**, **Cursor**, and **Codex**
 - lightweight git-friendly markdown that LIVES WITH THE REPO
-- HTML, graph, and Obsidian-ready VIEWS of what the project knows
+- HTML, graph, and Obsidian-ready VIEWS for human inspection
 
 Under the hood, it is just markdown files and a CLI.  
 No database. No server. No hosted backend. No black box.
@@ -87,7 +89,7 @@ bedrock init
 Read AGENTS.md and ./bedrock/STATUS.md, then onboard this project.
 ```
 
-**That's it.** The agent reads the project structure, writes stable knowledge into `Memory/`, and every future session starts with full context automatically.
+**That's it.** The agent writes stable knowledge into `Memory/`, current priorities into `Work/`, and every future session starts with better context automatically.
 
 <details>
 <summary><b>What <code>init</code> does in one shot</b></summary>
@@ -98,10 +100,10 @@ Read AGENTS.md and ./bedrock/STATUS.md, then onboard this project.
 |------|-------------|
 | 1 | Creates `./bedrock/` as a **real directory** inside the repo (git-tracked) |
 | 2 | Registers the project in `~/agent-os/projects/<slug>/` so **every project shows up in one place** -- open it in Obsidian for a unified cross-project vault |
-| 3 | Adds noisy subfolders (`Evidence/raw/`, `Outputs/site/`, ...) to `.gitignore` automatically |
+| 3 | Adds noisy generated subfolders (`Evidence/raw/`, `Views/site/`, ...) to `.gitignore` automatically |
 | 4 | Installs project-local integration for **Claude Code** and **Cursor** |
 | 5 | Detects **Codex** and installs its bridge files if present |
-| 6 | Bootstraps the memory tree and marks onboarding as `pending` |
+| 6 | Bootstraps the project cockpit (`Memory/`, `Work/`, `Views/`) and marks onboarding as `pending` |
 | 7 | Imports repo history into `Evidence/` and backfills lightweight history from git |
 
 </details>
@@ -128,18 +130,28 @@ bedrock migrate-to-local
 
 ## 🧠 How It Works
 
-Think of the vault as your team's **shared notebook**. Casual scribbles don't get mistaken for confirmed facts, and you can always tell what is canon vs. chatter.
+Think of the vault as your team's **shared project cockpit**. The goal is not more documentation for agents to blindly read. The goal is less context, loaded better.
 
-### Knowledge Layers
+### Project Cockpit
 
 | | Folder | What goes here | Canon? |
 |---|--------|---------------|:------:|
-| 📘 | **`Memory/`** | Decisions, conventions, architecture, gotchas -- what you'd tell a new hire | **Yes** |
-| 📅 | **`History/`** | What happened and when -- releases, milestones, a dated trail | **Yes** |
+| 📘 | **`Memory/`** | What the project knows -- stable, durable, project-shaped knowledge | **Yes** |
+| 🎯 | **`Work/`** | What matters now -- current focus, next actions, open questions, risks | **Yes** |
+| 👁️ | **`Views/`** | Human inspection views -- generated site and graph output | No |
+| 📅 | `History/` | Legacy diary layer -- still supported | **Yes** |
 | 📎 | `Evidence/` | Raw imports: docs, ADRs, PRs, screenshots -- captured context | No |
-| 📊 | `Outputs/` | Generated views: HTML site, search index, knowledge map | No |
+| 📊 | `Outputs/` | Legacy generated artifacts -- still supported | No |
 
-> **The rule:** only `Memory/` and `History/` are truth. Nothing imported, captured, or generated is ever treated as canon on its own. A developer has to consciously promote something into `Memory/` for it to count.
+> **The rule:** stable facts go into `Memory/`, current priorities go into `Work/`, and generated views stay in `Views/`. Imported or generated material is never canon by itself.
+
+### Memory Is Project-Shaped
+
+Bedrock does not force every repo into the same documentation template.
+
+- A robotics repo may organize Memory around `perception/`, `navigation/`, `localization/`, and `safety/`
+- A SaaS repo may organize Memory around `frontend/`, `backend/`, `auth/`, `billing/`, and `data/`
+- Bedrock itself may organize Memory around `product/`, `runtime/`, `cli/`, `integrations/`, `memory-model/`, and `views/`
 
 ---
 
@@ -212,7 +224,7 @@ Hooks fire automatically -- **zero manual intervention:**
 | Task complete | `Stop` | `stop` | `bedrock sync` |
 | Context compaction | `PreCompact` | `preCompact` | `bedrock sync` |
 
-The agent reads `STATUS.md` and `Memory/MEMORY.md` at the start of every session, with no prompting required.
+The agent reads `STATUS.md`, `Memory/PROJECT.md`, and `Work/NOW.md` at the start of every session, with no prompting required.
 
 ### 💬 Slash Commands
 
@@ -220,10 +232,10 @@ These are how the team writes to the logbook. Both work in Claude Code and Curso
 
 | Command | When to use it |
 |---------|---------------|
-| **`/memory-update`** | End of session, before logging off. The agent reviews what happened, writes stable facts into `Memory/`, and summarizes changes. **This is the team handoff** -- the next developer (or session) gets it for free. |
+| **`/memory-update`** | End of session, before logging off. The agent updates the project cockpit: stable facts in `Memory/`, current priorities in `Work/`, and a short summary of what changed. |
 | **`/system-update`** | After upgrading `project-bedrock`. Refreshes hooks, rules, commands. Purely infrastructure -- never touches knowledge content. |
 
-> A developer should never finish a session without running `/memory-update`. It's the equivalent of a daily standup writeup -- short, factual, and always there for the next person.
+> A developer should never finish a session without updating the cockpit. The point is not to save everything. The point is to save the next useful context.
 
 ### 🩺 Integration Health
 
@@ -245,7 +257,7 @@ One window. Every team.
 
 ```bash
 bedrock export-canvas
-# produces: bedrock/Outputs/knowledge-export.canvas
+# produces: bedrock/Views/graph/knowledge-export.canvas
 ```
 
 Obsidian is optional. Works without it too.

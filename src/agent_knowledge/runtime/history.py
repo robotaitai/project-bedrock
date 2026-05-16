@@ -31,6 +31,8 @@ from collections import defaultdict
 from pathlib import Path
 from typing import Any
 
+from .paths import resolve_memory_root
+
 _HISTORY_DIR = "History"
 _EVENTS_FILE = "History/events.ndjson"
 _HISTORY_MD = "History/history.md"
@@ -287,12 +289,13 @@ def _rebuild_history_md(
     """Regenerate History/history.md from events (always < 150 lines)."""
     today = _today()
     recent = events[:15]
+    memory_root_rel = "../" + resolve_memory_root(vault_dir).relative_to(vault_dir).as_posix()
 
     lines: list[str] = [
         f"---\narea: history\nproject: {project_slug}\nupdated: {today}\n---\n",
         "\n# Project History\n\n",
         "Lightweight project diary. What happened, when, in which area.\n\n",
-        "For current truth, see [Memory/MEMORY.md](../Memory/MEMORY.md).\n",
+        f"For current truth, see [Memory root]({memory_root_rel}).\n",
         "This is not a git replacement.\n",
     ]
 
@@ -322,7 +325,7 @@ def _rebuild_history_md(
             lines.append(f"- **{ts}** `{etype}`{ttag} — {summary}{btag}\n")
 
     lines.append("\n## Reference\n\n")
-    lines.append("- [Memory root](../Memory/MEMORY.md)\n")
+    lines.append(f"- [Memory root]({memory_root_rel})\n")
     lines.append("- [STATUS](../STATUS.md)\n")
     lines.append("- [events.ndjson](events.ndjson) — machine-readable log\n")
     lines.append("\n---\n\n")
@@ -440,6 +443,7 @@ def _make_backfill_timeline(
     tags: list[dict[str, str]],
     recent_commits: list[dict[str, str]],
     integrations: list[str],
+    memory_root_link: str,
 ) -> str:
     """Build the content of the initial backfill timeline note."""
     today = _today()
@@ -482,7 +486,7 @@ This note summarizes available signals; it is not a complete record.
 {tag_section}{recent_section}{integ_section}
 ## Links
 
-- [Memory root](../Memory/MEMORY.md)
+- [Memory root]({memory_root_link})
 - [events.ndjson](../events.ndjson)
 
 ---
@@ -627,6 +631,7 @@ def run_backfill(
         content = _make_backfill_timeline(
             project_slug, commit_count, first_commit,
             tags, recent_commits, detected_tools,
+            "../" + resolve_memory_root(vault_dir).relative_to(vault_dir).as_posix(),
         )
         note = _create_timeline_note(
             vault_dir, "History backfill", content, slug="backfill",

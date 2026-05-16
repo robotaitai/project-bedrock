@@ -1,7 +1,7 @@
 ---
 area: history
 project: agent-knowledge
-updated: 2026-05-05
+updated: 2026-05-16
 ---
 
 # Project History

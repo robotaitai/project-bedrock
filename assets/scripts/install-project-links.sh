@@ -272,7 +272,7 @@ if [ "$INSTALL_HOOKS" -eq 1 ]; then
     fi
 fi
 
-if [ ! -f "$KNOWLEDGE_REAL_DIR/Memory/MEMORY.md" ] || [ ! -f "$KNOWLEDGE_REAL_DIR/STATUS.md" ] || [ "$FORCE" -eq 1 ]; then
+if [ \( ! -f "$KNOWLEDGE_REAL_DIR/Memory/PROJECT.md" \) -a \( ! -f "$KNOWLEDGE_REAL_DIR/Memory/MEMORY.md" \) ] || [ ! -f "$KNOWLEDGE_REAL_DIR/STATUS.md" ] || [ "$FORCE" -eq 1 ]; then
     bootstrap_cmd="$SCRIPT_DIR/bootstrap-memory-tree.sh"
     bootstrap_args=(--project "$TARGET_PROJECT")
     if [ "$DRY_RUN" -eq 1 ]; then
@@ -297,4 +297,3 @@ json_summary="$json_summary\"changes\":$(kc_json_array "${CHANGES[@]+"${CHANGES[
 json_summary="$json_summary\"warnings\":$(kc_json_array "${WARNINGS[@]+"${WARNINGS[@]}"}")"
 json_summary="$json_summary}"
 kc_write_json_output "$json_summary"
-

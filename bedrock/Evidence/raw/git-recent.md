@@ -1,15 +1,20 @@
 ---
 note_type: evidence
 source: git-log
-extracted: 2026-05-05T20:38:30Z
+extracted: 2026-05-16T17:54:11Z
 commits: 30
 ---
 
 # Recent Git History
 
-Last 30 commits as of 2026-05-05.
+Last 30 commits as of 2026-05-16.
 
 ```
+e1cc79c bd init: initialize beads issue tracking
+e9a3b83 fix: add encoding=utf-8 to all remaining read_text calls (v0.4.11)
+0da9164 fix: f-string bracket syntax for Python 3.9 compat (test_cli.py:1539)
+78c0592 memory: update packaging, conventions, testing, decisions for v0.4.8–v0.4.10 session
+4b6556e fix: update test path agent-knowledge → bedrock; bump v0.4.10
 2b9fde9 feat: emoji on every decision entry + clean up starter templates
 c32f3b9 feat: emoji section headers in memory branch notes (v0.4.9)
 e3ebc01 fix: add decisions step to every memory-update template (v0.4.8)
@@ -35,9 +40,4 @@ fddebe9 feat: add bedrock upgrade command (checks PyPI, detects pipx vs pip)
 2c92a4a feat: add tab completion command; hide specialist commands from help
 932d445 feat: add /compact-context slash command for Claude, Cursor; fix .claude/CLAUDE.md paths
 4991fb3 chore: memory update -- v0.4.0 rename and Windows fixes
-337e612 feat: v0.4.0 -- rename vault folder agent-knowledge -> bedrock, Windows fixes
-11b43cc Update star history link in README.md
-74a76e1 Create CONTRIBUTING.md
-5831ab2 docs: add Obsidian graph GIF to README Obsidian-Ready section
-dc0e73b chore: memory update -- v0.3.1/0.3.2 CLI rename and migration
 ```

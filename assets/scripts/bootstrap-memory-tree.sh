@@ -1,6 +1,6 @@
 #!/bin/bash
 #
-# Bootstrap a minimal project knowledge tree under ./bedrock/.
+# Bootstrap a minimal project cockpit under ./bedrock/.
 #
 # Usage:
 #   ./bootstrap-memory-tree.sh [project-dir] [profile]
@@ -11,8 +11,8 @@
 #
 # What it does:
 #   1. Detects a profile hint from manifests, docs, configs, tests, and workflows
-#   2. Creates the minimal knowledge tree: Memory/, Evidence/, Sessions/, Outputs/, Dashboards/
-#   3. Creates Memory/MEMORY.md and Memory/decisions/decisions.md
+#   2. Creates the minimal project cockpit: Memory/, Work/, Views/
+#   3. Creates Memory/PROJECT.md, Memory/decisions.md, Memory/glossary.md, and Work/*.md
 #   4. Stores profile hint in STATUS.md (the agent infers the actual ontology)
 #
 # What it does NOT do:
@@ -28,7 +28,6 @@ AGENTS_RULES_DIR="$(cd "$SCRIPT_DIR/.." && pwd)"
 . "$SCRIPT_DIR/lib/knowledge-common.sh"
 TEMPLATES_DIR="$AGENTS_RULES_DIR/templates/memory"
 PROJECT_TEMPLATE_DIR="$AGENTS_RULES_DIR/templates/project/bedrock"
-DASHBOARD_TEMPLATES_DIR="$AGENTS_RULES_DIR/templates/dashboards"
 STATUS_TEMPLATE="$AGENTS_RULES_DIR/templates/project/bedrock/STATUS.md"
 
 TARGET_PROJECT_ARG="."
@@ -262,48 +261,27 @@ kc_log ""
 # Create minimal directory scaffold
 # ---------------------------------------------------------------------------
 
-EVIDENCE_CAPTURES_DIR="$EVIDENCE_DIR/captures"
-
 for dir in \
     "$KNOWLEDGE_DIR" \
     "$MEMORY_DIR" \
-    "$DECISIONS_DIR" \
-    "$EVIDENCE_DIR" \
-    "$EVIDENCE_RAW_DIR" \
-    "$EVIDENCE_IMPORTS_DIR" \
-    "$EVIDENCE_CAPTURES_DIR" \
-    "$OUTPUTS_DIR" \
-    "$DASHBOARDS_DIR" \
-    "$LOCAL_TEMPLATES_DIR" \
-    "$OBSIDIAN_DIR"; do
+    "$WORK_DIR" \
+    "$VIEWS_DIR" \
+    "$VIEWS_SITE_DIR" \
+    "$VIEWS_GRAPH_DIR"; do
     kc_ensure_dir "$dir" "$dir"
 done
 
 # ---------------------------------------------------------------------------
-# Copy static templates (no INDEX.md -- uses STATUS.md + MEMORY.md as entries)
+# Copy static templates
 # ---------------------------------------------------------------------------
 
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/README.md" "$EVIDENCE_DIR/README.md" "bedrock/Evidence/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/raw/README.md" "$EVIDENCE_RAW_DIR/README.md" "bedrock/Evidence/raw/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/imports/README.md" "$EVIDENCE_IMPORTS_DIR/README.md" "bedrock/Evidence/imports/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Evidence/captures/README.md" "$EVIDENCE_CAPTURES_DIR/README.md" "bedrock/Evidence/captures/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Outputs/README.md" "$OUTPUTS_DIR/README.md" "bedrock/Outputs/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Templates/README.md" "$LOCAL_TEMPLATES_DIR/README.md" "bedrock/Templates/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/.obsidian/README.md" "$OBSIDIAN_DIR/README.md" "bedrock/.obsidian/README.md"
-copy_static_template "$PROJECT_TEMPLATE_DIR/Memory/decisions/decisions.md" "$DECISIONS_DIR/decisions.md" "bedrock/Memory/decisions/decisions.md"
-
-kc_copy_file "$PROJECT_TEMPLATE_DIR/.obsidian/core-plugins.json" "$OBSIDIAN_DIR/core-plugins.json" "bedrock/.obsidian/core-plugins.json"
-case "$KC_LAST_ACTION" in
-    created|updated|would-create|would-update)
-        CHANGES+=("bedrock/.obsidian/core-plugins.json")
-        ;;
-esac
-kc_copy_file "$PROJECT_TEMPLATE_DIR/.obsidian/app.json" "$OBSIDIAN_DIR/app.json" "bedrock/.obsidian/app.json"
-case "$KC_LAST_ACTION" in
-    created|updated|would-create|would-update)
-        CHANGES+=("bedrock/.obsidian/app.json")
-        ;;
-esac
+copy_static_template "$PROJECT_TEMPLATE_DIR/Memory/PROJECT.md" "$MEMORY_DIR/PROJECT.md" "bedrock/Memory/PROJECT.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Memory/decisions.md" "$MEMORY_DIR/decisions.md" "bedrock/Memory/decisions.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Memory/glossary.md" "$MEMORY_DIR/glossary.md" "bedrock/Memory/glossary.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Work/NOW.md" "$WORK_DIR/NOW.md" "bedrock/Work/NOW.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Work/backlog.md" "$WORK_DIR/backlog.md" "bedrock/Work/backlog.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Work/open-questions.md" "$WORK_DIR/open-questions.md" "bedrock/Work/open-questions.md"
+copy_static_template "$PROJECT_TEMPLATE_DIR/Work/risks.md" "$WORK_DIR/risks.md" "bedrock/Work/risks.md"
 
 # ---------------------------------------------------------------------------
 # STATUS.md
@@ -319,32 +297,6 @@ kc_replace_in_template \
 case "$KC_LAST_ACTION" in
     created|updated|would-create|would-update)
         CHANGES+=("bedrock/STATUS.md")
-        ;;
-esac
-
-# ---------------------------------------------------------------------------
-# Dashboard stubs
-# ---------------------------------------------------------------------------
-
-render_dashboard_note \
-    "$DASHBOARD_TEMPLATES_DIR/project-overview.template.md" \
-    "$DASHBOARDS_DIR/project-overview.md" \
-    "bedrock/Dashboards/project-overview.md"
-# ---------------------------------------------------------------------------
-# Memory/MEMORY.md (minimal -- agent infers branches later)
-# ---------------------------------------------------------------------------
-
-render_text_template \
-    "$TEMPLATES_DIR/MEMORY.root.template.md" \
-    "$MEMORY_ROOT" \
-    "$(printf -- '- Profile hint: `%s`. The agent should inspect the repo to infer the real ontology.\n- Memory has been initialized but branches have not been created yet.' "$PROFILE")" \
-    "$(printf -- '- %s - Bootstrapped minimal memory root.' "$DATE")" \
-    "$(printf -- '- [decisions/decisions.md](decisions/decisions.md) - Decision log.')" \
-    "$(printf -- '- Which areas of the project should become the first memory branches?\n- Which decisions should be recorded explicitly from existing docs and code?')" \
-    "$(printf -- '- Add branch links here as the agent infers project structure.')"
-case "$KC_LAST_ACTION" in
-    created|updated|would-create|would-update)
-        CHANGES+=("bedrock/Memory/MEMORY.md")
         ;;
 esac
 

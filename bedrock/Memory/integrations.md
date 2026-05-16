@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: integrations
-updated: 2026-05-05
+updated: 2026-05-16
 tags:
   - agent-knowledge
   - memory
@@ -34,11 +34,13 @@ Called by [[cli#init|init]] via `detect()` then `install_all()`.
 - `.cursor/hooks.json` -- 4 hooks: `post-write`, `session-start`, `stop`, `preCompact`
 - `.cursor/rules/bedrock.mdc` -- `alwaysApply` rule (was `agent-knowledge.mdc`; auto-renamed by `refresh-system`)
 - `.cursor/commands/memory-update.md`, `system-update.md`, `absorb.md`, `compact-context.md`
+- Project contract now tells agents to read `Memory/PROJECT.md` and `Work/NOW.md`, keep Memory project-shaped, and treat `Views/` as generated/non-canonical
 
 ### Claude Code (first-class)
 - `.claude/settings.json` -- hooks: SessionStart, Stop, PreCompact
 - `.claude/CLAUDE.md` -- runtime contract
 - `.claude/commands/memory-update.md`, `system-update.md`, `absorb.md`, `compact-context.md`
+- Templates now use the simplified cockpit framing: stable facts in `Memory/`, current priorities in `Work/`, generated inspection output in `Views/`
 
 ### Codex
 - `.codex/AGENTS.md` -- fully self-contained (v0.4.5+): includes onboarding, memory-update procedure, compact-context, knowledge structure. No longer defers to root AGENTS.md.
@@ -67,7 +69,7 @@ All writes are sentinel-guarded (idempotent). `--uninstall` removes them. `--dry
 flowchart TD
     A["Agent session starts"] --> B{"STATUS.md\nonboarding:?"}
     B -->|pending| C["Read AGENTS.md\nfirst-time setup"]
-    B -->|complete| D["Read Memory/MEMORY.md\nfor context"]
+    B -->|complete| D["Read Memory/PROJECT.md\nand Work/NOW.md"]
     C --> E["Run bedrock init"]
     E --> D
 ```
@@ -98,6 +100,7 @@ Cursor rule content is **inlined as `_CURSOR_RULE`** in `integrations.py` AND st
 - 2026-05-05: v0.4.5 — `.codex/AGENTS.md` rewritten to be fully self-contained; removed dependency on root AGENTS.md.
 - 2026-05-05: v0.4.6 — `install-global` command added; installs conditional rules in `~/.cursor/`, `~/.claude/`, `~/.codex/`.
 - 2026-05-05: v0.4.7 — Gemini CLI + Antigravity added; `GEMINI.md` template; detection via `.gemini/` or `GEMINI.md`; `install-global` writes `~/.gemini/GEMINI.md`.
+- 2026-05-16: Generated Claude, Cursor, Codex, and Gemini instructions switched to the `Memory / Work / Views` cockpit story and now start from `Memory/PROJECT.md` plus `Work/NOW.md`.
 
 ## 🔗 See Also
 

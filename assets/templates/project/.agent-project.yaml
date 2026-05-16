@@ -14,11 +14,11 @@ knowledge:
   pointer_path: ./bedrock
   real_path: <absolute-path-to-dedicated-knowledge-folder>
   ignore_file: ./.agentknowledgeignore
-  memory_root: ./bedrock/Memory/MEMORY.md
-  evidence_raw: ./bedrock/Evidence/raw
-  evidence_imports: ./bedrock/Evidence/imports
-  outputs_root: ./bedrock/Outputs
-  dashboards_root: ./bedrock/Dashboards
+  memory_root: ./bedrock/Memory/PROJECT.md
+  work_root: ./bedrock/Work
+  views_root: ./bedrock/Views
+  site_root: ./bedrock/Views/site
+  graph_root: ./bedrock/Views/graph
   obsidian_mode: lightweight
 
 onboarding:

@@ -6,7 +6,8 @@ Three-layer retrieval model:
   Layer 3 -- full note contents (load only chosen notes on demand)
 
 The index is written to Outputs/ and is never canonical.
-Memory/ notes are ranked above Evidence/ and Outputs/ in search results.
+Memory/ and Work/ notes are ranked above Evidence/ and Outputs/ in search
+results.
 """
 
 from __future__ import annotations
@@ -17,9 +18,11 @@ import re
 from pathlib import Path
 from typing import Any, Sequence
 
+from .paths import is_memory_root_relpath
+
 # Folders in priority order for retrieval.
-_FOLDER_ORDER = ["Memory", "Evidence", "Outputs"]
-_CANONICAL_FOLDERS = {"Memory"}
+_FOLDER_ORDER = ["Memory", "Work", "Evidence", "Outputs"]
+_CANONICAL_FOLDERS = {"Memory", "Work"}
 
 # Branch entry note pattern: <topic>/<topic>.md
 _BRANCH_ENTRY_RE = re.compile(r"^([^/]+)/\1\.md$")
@@ -74,7 +77,7 @@ def _first_content_lines(text: str, max_chars: int = 200) -> str:
 
 
 def _is_branch_entry(rel: str) -> bool:
-    return bool(_BRANCH_ENTRY_RE.match(rel)) or rel == "Memory/MEMORY.md"
+    return bool(_BRANCH_ENTRY_RE.match(rel)) or is_memory_root_relpath(rel)
 
 
 def build_index(vault_dir: Path) -> dict[str, Any]:

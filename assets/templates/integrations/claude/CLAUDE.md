@@ -1,12 +1,22 @@
 # bedrock
 
-This project uses **bedrock** for persistent project memory.
-All knowledge lives in `./bedrock/`.
+This project uses **bedrock** as a small project cockpit for AI-agent work.
+All project context lives in `./bedrock/`.
+
+## Project cockpit
+
+- `Memory/` = what the project knows
+- `Work/` = what matters now
+- `Views/` = generated human inspection views
+
+Legacy folders such as `History/`, `Evidence/`, `Outputs/`, or `Sessions/`
+may still exist for compatibility. They are not the main user-facing model.
 
 ## On session start
 
-If `./bedrock/` does not exist but `./agent-knowledge/` does, this project needs migration -- tell the user to run:
-```
+If `./bedrock/` does not exist but `./agent-knowledge/` does, this project needs migration:
+
+```bash
 bedrock migrate-vault && bedrock refresh-system
 ```
 
@@ -14,32 +24,20 @@ Otherwise:
 
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` -- read `AGENTS.md` and perform First-Time Onboarding
-3. If `onboarding: complete` -- read `./bedrock/Memory/MEMORY.md`
-   - Load branch notes relevant to the current task
-   - Scan `./bedrock/History/history.md` for recent activity if useful
-
-## Knowledge layers
-
-| Layer | Canonical? | Use for |
-|-------|-----------|---------|
-| `Memory/` | Yes | Stable project truth -- write here |
-| `History/` | Yes (diary) | What happened over time |
-| `Evidence/` | No | Raw imports -- never promote to Memory |
-| `Outputs/` | No | Generated views -- never treat as truth |
+3. If `onboarding: complete` -- read `./bedrock/Memory/PROJECT.md`
+4. Read `./bedrock/Work/NOW.md`
+5. Load only the relevant Memory branches for the task
 
 ## After meaningful work
 
-- Write confirmed facts to `./bedrock/Memory/<branch>.md`
-- If any architectural, design, or tooling decisions were made, add them to `./bedrock/Memory/decisions/decisions.md`
-- Run `/memory-update` — sync, update branches, log any decisions, summarize what changed
+- Update stable project knowledge in `./bedrock/Memory/`
+- Update current priorities and open loops in `./bedrock/Work/`
+- Run `/memory-update`
 
-## Periodic (every few sessions)
+## Periodic
 
-- Run `/system-update` to refresh integration files to the latest framework version
+- Run `/system-update` every few sessions to refresh integration files
 
 ## When the context window is getting long
 
-- Run `/compact-context` — saves memory, then resets the context window
-
-Keep ontology small and project-native. Do not force generic templates.
-Use emojis in section headers when writing or updating branch notes (e.g. `## 🔄 Recent Changes`, `## 🔗 See Also`, `## ⚠️ Gotchas`).
+- Run `/compact-context`

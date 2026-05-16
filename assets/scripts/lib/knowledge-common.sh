@@ -346,6 +346,7 @@ kc_load_project_context() {
     local project_dir="${1:-.}"
     local pointer_value=""
     local real_value=""
+    local memory_root_value=""
 
     TARGET_PROJECT="$(cd "$project_dir" 2>/dev/null && pwd)"
     [ -n "$TARGET_PROJECT" ] || kc_fail "Unable to resolve project dir: $project_dir"
@@ -367,6 +368,7 @@ kc_load_project_context() {
         VAULT_MODE="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "vault_mode" 2>/dev/null || printf 'external')"
         pointer_value="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "pointer_path" || true)"
         real_value="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "real_path" || true)"
+        memory_root_value="$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "memory_root" || true)"
         if [ -n "$pointer_value" ]; then
             POINTER_DISPLAY="$pointer_value"
             POINTER_PATH="$(kc_resolve_relative "$TARGET_PROJECT" "$pointer_value")"
@@ -387,8 +389,28 @@ kc_load_project_context() {
     KNOWLEDGE_POINTER_PATH="$POINTER_PATH"
     KNOWLEDGE_DIR="$POINTER_PATH"
     MEMORY_DIR="$KNOWLEDGE_DIR/Memory"
-    MEMORY_ROOT="$MEMORY_DIR/MEMORY.md"
+    if [ -n "$memory_root_value" ]; then
+        MEMORY_ROOT="$(kc_resolve_relative "$TARGET_PROJECT" "$memory_root_value")"
+    elif [ -f "$MEMORY_DIR/PROJECT.md" ]; then
+        MEMORY_ROOT="$MEMORY_DIR/PROJECT.md"
+    elif [ -f "$MEMORY_DIR/MEMORY.md" ]; then
+        MEMORY_ROOT="$MEMORY_DIR/MEMORY.md"
+    else
+        MEMORY_ROOT="$MEMORY_DIR/PROJECT.md"
+    fi
     DECISIONS_DIR="$MEMORY_DIR/decisions"
+    if [ -f "$MEMORY_DIR/decisions.md" ]; then
+        DECISIONS_LOG="$MEMORY_DIR/decisions.md"
+    elif [ -f "$DECISIONS_DIR/decisions.md" ]; then
+        DECISIONS_LOG="$DECISIONS_DIR/decisions.md"
+    else
+        DECISIONS_LOG="$MEMORY_DIR/decisions.md"
+    fi
+    WORK_DIR="$KNOWLEDGE_DIR/Work"
+    WORK_NOW="$WORK_DIR/NOW.md"
+    VIEWS_DIR="$KNOWLEDGE_DIR/Views"
+    VIEWS_SITE_DIR="$VIEWS_DIR/site"
+    VIEWS_GRAPH_DIR="$VIEWS_DIR/graph"
     EVIDENCE_DIR="$KNOWLEDGE_DIR/Evidence"
     EVIDENCE_RAW_DIR="$EVIDENCE_DIR/raw"
     EVIDENCE_IMPORTS_DIR="$EVIDENCE_DIR/imports"

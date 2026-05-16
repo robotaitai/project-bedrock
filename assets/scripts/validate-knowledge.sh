@@ -82,14 +82,26 @@ check_required_path "$AGENT_PROJECT_FILE" ".agent-project.yaml"
 check_required_dir "$KNOWLEDGE_POINTER_PATH" "bedrock local handle"
 check_required_dir "$KNOWLEDGE_REAL_DIR" "real knowledge dir"
 check_required_path "$STATUS_FILE" "STATUS.md"
-check_required_path "$MEMORY_ROOT" "Memory/MEMORY.md"
-check_required_dir "$DECISIONS_DIR" "Memory/decisions"
-check_required_dir "$EVIDENCE_RAW_DIR" "Evidence/raw"
-check_required_dir "$EVIDENCE_IMPORTS_DIR" "Evidence/imports"
-check_required_dir "$OUTPUTS_DIR" "Outputs"
+check_required_path "$MEMORY_ROOT" "Memory root"
+check_required_path "$DECISIONS_LOG" "Memory decisions log"
+if [ -f "$WORK_NOW" ]; then
+    CHECKS+=("Work/NOW.md:ok")
+elif [ -d "$OUTPUTS_DIR" ] || [ -d "$EVIDENCE_DIR" ] || [ -d "$KNOWLEDGE_DIR/History" ]; then
+    WARNINGS+=("Work/NOW.md is missing. Legacy projects are still supported, but new Bedrock projects use the simplified Memory/Work/Views cockpit.")
+else
+    ERRORS+=("Missing Work/NOW.md at $WORK_NOW")
+fi
+if [ -d "$VIEWS_SITE_DIR" ] && [ -d "$VIEWS_GRAPH_DIR" ]; then
+    CHECKS+=("Views/site:ok")
+    CHECKS+=("Views/graph:ok")
+elif [ -d "$OUTPUTS_DIR" ]; then
+    WARNINGS+=("Views/site or Views/graph is missing. Legacy Outputs/ is still supported, but new Bedrock projects use Views/ for generated human inspection output.")
+else
+    ERRORS+=("Missing generated views directories at $VIEWS_SITE_DIR and $VIEWS_GRAPH_DIR")
+fi
 
 if [ -f "$AGENT_PROJECT_FILE" ]; then
-    for key in name slug pointer_path real_path memory_root evidence_raw evidence_imports; do
+    for key in name slug pointer_path real_path memory_root; do
         if [ -z "$(kc_yaml_leaf_value "$AGENT_PROJECT_FILE" "$key" || true)" ]; then
             ERRORS+=("Missing required .agent-project.yaml key: $key")
         fi

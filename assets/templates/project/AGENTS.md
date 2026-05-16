@@ -1,7 +1,16 @@
 # Agent Knowledge: <project-name>
 
-This project uses **Project Bedrock** for persistent project memory.
-All knowledge is accessed through `./bedrock/` (symlink to external vault).
+This project uses **Project Bedrock** as a small project cockpit for AI-agent work.
+All project context lives under `./bedrock/`.
+
+## Project Cockpit
+
+- `Memory/` = what the project knows
+- `Work/` = what matters now
+- `Views/` = generated human inspection views
+
+Legacy folders such as `History/`, `Evidence/`, `Outputs/`, or `Sessions/`
+may still exist for compatibility. They are not the main user-facing model.
 
 ## First-Time Onboarding
 
@@ -10,59 +19,19 @@ Check `./bedrock/STATUS.md`. If `onboarding: pending`:
 1. Inspect project structure: manifests, package files, CI/CD config, docs
 2. Inspect project-local tool config: `.cursor/`, `.claude/`, `.codex/` if present
 3. Review recent git history (last ~50 commits, key branches)
-4. Import findings into `Evidence/raw/` using `bedrock import`
-5. Infer the project ontology from the actual repo -- use the project's own
-   functional domains as branch names (e.g., perception, navigation, localization),
-   not generic categories (e.g., architecture, conventions)
-6. Create one branch note per functional domain. Each note should be focused
-   and under ~150 lines. Do NOT put the whole system description in one file.
-7. Link related notes to each other with relative markdown links
-8. Update `Memory/MEMORY.md` with links to all new branches
-9. Update `./bedrock/STATUS.md`: set `onboarding: complete`
+4. Infer the project shape from the actual repo
+5. Create Memory branches using the repo's real domains, not generic templates
+6. Update `Memory/PROJECT.md` with durable project context
+7. Update `Work/NOW.md` with the current focus and next recommended actions
+8. Update `./bedrock/STATUS.md`: set `onboarding: complete`
 
-## Branch Convention
+## Memory Rules
 
-Use the same-name branch-note pattern:
-
-```
-Memory/
-  MEMORY.md                    # root -- always read first
-  stack.md                     # flat note when no subtopics needed
-  perception/
-    perception.md              # entry note = same name as folder
-    fusion.md                  # subtopic note
-    lane-detection.md
-  navigation/
-    navigation.md
-    path-following.md
-  localization/
-    localization.md
-  decisions/
-    decisions.md               # decision log
-    2025-01-15-use-raw-sql.md  # individual decision
-```
-
-Rules:
-- Each branch = one focused functional domain from the project
-- Use the project's own terminology, not generic templates
-- Each note stays under ~150 lines. If a topic is too big, split it.
-- Link between related notes with relative markdown links (e.g.,
-  `See [perception](perception/perception.md) for sensor details`)
-- Small topic with no subtopics: one flat note (`stack.md`)
-- Bigger topic: folder + same-name entry note (`perception/perception.md`)
-- Do not create deep trees automatically -- grow only when justified
-- Do NOT lump unrelated subsystems into a single "architecture" note.
-  Split by functional domain instead.
-- Use emojis in section headers to improve scannability. Pick an emoji that
-  matches the section's purpose (e.g. `## 🔄 Recent Changes`, `## 🔗 See Also`,
-  `## ⚠️ Gotchas`, `## 📦 Build`, `## 🔍 Detection`, `## 🧩 Patterns`).
-
-## Onboarding Rules
-
-- Only write confirmed facts to `Memory/` -- never speculate
-- Keep raw/extracted material in `Evidence/`, not `Memory/`
-- Keep generated views in `Outputs/` -- never treat as canonical truth
-- Do NOT redo onboarding if STATUS.md already shows `onboarding: complete`
+- Memory must be project-shaped
+- Do NOT force generic folders like `engineering/`, `testing/`, `release/`, or `setup/` unless the repo actually needs them
+- Use the project's own terminology for Memory branches
+- Only write confirmed, stable facts into `Memory/`
+- Do not read the whole vault unless necessary
 
 ## Session Start
 
@@ -72,18 +41,24 @@ If you support shell commands, run at session start:
 bedrock sync --project .
 ```
 
-## Memory Maintenance
+Then read:
 
-After meaningful work, update `./bedrock/Memory/` directly:
+1. `Memory/PROJECT.md`
+2. `Work/NOW.md`
+3. Only the relevant Memory branches for the current task
 
-1. Edit the relevant branch note (`Memory/cli.md`, `Memory/architecture.md`, etc.)
-   - Update `Current State` with confirmed facts (replace stale entries, no duplicates)
-   - Add a `YYYY-MM-DD -- what changed` line to `Recent Changes`
-2. If any architectural, design, or tooling decisions were made, add them to `Memory/decisions/decisions.md` using the existing numbered format
-3. Update `Memory/MEMORY.md` if branch one-line summaries changed
-4. Run `bedrock sync --project .` to propagate and refresh indexes
+Do not treat generated Views as canonical truth.
 
-Write to memory when:
+## Updating The Cockpit
+
+After meaningful work:
+
+1. Update `Memory/` with stable project knowledge
+2. Update `Work/NOW.md` if focus, next actions, or blockers changed
+3. Update `Work/open-questions.md`, `Work/risks.md`, or `Work/backlog.md` if needed
+4. Run `bedrock sync --project .`
+
+Write to Memory when:
 - A new feature, command, or module was completed
 - An architectural decision was made or changed
 - A gotcha, constraint, or pattern was confirmed
@@ -91,24 +66,13 @@ Write to memory when:
 
 Skip writeback for read-only sessions, speculative changes, or session-specific context.
 
-## Ongoing Maintenance
-
-After onboarding is complete, during normal work:
-- Keep `Evidence/` and `Outputs/` separate from `Memory/` (never promote)
-- Do NOT rebuild the knowledge tree every session
-- Record architectural decisions in `Memory/decisions/`
-
 ## Knowledge Structure
 
-- `Memory/` -- Curated, durable project knowledge (source of truth)
-- `Evidence/` -- Imported/extracted material (not curated truth)
-- `Outputs/` -- Generated helper views (never canonical)
+- `Memory/` -- Curated, durable project knowledge
+- `Work/` -- Current priorities and open loops
+- `Views/` -- Generated site and graph views
+- `History/` -- Legacy diary layer, still supported
+- `Evidence/` -- Imported/extracted material, not curated truth
+- `Outputs/` -- Legacy generated artifacts, still supported
 - `STATUS.md` -- Onboarding and maintenance state
 - `.agent-project.yaml` -- Project configuration
-
-## Reading Order
-
-1. `Memory/MEMORY.md` -- always read first
-2. Relevant branch entry notes (e.g., `perception/perception.md`)
-3. Leaf notes only if the specific detail is needed
-4. Keep context lean -- do not read branches unrelated to the current task

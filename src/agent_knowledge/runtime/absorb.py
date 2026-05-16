@@ -26,6 +26,8 @@ import re
 from pathlib import Path
 from typing import Any
 
+from .paths import resolve_decisions_log
+
 # ---------------------------------------------------------------------------
 # Source discovery
 # ---------------------------------------------------------------------------
@@ -290,7 +292,7 @@ and promote relevant content to `Memory/` branches.
 
 1. Review imported files in `Evidence/imports/`
 2. For each imported doc, extract stable facts and write to the relevant `Memory/<branch>.md`
-3. For parsed decisions, verify they are captured in `Memory/decisions/decisions.md`
+3. For parsed decisions, verify they are captured in `Memory/decisions.md`
 4. Run `/memory-update` to sync and summarize changes
 """
 
@@ -374,7 +376,7 @@ def run_absorb(
     results: list[dict[str, Any]] = []
     decisions_written: list[str] = []
 
-    decisions_path = vault_dir / "Memory" / "decisions" / "decisions.md"
+    decisions_path = resolve_decisions_log(vault_dir)
 
     for source in sources:
         path: Path = source["path"]

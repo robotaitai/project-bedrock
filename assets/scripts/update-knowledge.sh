@@ -224,10 +224,13 @@ render_decision_note() {
             ;;
     esac
 
-    # Update decisions log (decisions.md, with fallback to legacy INDEX.md)
-    local decisions_log="$DECISIONS_DIR/decisions.md"
-    [ -f "$decisions_log" ] || decisions_log="$DECISIONS_DIR/INDEX.md"
-    local decisions_label="Memory/decisions/$(basename "$decisions_log")"
+    # Update the preferred flat decisions log, with a legacy fallback.
+    local decisions_log="$DECISIONS_LOG"
+    if [ ! -f "$decisions_log" ] && [ -f "$DECISIONS_DIR/INDEX.md" ]; then
+        decisions_log="$DECISIONS_DIR/INDEX.md"
+    fi
+    local decisions_label
+    decisions_label="$(kc_rel_knowledge_path "$decisions_log")"
     kc_append_unique_bullet "$decisions_log" "Current State" "- [$title]($slug.md) - Recorded from project sync." "$decisions_label"
     kc_append_unique_bullet "$decisions_log" "Recent Changes" "- $(kc_today) - Updated decision note [$title]($slug.md)." "$decisions_label"
 }

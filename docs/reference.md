@@ -15,9 +15,10 @@ bedrock view              # generate and open in browser
 
 The generated site includes an overview page, branch tree navigation, note detail
 view, evidence view, interactive graph view, and machine-readable `knowledge.json`
-and `graph.json`. Opens via `file://` with no server needed.
+and `graph.json`. It writes to `Views/site/` by default, with legacy
+`Outputs/site/` fallback for older projects. Opens via `file://` with no server needed.
 
-Memory/ notes are always primary. Evidence and Outputs items are clearly marked
+Memory/ notes are always primary. Evidence and generated view items are clearly marked
 non-canonical.
 
 ## Automatic capture
@@ -55,7 +56,7 @@ YAML frontmatter marking it as non-canonical.
 
 ## Project history
 
-`init` automatically backfills a lightweight history layer when run on an existing repo.
+`init` automatically backfills a lightweight legacy history layer when run on an existing repo.
 You can also run it explicitly:
 
 ```bash
@@ -66,7 +67,8 @@ Creates `History/events.ndjson` (append-only event log), `History/history.md`
 (human-readable summary), and `History/timeline/` (sparse milestone notes).
 
 History records what happened over time -- releases, integrations, sync events.
-It is not a git replacement. Current truth lives in `Memory/`.
+It is not a git replacement. Current truth lives in `Memory/`, and current focus
+lives in `Work/`.
 
 ## Keeping up to date
 
@@ -77,7 +79,7 @@ bedrock refresh-system
 
 `refresh-system` updates all integration files -- Claude settings/commands/contract,
 Cursor hooks/rules/commands, `AGENTS.md` header, Codex config -- and version markers.
-It never touches `Memory/`, `Evidence/`, or any curated knowledge.
+It never touches `Memory/`, `Work/`, `Evidence/`, or any curated knowledge.
 
 `bedrock doctor` warns when the project integration is behind the installed version.
 

@@ -51,30 +51,37 @@ alwaysApply: true
 ---
 
 This project uses **bedrock** for persistent memory.
-All knowledge lives in `./bedrock/`.
+Bedrock uses a small project cockpit in `./bedrock/`:
+
+- `Memory/` = what the project knows
+- `Work/` = what matters now
+- `Views/` = generated human inspection views
 
 ## On session start
 
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` — read `AGENTS.md` and perform First-Time Onboarding
-3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`
-   - Load branch notes relevant to the current task
-   - Scan `./bedrock/History/history.md` for recent activity if useful
+3. If `onboarding: complete` — read `./bedrock/Memory/PROJECT.md`
+4. Read `./bedrock/Work/NOW.md`
+5. Load only the Memory branches relevant to the current task
 
-## Knowledge layers
+## Project cockpit
 
 | Layer | Canonical? | Use for |
 |-------|-----------|---------|
 | `Memory/` | Yes | Stable project truth — write here |
-| `History/` | Yes (diary) | What happened over time |
+| `Work/` | Yes | Current focus, open loops, recommended next context |
+| `Views/` | No | Generated site/graph views for humans |
+| `History/` | Yes (legacy diary) | What happened over time |
 | `Evidence/` | No | Raw imports — never promote to Memory |
-| `Outputs/` | No | Generated views — never treat as truth |
+| `Outputs/` | No | Legacy generated outputs — compatibility only |
 | `Sessions/` | No | Temporary state — prune aggressively |
 
 ## After meaningful work
 
-- Write confirmed facts to `./bedrock/Memory/<branch>.md`
-- Run `/memory-update` — sync, update branches, summarize what changed
+- Write confirmed facts to `./bedrock/Memory/`
+- Update current priorities, risks, or open loops in `./bedrock/Work/`
+- Run `/memory-update` — update the project cockpit and summarize what changed
 
 ## Periodic (every few sessions)
 

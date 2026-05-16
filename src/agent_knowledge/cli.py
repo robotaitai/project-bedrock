@@ -40,10 +40,11 @@ def main() -> None:
 
 _LOCAL_GITIGNORE_BLOCK = """\
 # bedrock: noisy auto-generated content excluded from git
-# Curated knowledge (Memory/, History/, Evidence/imports/, Dashboards/) IS tracked.
+# Curated knowledge (Memory/, Work/, History/, Evidence/imports/) IS tracked.
 bedrock/Evidence/raw/
 bedrock/Evidence/captures/
-bedrock/Outputs/site/
+bedrock/Views/site/
+bedrock/Views/graph/
 bedrock/Outputs/graph.json
 bedrock/Outputs/knowledge-index.json
 bedrock/Outputs/knowledge-index.md
@@ -639,7 +640,7 @@ def index_cmd(project: str, dry_run: bool, json_mode: bool) -> None:
 
 @main.command("export-html")
 @click.option("--project", default=".", type=click.Path(exists=True), help="Project repo root.")
-@click.option("--output-dir", default=None, type=click.Path(), help="Output directory (default: Outputs/site/).")
+@click.option("--output-dir", default=None, type=click.Path(), help="Output directory (default: Views/site/, with legacy Outputs/site/ fallback).")
 @click.option("--include-evidence", is_flag=True, default=True, show_default=True, help="Include Evidence/ notes in the site.")
 @click.option("--no-evidence", "include_evidence", flag_value=False, help="Exclude Evidence/ notes from the site.")
 @click.option("--dry-run", is_flag=True, help="Preview what would be generated without writing.")
@@ -655,9 +656,10 @@ def export_html(
 ) -> None:
     """Build a polished static HTML site from the knowledge vault.
 
-    Generates Outputs/site/index.html and Outputs/site/data/knowledge.json.
-    Opens in any browser without Obsidian. Memory/ is primary; Evidence/ and
-    Outputs/ are clearly marked non-canonical.
+    Generates Views/site/index.html and Views/site/data/knowledge.json by
+    default, with legacy Outputs/site/ fallback for older projects. Opens in
+    any browser without Obsidian. Memory/ is primary; Evidence/ and generated
+    views are clearly marked non-canonical.
 
     \b
     Examples:
@@ -710,7 +712,7 @@ def view(project: str, output_dir: str | None) -> None:
     """Build the knowledge site and open it in the browser.
 
     Equivalent to export-html --open. No Obsidian required.
-    The site is generated into Outputs/site/ and opened via file://.
+    The site is generated into Views/site/ by default and opened via file://.
     """
     import webbrowser
 
@@ -946,7 +948,7 @@ def absorb(project: str, dry_run: bool, json_mode: bool, no_decisions: bool) -> 
     \b
     Outputs:
       - Evidence/imports/<file>.md  -- non-canonical copies with metadata
-      - Memory/decisions/decisions.md  -- parsed ADR entries appended
+      - Memory/decisions.md  -- parsed ADR entries appended
       - Outputs/absorb-manifest.md  -- manifest listing all imports
       - History/events.ndjson  -- absorb event recorded
     """
@@ -1000,7 +1002,7 @@ def absorb(project: str, dry_run: bool, json_mode: bool, no_decisions: bool) -> 
     if already:
         click.echo(f"  Skipped:   {already} already present", err=True)
     if decisions:
-        click.echo(f"  Decisions: {decisions} ADR entries parsed -> Memory/decisions/decisions.md", err=True)
+        click.echo(f"  Decisions: {decisions} ADR entries parsed -> Memory/decisions.md", err=True)
     if not dry_run:
         click.echo(f"  Manifest:  {manifest}", err=True)
         click.echo("", err=True)
@@ -1482,10 +1484,11 @@ If this project has `./bedrock/STATUS.md`:
 
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
-3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+3. If `onboarding: complete` — read `./bedrock/Memory/PROJECT.md` and `./bedrock/Work/NOW.md`, then load only the relevant Memory branches
 
 At end of session with meaningful work:
-- Update relevant notes in `./bedrock/Memory/`
+- Update stable project knowledge in `./bedrock/Memory/`
+- Update current priorities and open loops in `./bedrock/Work/`
 - Run: `bedrock sync --project .`
 """
 
@@ -1498,9 +1501,9 @@ If this project has `./bedrock/STATUS.md`:
 
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
-3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+3. If `onboarding: complete` — read `./bedrock/Memory/PROJECT.md` and `./bedrock/Work/NOW.md`, then load only the relevant Memory branches
 
-At end of session with meaningful work, update `./bedrock/Memory/` and run `bedrock sync --project .`
+At end of session with meaningful work, update `./bedrock/Memory/`, update `./bedrock/Work/`, and run `bedrock sync --project .`
 <!-- /bedrock-global -->
 """
 
@@ -1512,10 +1515,11 @@ If this project has `./bedrock/STATUS.md`:
 
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
-3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+3. If `onboarding: complete` — read `./bedrock/Memory/PROJECT.md` and `./bedrock/Work/NOW.md`, then load only the relevant Memory branches
 
 At end of session with meaningful work:
-- Update relevant notes in `./bedrock/Memory/`
+- Update stable project knowledge in `./bedrock/Memory/`
+- Update current priorities and open loops in `./bedrock/Work/`
 - Run: `bedrock sync --project .`
 <!-- /bedrock-global -->
 """
@@ -1529,9 +1533,9 @@ If this project has `./bedrock/STATUS.md`:
 
 1. Read `./bedrock/STATUS.md`
 2. If `onboarding: pending` — read `AGENTS.md` and follow First-Time Onboarding
-3. If `onboarding: complete` — read `./bedrock/Memory/MEMORY.md`, then load branch notes relevant to the current task
+3. If `onboarding: complete` — read `./bedrock/Memory/PROJECT.md` and `./bedrock/Work/NOW.md`, then load only the relevant Memory branches
 
-At end of session with meaningful work, update `./bedrock/Memory/` and run `bedrock sync --project .`
+At end of session with meaningful work, update `./bedrock/Memory/`, update `./bedrock/Work/`, and run `bedrock sync --project .`
 <!-- /bedrock-global -->
 """
 

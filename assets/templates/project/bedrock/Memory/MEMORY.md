@@ -1,14 +1,11 @@
 ---
-note_type: durable-memory-root
+note_type: legacy-memory-root
 project: <project-name>
 updated: <date>
-tags:
-  - bedrock
-  - memory
 ---
 
-# 🧠 Memory: <project-name>
+# Legacy Memory Root
 
-## 🗂️ Areas
+This file is kept only for compatibility with older Bedrock projects.
 
-- [decisions](decisions/decisions.md) -- decision log
+Use [PROJECT.md](PROJECT.md) as the public Memory entry point.

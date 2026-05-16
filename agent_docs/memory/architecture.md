@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: architecture
-updated: 2026-04-28
+updated: 2026-05-16
 tags:
   - agent-knowledge
   - memory
@@ -52,22 +52,27 @@ flowchart LR
 `bedrock init` defaults to local mode. Use `--external` for external mode, or `bedrock migrate-to-local` to convert an existing external project.
 In local mode, `.gitignore` auto-patched to exclude `Evidence/raw/`, `Sessions/`, `Outputs/site/`, etc.
 
-Vault structure (same in both modes):
+Public project cockpit (same in both modes):
 
 ```mermaid
 flowchart TD
     V["bedrock/"]
-    V --> M["Memory/\n✅ canonical, curated, durable"]
-    V --> E["Evidence/\n⚠️ raw imports, captures"]
-    V --> O["Outputs/\n🔧 generated — never canonical"]
-    V --> H["History/\n📖 lightweight diary"]
+    V --> M["Memory/\n✅ what the project knows"]
+    V --> W["Work/\n✅ what matters now"]
+    V --> VW["Views/\n⚠️ generated human inspection views"]
+    V --> E["Evidence/\ncompat raw imports, captures"]
+    V --> O["Outputs/\ncompat generated artifacts"]
+    V --> H["History/\ncompat diary"]
 ```
+
+The runtime now prefers `Memory/PROJECT.md` as the public memory root, `Memory/decisions.md` as the default decisions log, `Views/site/` for static site export, and `Views/graph/` for graph/canvas export. Older `MEMORY.md`, `Memory/decisions/decisions.md`, and `Outputs/site/` locations remain supported as fallbacks.
 
 ## 📂 Path Resolution
 
 - `runtime/paths.py` → `get_assets_dir()` with dual-mode:
   1. Installed: `assets/` sibling of `runtime/` in site-packages
   2. Dev: `repo_root/assets/` (4 parents up from `paths.py`)
+- Also resolves preferred-vs-legacy cockpit paths: `PROJECT.md` vs `MEMORY.md`, flat `decisions.md` vs `decisions/decisions.md`, `Views/site` vs `Outputs/site`, and `Views/graph` vs `Outputs/graph`
 - Marker file for validation: `scripts/lib/knowledge-common.sh`
 - Result cached in `_cached_assets_dir` for the process lifetime
 
@@ -151,6 +156,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - 2026-04-28: Graph node selection dims unrelated nodes and keeps neighbors semi-visible with labels.
 - 2026-04-28: Graph layout spread tuned — `SIM_REPULSION 18000`, `SIM_REST 220`, `SIM_GRAVITY 0.008` for a readable layout.
 - 2026-04-28: Staleness detection added to `doctor` via `check_stale_notes()` in `refresh.py`.
+- 2026-05-16: Bedrock vNext session 1 introduced the simplified public cockpit (`Memory / Work / Views`) with compatibility resolvers for legacy roots and export paths.
 
 ## 🔗 See Also
 

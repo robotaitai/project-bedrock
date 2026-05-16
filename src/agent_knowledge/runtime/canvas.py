@@ -17,6 +17,7 @@ from pathlib import Path
 from typing import Any
 
 from .index import build_index, _extract_frontmatter
+from .paths import is_memory_root_relpath, resolve_graph_output_dir
 
 _FOLDER_COLORS = {
     "Memory": "2",     # green
@@ -50,10 +51,10 @@ def _layout_nodes(notes: list[dict]) -> dict[str, tuple[int, int]]:
     """Assign (x, y) positions. Memory branches radiate from center; others surround."""
     positions: dict[str, tuple[int, int]] = {}
 
-    memory_roots = [n for n in notes if n["path"] == "Memory/MEMORY.md"]
+    memory_roots = [n for n in notes if is_memory_root_relpath(n["path"])]
     memory_branches = [
         n for n in notes
-        if n["folder"] == "Memory" and n["is_branch_entry"] and n["path"] != "Memory/MEMORY.md"
+        if n["folder"] == "Memory" and n["is_branch_entry"] and not is_memory_root_relpath(n["path"])
     ]
     memory_leaves = [
         n for n in notes
@@ -187,7 +188,7 @@ def export_canvas(
     The canvas is an Output and is non-canonical.
     """
     if output_path is None:
-        output_path = vault_dir / "Outputs" / "knowledge-export.canvas"
+        output_path = resolve_graph_output_dir(vault_dir) / "knowledge-export.canvas"
 
     if dry_run:
         return output_path, "dry-run"

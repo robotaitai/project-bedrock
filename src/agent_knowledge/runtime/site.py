@@ -3,10 +3,10 @@
 Pipeline:
   1. build_site_data()  -> structured dict (knowledge.json)
   2. build_graph_data() -> graph nodes/edges (graph.json)
-  3. Write Outputs/site/data/knowledge.json
-  4. Write Outputs/site/data/graph.json
+  3. Write Views/site/data/knowledge.json
+  4. Write Views/site/data/graph.json
   5. _render_html()     -> complete index.html with both data sets embedded
-  6. Write Outputs/site/index.html
+  6. Write Views/site/index.html
 
 Generated output is non-canonical. Memory/ remains the source of truth.
 The site is a presentation layer, not the authoritative knowledge store.
@@ -30,6 +30,7 @@ from .index import (
     _note_title,
     build_index,
 )
+from .paths import is_memory_root_relpath, resolve_memory_root, resolve_site_output_dir
 
 _SITE_SCHEMA_VERSION = "1"
 
@@ -394,13 +395,16 @@ def build_site_data(
     """Build the complete site data model from the vault.
 
     Returns a structured dict ready to be serialized as knowledge.json.
-    Memory/ is primary; Evidence/Outputs are marked non-canonical.
+    Memory/ is primary; Work/ is current-state context; generated and imported
+    material remains non-canonical.
     """
     status = _read_status(vault_dir)
     index = build_index(vault_dir)
     all_notes = index["notes"]
 
     generated = datetime.datetime.now(datetime.timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
+
+    memory_root_path = resolve_memory_root(vault_dir).relative_to(vault_dir).as_posix()
 
     project = {
         "name": status.get("project", vault_dir.name),
@@ -409,6 +413,7 @@ def build_site_data(
         "onboarding": status.get("onboarding", "unknown"),
         "vault_path": str(vault_dir),
         "last_updated": status.get("last_project_sync", ""),
+        "memory_root_path": memory_root_path,
     }
 
     # --- Separate notes by folder ---
@@ -420,7 +425,7 @@ def build_site_data(
         n for n in memory_notes
         if n["is_branch_entry"]
         and "decisions" not in n["path"].lower()
-        and n["path"] != "Memory/MEMORY.md"
+        and not is_memory_root_relpath(n["path"])
     ]
 
     # Leaf notes: non-entry Memory notes (excluding decisions/)
@@ -428,7 +433,7 @@ def build_site_data(
         n for n in memory_notes
         if not n["is_branch_entry"]
         and "decisions" not in n["path"].lower()
-        and n["path"] != "Memory/MEMORY.md"
+        and not is_memory_root_relpath(n["path"])
     ]
 
     # Flat (non-folder) Memory notes: treat as their own branch
@@ -436,7 +441,7 @@ def build_site_data(
         n for n in memory_notes
         if not n["is_branch_entry"]
         and "decisions" not in n["path"].lower()
-        and n["path"] != "Memory/MEMORY.md"
+        and not is_memory_root_relpath(n["path"])
         and "/" not in n["path"].replace("Memory/", "", 1)
     ]
 
@@ -462,14 +467,14 @@ def build_site_data(
         if meta["path"] not in covered_paths:
             branches.append(_build_branch_data(vault_dir, meta))
 
-    # Sort branches: root MEMORY.md summary first, then alphabetical
-    branches.sort(key=lambda b: (0 if "MEMORY" in b["path"] else 1, b["title"]))
+    # Sort branches alphabetically; the memory root is handled separately.
+    branches.sort(key=lambda b: b["title"])
 
     # --- Decisions ---
     decision_metas = [
         n for n in memory_notes
         if "decisions" in n["path"].lower()
-        and n["path"] != "Memory/decisions/decisions.md"
+        and n["path"] not in {"Memory/decisions.md", "Memory/decisions/decisions.md"}
     ]
     decisions = sorted(
         [_build_decision_data(vault_dir, m) for m in decision_metas],
@@ -663,7 +668,7 @@ def build_graph_data(site_data: dict[str, Any]) -> dict[str, Any]:
     # Outputs — skip site/ self-references
     for out in site_data.get("outputs", []):
         path = out.get("path", "")
-        if "site/" in path or path.startswith("Outputs/site"):
+        if "site/" in path or path.startswith("Outputs/site") or path.startswith("Views/site"):
             continue
         oid = f"output/{path}"
         nodes.append({
@@ -1111,13 +1116,14 @@ function buildSidebar(){
   meta.innerHTML = `<span class="badge badge-profile">${esc(profile)}</span><span class="badge ${onbCls}">${esc(onb)}</span>`;
 
   const tree = document.getElementById('sidebar-tree');
+  const memoryRootPath = DATA.project.memory_root_path||'Memory/PROJECT.md';
   let h = '';
 
   // Memory group
   h += '<div class="tree-group">';
   h += `<div class="tree-group-header">${badge('Memory')}</div>`;
   for(const b of DATA.branches){
-    if(b.path==='Memory/MEMORY.md') continue;
+    if(b.path===memoryRootPath) continue;
     h += `<div class="tree-item branch" data-path="${esc(b.path)}" onclick="nav('note','${esc(b.path)}')" title="${esc(b.path)}">`;
     h += `<span class="tree-item-icon">o</span><span class="tree-item-label">${esc(b.title)}</span></div>`;
     for(const lf of (b.leaves||[])){
@@ -1209,7 +1215,7 @@ function showOverview(){
     h += `</div>`;
   }
 
-  const mainBranches = DATA.branches.filter(b=>b.path!=='Memory/MEMORY.md');
+  const mainBranches = DATA.branches.filter(b=>b.path!==memoryRootPath);
   if(mainBranches.length>0){
     h += `<div class="section"><div class="section-heading">Knowledge Branches</div>`;
     h += `<div class="branch-grid">`;
@@ -1948,7 +1954,7 @@ def generate_site(
       <output_dir>/data/graph.json     -- graph nodes and edges
     """
     if output_dir is None:
-        output_dir = vault_dir / "Outputs" / "site"
+        output_dir = resolve_site_output_dir(vault_dir)
 
     site_data = build_site_data(
         vault_dir,

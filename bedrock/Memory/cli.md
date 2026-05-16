@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: cli
-updated: 2026-05-05
+updated: 2026-05-16
 tags:
   - agent-knowledge
   - cli
@@ -59,6 +59,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - **Default (local mode)**: creates `./bedrock/` as real directory; creates `~/agent-os/projects/<slug>/` as symlink back; patches `.gitignore` with noisy-subfolder exclusions
 - `--external` flag: creates knowledge in `~/agent-os/projects/<slug>/`; `./bedrock` becomes a symlink to that folder
 - `--local` flag: accepted as a no-op for backward compatibility (was previously needed, now the default)
+- Bootstraps the simplified public cockpit: `Memory/PROJECT.md`, `Memory/decisions.md`, `Memory/glossary.md`, `Work/*.md`, `Views/site/`, `Views/graph/`
 - After setup: **auto-calls `run_backfill()`** from `history.py` if vault exists
 - Prints cyan-bordered prompt with next-step suggestion
 
@@ -74,7 +75,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 
 - Scans project for docs: `ARCHITECTURE.md`, `CHANGELOG.md`, `DESIGN.md`, ADRs, etc.
 - Copies to `Evidence/imports/` as non-canonical evidence
-- Parses ADR/decision files into `decisions.md` (skippable via `--no-decisions`)
+- Parses ADR/decision files into `Memory/decisions.md` (skippable via `--no-decisions`)
 - Writes `Outputs/absorb-manifest.md` for agent review and curation
 - Mechanical ingestion only — curation to `Memory/` remains the agent's responsibility
 
@@ -90,7 +91,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 
 - Refreshes `AGENTS.md`, `.cursor/hooks.json`, `.cursor/rules/bedrock.mdc` (auto-renames from `agent-knowledge.mdc` if found), `CLAUDE.md`, `.codex/AGENTS.md`, `STATUS.md`, `.agent-project.yaml`
 - Idempotent: returns "up-to-date" if version already matches
-- Never touches `Memory/`, `Evidence/`, `Sessions/`, `Outputs/`, `History/`
+- Never touches user `Memory/` or `Work/` content
 - Supports `--dry-run`, `--json`
 
 ## 📅 backfill-history
@@ -103,10 +104,15 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 ## 🌐 export-html / view
 
 - Reads vault → builds `knowledge.json` → builds `graph.json` → renders `index.html`
+- Default output prefers `Views/site/`; if an older project already uses `Outputs/site/`, generation falls back there
 - All data embedded in HTML (no AJAX, works via `file://`)
 - Views: Overview, Tree/Ontology, Note detail, Evidence, Graph tab
 - Graph: interactive force-directed canvas, wikilink edges rendered in accent blue, searchable, filterable by type/canonical status
 - `view` = `export-html` + opens result in browser
+
+## 🖼️ export-canvas
+
+- Default output prefers `Views/graph/knowledge-export.canvas`; falls back to legacy `Outputs/` only when older projects already use that path
 
 ## 🧩 Patterns
 
@@ -136,6 +142,7 @@ flowchart LR
 - 2026-04-29: vault path changed `agent-knowledge/` → `bedrock/` in all CLI commands. `migrate-vault` added (24 total commands). `refresh-system` now auto-renames `agent-knowledge.mdc` → `bedrock.mdc`. Windows: bash auto-detected, JSON paths use forward slashes, git subprocesses use UTF-8.
 - 2026-04-30: `completion` command added (tab completion for zsh/bash/fish, `--install` flag). `upgrade` command added (checks PyPI, detects pipx vs pip). `/compact-context` slash command added for Claude + Cursor. 8 specialist commands hidden from `--help` (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format).
 - 2026-05-05: `install-global` command added (v0.4.6) — writes conditional bedrock rules to global agent config dirs for Cursor, Claude, Codex, Gemini CLI, Antigravity. Idempotent, `--uninstall` supported. Total: 28 commands.
+- 2026-05-16: Session 1 of the Bedrock vNext cockpit shift — bootstrap now creates `Memory / Work / Views`, `export-html` prefers `Views/site`, `export-canvas` prefers `Views/graph`, `absorb` writes to `Memory/decisions.md`, and generated agent instructions now read `Memory/PROJECT.md` plus `Work/NOW.md`.
 
 ## 🔗 See Also
 

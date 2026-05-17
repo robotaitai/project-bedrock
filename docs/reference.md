@@ -21,19 +21,20 @@ and `graph.json`. It writes to `Views/site/` by default, with legacy
 Memory/ notes are always primary. Evidence and generated view items are clearly marked
 non-canonical.
 
-## Automatic capture
+## Lightweight sync output
 
-Every sync and update event is automatically recorded in `Evidence/captures/`
-as a small structured YAML file. This gives a lightweight history of what
-changed and when -- without a database or background service.
+`bedrock sync` keeps the active vault small. It refreshes:
 
-Captures are evidence, not memory. They accumulate quietly and can be pruned
-with `bedrock compact`.
+- `Evidence/raw/git-recent.md` for a compact recent git snapshot
+- `History/` for lightweight project chronology
+- `Views/graph/knowledge-index.json` and `.md` for deterministic retrieval
+
+It does **not** create per-sync capture YAML files by default.
 
 ## Progressive retrieval
 
-The knowledge index (`Outputs/knowledge-index.json` and `.md`) is regenerated
-on every sync. Agents can:
+The knowledge index (`Views/graph/knowledge-index.json` and `.md`) is regenerated
+on every sync, with legacy `Outputs/` fallback for older projects. Agents can:
 
 1. Load the index first (cheap, a few KB)
 2. Identify relevant branches from the shortlist
@@ -48,7 +49,7 @@ Import a web page as cleaned, non-canonical evidence:
 
 ```bash
 bedrock clean-import https://docs.example.com/api-reference
-# produces: agent-knowledge/Evidence/imports/2025-01-15-api-reference.md
+# produces: bedrock/Evidence/imports/2025-01-15-api-reference.md
 ```
 
 Strips navigation, ads, scripts, and boilerplate. Writes clean markdown with
@@ -98,7 +99,7 @@ bedrock doctor --json   # machine-readable health check
 ```
 
 Common issues:
-- `./agent-knowledge` missing: run `bedrock init` (or `bedrock init --external` to keep knowledge outside the repo)
+- `./bedrock` missing: run `bedrock init` (or `bedrock init --external` to keep knowledge outside the repo)
 - Project still on external mode: run `bedrock migrate-to-local` to switch the vault into the repo
 - Onboarding still pending: paste the init prompt into your agent
 - Claude not picking up memory: check `.claude/settings.json` exists -- run `bedrock refresh-system`

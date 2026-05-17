@@ -1,11 +1,17 @@
 ---
 project: agent-knowledge
-updated: 2026-04-30
+updated: 2026-05-17
 ---
 
-# 🧠 Memory
+# Memory
 
-## 🗂️ Areas
+## Start Here
+
+- [PROJECT](PROJECT.md) -- what Bedrock is, the current product direction, and how to navigate the active cockpit
+- [decisions](decisions.md) -- active flat decision log; older numbered decisions remain in [decisions/decisions](decisions/decisions.md)
+- [glossary](glossary.md) -- shared terms for the Bedrock runtime and vault model
+
+## Areas
 
 - [packaging](packaging.md) -- PyPI: project-bedrock, CLI: bedrock (alias: agent-knowledge deprecated), v0.4.1, pipx install recommended
 - [cli](cli.md) -- CLI, 27 subcommands + /compact-context; completion, upgrade commands added; specialist cmds hidden from --help; v0.4.1
@@ -17,3 +23,9 @@ updated: 2026-04-30
 - [deployments](deployments.md) -- CI pipeline, release process, PyPI publish
 - [gotchas](gotchas.md) -- Known pitfalls; f-string backslash SyntaxError on Python < 3.12
 - [history-layer](history-layer.md) -- Lightweight History/ diary, events.ndjson, backfill-history command
+
+## Notes
+
+- `bedrock/` is the active in-repo vault for this repository.
+- `agent-knowledge/` is a legacy vault copy that still exists in the repo; missing historical timeline notes and evidence imports have been copied into `bedrock/` so past context stays available during cleanup.
+- Generated inspection output belongs in `Views/`. Durable facts belong in `Memory/`. Active priorities belong in `Work/`.

@@ -1,9 +1,7 @@
 """Sync logic: memory branch sync, git-log evidence extraction.
 
 Also integrates:
-- Capture: each sync event is recorded in Evidence/captures/ as a lightweight
-  evidence item (not curated memory, never auto-promoted).
-- Index: Outputs/knowledge-index.json and .md are regenerated on each sync
+- Index: Views/graph/knowledge-index.json and .md are regenerated on each sync
   so agents and humans always have a current compact catalog.
 - History: incremental backfill keeps History/events.ndjson and history.md current.
 """
@@ -189,58 +187,11 @@ def stamp_status(repo: Path, field: str) -> None:
 
 
 # ---------------------------------------------------------------------------
-# 5. Capture event recording -> Evidence/captures/
-# ---------------------------------------------------------------------------
-
-def _record_sync_capture(
-    repo: Path,
-    *,
-    memory_actions: list[str],
-    dry_run: bool = False,
-) -> list[str]:
-    """Record a sync event in Evidence/captures/."""
-    from .capture import record as capture_record
-
-    vault = repo / "bedrock"
-    captures_dir = vault / "Evidence" / "captures"
-
-    # Derive touched branches from memory-sync actions (e.g. "updated: Memory/stack.md")
-    touched: list[str] = []
-    for action in memory_actions:
-        m = re.search(r"Memory/([^\s]+\.md)", action)
-        if m:
-            touched.append(m.group(1))
-
-    # Infer project slug from the vault name
-    try:
-        slug = repo.name
-    except Exception:
-        slug = "unknown"
-
-    _path, action = capture_record(
-        captures_dir,
-        event_type="sync",
-        source_tool="cli",
-        project_slug=slug,
-        summary="Project sync: memory branches updated, git evidence extracted, history updated.",
-        touched_branches=touched,
-        dry_run=dry_run,
-    )
-
-    if action == "created":
-        return [f"  recorded capture: Evidence/captures/"]
-    elif action == "exists":
-        return ["  capture: already recorded this minute (skipped)"]
-    else:
-        return [f"  [dry-run] would record capture: Evidence/captures/"]
-
-
-# ---------------------------------------------------------------------------
-# 6. Knowledge index generation -> Outputs/
+# 5. Knowledge index generation -> Views/graph/
 # ---------------------------------------------------------------------------
 
 def _regenerate_index(repo: Path, *, dry_run: bool = False) -> list[str]:
-    """Regenerate Outputs/knowledge-index.json and .md."""
+    """Regenerate the compact knowledge index."""
     from .index import write_index
 
     vault = repo / "bedrock"
@@ -251,7 +202,7 @@ def _regenerate_index(repo: Path, *, dry_run: bool = False) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# 7. History incremental update
+# 6. History incremental update
 # ---------------------------------------------------------------------------
 
 def _update_history(repo: Path, *, dry_run: bool = False) -> list[str]:
@@ -278,7 +229,7 @@ def _update_history(repo: Path, *, dry_run: bool = False) -> list[str]:
 
 
 # ---------------------------------------------------------------------------
-# 8. Top-level sync orchestrator
+# 7. Top-level sync orchestrator
 # ---------------------------------------------------------------------------
 
 def run_sync(
@@ -293,9 +244,6 @@ def run_sync(
     results["memory-branches"] = sync_memory_branches(repo, dry_run=dry_run)
     results["git-evidence"] = extract_git_log(repo, dry_run=dry_run)
     results["history"] = _update_history(repo, dry_run=dry_run)
-    results["capture"] = _record_sync_capture(
-        repo, memory_actions=results["memory-branches"], dry_run=dry_run
-    )
     results["index"] = _regenerate_index(repo, dry_run=dry_run)
 
     if not dry_run:

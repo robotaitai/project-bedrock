@@ -1,15 +1,16 @@
 ---
 note_type: evidence
 source: git-log
-extracted: 2026-05-16T17:54:11Z
+extracted: 2026-05-17T07:21:45Z
 commits: 30
 ---
 
 # Recent Git History
 
-Last 30 commits as of 2026-05-16.
+Last 30 commits as of 2026-05-17.
 
 ```
+ca5e354 Simplify Bedrock cockpit structure
 e1cc79c bd init: initialize beads issue tracking
 e9a3b83 fix: add encoding=utf-8 to all remaining read_text calls (v0.4.11)
 0da9164 fix: f-string bracket syntax for Python 3.9 compat (test_cli.py:1539)
@@ -39,5 +40,4 @@ b01261f fix: update tests for v0.4.0 rename (agent-knowledge -> bedrock, local m
 fddebe9 feat: add bedrock upgrade command (checks PyPI, detects pipx vs pip)
 2c92a4a feat: add tab completion command; hide specialist commands from help
 932d445 feat: add /compact-context slash command for Claude, Cursor; fix .claude/CLAUDE.md paths
-4991fb3 chore: memory update -- v0.4.0 rename and Windows fixes
 ```

@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: cli
-updated: 2026-05-16
+updated: 2026-05-17
 tags:
   - agent-knowledge
   - cli
@@ -26,7 +26,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 | `init` | Zero-arg project setup + history backfill. Local (in-repo) by default; `--external` for external vault | `install-project-links.sh` + integrations + history.py |
 | `migrate-vault` | Rename `./agent-knowledge/` → `./bedrock/` for projects before v0.4 | pure Python |
 | `migrate-to-local` | Convert existing external-vault project: copy vault, swap pointer, patch .gitignore | pure Python |
-| `sync` | Memory sync, git evidence extraction, update STATUS.md | `runtime/sync.py` |
+| `sync` | Memory sync, git evidence extraction, history refresh, compact index refresh, update STATUS.md | `runtime/sync.py` |
 | `setup` | Global Cursor rules/skills install | pure Python |
 | `bootstrap` | Repair memory tree | `bootstrap-memory-tree.sh` |
 | `import` | Import repo evidence | `import-agent-history.sh` |
@@ -36,9 +36,9 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 | `ship` | Validate, sync, commit, push | `ship.sh` |
 | `global-sync` | Import global tooling config | `global-knowledge-sync.sh` |
 | `graphify-sync` | Import graph artifacts | `graphify-sync.sh` |
-| `compact` | Prune stale memory and old captures | `compact-memory.sh` |
+| `compact` | Prune stale memory and legacy capture files if present | `compact-memory.sh` |
 | `measure-tokens` | Token savings estimation (subcommands: compare, log-run, summarize-log) | `measure-token-savings.py` |
-| `index` | Regenerate knowledge index JSON + md | `runtime/index.py` |
+| `index` | Regenerate compact knowledge index JSON + md | `runtime/index.py` |
 | `search <query>` | Search knowledge index, Memory-first | `runtime/index.py` |
 | `export-html` | Build polished static HTML site | `runtime/site.py` |
 | `view` | Build site and open in browser | `runtime/site.py` + webbrowser |
@@ -100,6 +100,7 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 - Reads git: first commit date, total commits, tags (releases), integration detection
 - One-per-tag for release events; once-per-month for backfill/integration events
 - Supports `--dry-run`, `--json`, `--force`
+- Older backfill notes can be copied forward from a legacy vault when consolidating history into the active `bedrock/` tree
 
 ## 🌐 export-html / view
 
@@ -113,6 +114,12 @@ Built on [[stack|click >= 8.0]] with a `@click.group()` top-level.
 ## 🖼️ export-canvas
 
 - Default output prefers `Views/graph/knowledge-export.canvas`; falls back to legacy `Outputs/` only when older projects already use that path
+
+## 🔍 index / search
+
+- Default compact index output now lives in `Views/graph/knowledge-index.json` and `.md`
+- Older projects can still read/write the legacy `Outputs/knowledge-index.*` paths
+- `sync` refreshes the index automatically; `search` reads it as the cheap first retrieval layer
 
 ## 🧩 Patterns
 
@@ -143,6 +150,7 @@ flowchart LR
 - 2026-04-30: `completion` command added (tab completion for zsh/bash/fish, `--install` flag). `upgrade` command added (checks PyPI, detects pipx vs pip). `/compact-context` slash command added for Claude + Cursor. 8 specialist commands hidden from `--help` (still callable). Total: 27 commands (+ 1 slash command). CI fixed: tests updated for v0.4.0 rename (bedrock paths, local mode default, STATUS.md timestamp format).
 - 2026-05-05: `install-global` command added (v0.4.6) — writes conditional bedrock rules to global agent config dirs for Cursor, Claude, Codex, Gemini CLI, Antigravity. Idempotent, `--uninstall` supported. Total: 28 commands.
 - 2026-05-16: Session 1 of the Bedrock vNext cockpit shift — bootstrap now creates `Memory / Work / Views`, `export-html` prefers `Views/site`, `export-canvas` prefers `Views/graph`, `absorb` writes to `Memory/decisions.md`, and generated agent instructions now read `Memory/PROJECT.md` plus `Work/NOW.md`.
+- 2026-05-17: `sync` stopped emitting per-sync `Evidence/captures/*.yaml` files. `index` and `search` now prefer `Views/graph/knowledge-index.*`, which keeps the active vault smaller while leaving older `Outputs/` indexes readable.
 
 ## 🔗 See Also
 

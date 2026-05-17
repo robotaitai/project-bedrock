@@ -1,14 +1,14 @@
 ---
 area: history
 project: agent-knowledge
-updated: 2026-05-16
+updated: 2026-05-17
 ---
 
 # Project History
 
 Lightweight project diary. What happened, when, in which area.
 
-For current truth, see [Memory/MEMORY.md](../Memory/MEMORY.md).
+For current truth, see [Memory root](../Memory/PROJECT.md).
 This is not a git replacement.
 
 ## Timeline Notes
@@ -16,6 +16,11 @@ This is not a git replacement.
 - [2026-05-04-backfill](timeline/2026-05-04-backfill.md)
 - [2026-04-30-backfill](timeline/2026-04-30-backfill.md)
 - [2026-04-29-backfill](timeline/2026-04-29-backfill.md)
+- [2026-04-28-backfill](timeline/2026-04-28-backfill.md)
+- [2026-04-26-backfill](timeline/2026-04-26-backfill.md)
+- [2026-04-23-backfill](timeline/2026-04-23-backfill.md)
+- [2026-04-18-backfill](timeline/2026-04-18-backfill.md)
+- [2026-04-11-backfill](timeline/2026-04-11-backfill.md)
 
 ## Recent Activity
 
@@ -31,13 +36,13 @@ This is not a git replacement.
 - **2026-04-29** `release` [v0.4.1] — Release v0.4.1
 - **2026-04-29** `release` [v0.4.0] — Release v0.4.0
 - **2026-04-29** `backfill` [v0.3.2, v0.3.1] — History backfill: 61 commits, 10 releases, 2 integrations
-- **2026-04-29** `integration_claude` — claude integration detected
-- **2026-04-29** `integration_cursor` — cursor integration detected
-- **2026-04-29** `release` [v0.2.3] — Release v0.2.3
+- **2026-04-28** `release` [v0.3.0] — Release v0.3.0
+- **2026-04-26** `release` [v0.2.8] — Release v0.2.8
+- **2026-04-23** `backfill` [v0.2.7, v0.2.6] — History backfill: 42 commits, 10 releases, 2 integrations
 
 ## Reference
 
-- [Memory root](../Memory/MEMORY.md)
+- [Memory root](../Memory/PROJECT.md)
 - [STATUS](../STATUS.md)
 - [events.ndjson](events.ndjson) — machine-readable log
 

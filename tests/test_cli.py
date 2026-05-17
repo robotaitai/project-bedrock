@@ -343,10 +343,10 @@ def test_sync_updates_status_timestamp(tmp_path: Path):
     assert m.group(1) not in ("", "not-yet")
 
 
-# -- capture tests --------------------------------------------------------- #
+# -- sync cleanup tests ---------------------------------------------------- #
 
 
-def test_sync_creates_capture(tmp_path: Path):
+def test_sync_does_not_create_capture_files(tmp_path: Path):
     repo = _init_repo(tmp_path, "capture-test")
     kh = tmp_path / "kh"
     r = _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
@@ -356,56 +356,7 @@ def test_sync_creates_capture(tmp_path: Path):
     assert r.returncode == 0
 
     captures_dir = repo / "bedrock" / "Evidence" / "captures"
-    capture_files = list(captures_dir.glob("*.yaml"))
-    assert len(capture_files) >= 1, "sync should create a capture file"
-
-    content = capture_files[0].read_text()
-    assert "event_type: sync" in content
-    assert "source_tool: cli" in content
-    assert "note_type: capture" in content
-
-
-def test_capture_is_non_canonical(tmp_path: Path):
-    """Captures must live in Evidence/captures/, never in Memory/."""
-    repo = _init_repo(tmp_path, "capture-canonical")
-    kh = tmp_path / "kh"
-    _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
-    _run("sync", "--project", str(repo))
-
-    memory_dir = repo / "bedrock" / "Memory"
-    captures_in_memory = list(memory_dir.rglob("*.yaml"))
-    assert captures_in_memory == [], "No capture files should appear in Memory/"
-
-
-def test_capture_idempotent(tmp_path: Path):
-    """Running sync twice in the same minute should not duplicate the capture."""
-    repo = _init_repo(tmp_path, "capture-idem")
-    kh = tmp_path / "kh"
-    _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
-    _run("sync", "--project", str(repo))
-
-    captures_dir = repo / "bedrock" / "Evidence" / "captures"
-    count_after_first = len(list(captures_dir.glob("*.yaml")))
-
-    _run("sync", "--project", str(repo))
-    count_after_second = len(list(captures_dir.glob("*.yaml")))
-
-    # Within the same minute, count should not grow (dedup).
-    assert count_after_second == count_after_first, (
-        "Repeated sync within same minute should not duplicate captures"
-    )
-
-
-def test_capture_dry_run_does_not_write(tmp_path: Path):
-    repo = _init_repo(tmp_path, "capture-dry")
-    kh = tmp_path / "kh"
-    _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
-
-    r = _run("sync", "--project", str(repo), "--dry-run")
-    assert r.returncode == 0
-
-    captures_dir = repo / "bedrock" / "Evidence" / "captures"
-    assert not any(captures_dir.glob("*.yaml")), "dry-run should not create capture files"
+    assert not captures_dir.exists(), "sync should not create legacy capture files"
 
 
 # -- index tests ----------------------------------------------------------- #
@@ -419,8 +370,8 @@ def test_sync_creates_knowledge_index(tmp_path: Path):
     r = _run("sync", "--project", str(repo))
     assert r.returncode == 0
 
-    index_json = repo / "bedrock" / "Outputs" / "knowledge-index.json"
-    index_md = repo / "bedrock" / "Outputs" / "knowledge-index.md"
+    index_json = repo / "bedrock" / "Views" / "graph" / "knowledge-index.json"
+    index_md = repo / "bedrock" / "Views" / "graph" / "knowledge-index.md"
     assert index_json.is_file(), "sync should produce knowledge-index.json"
     assert index_md.is_file(), "sync should produce knowledge-index.md"
 
@@ -438,7 +389,7 @@ def test_index_command(tmp_path: Path):
     r = _run("index", "--project", str(repo))
     assert r.returncode == 0
 
-    index_json = repo / "bedrock" / "Outputs" / "knowledge-index.json"
+    index_json = repo / "bedrock" / "Views" / "graph" / "knowledge-index.json"
     assert index_json.is_file()
 
 
@@ -449,7 +400,7 @@ def test_index_memory_first(tmp_path: Path):
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     _run("sync", "--project", str(repo))
 
-    index_json = repo / "bedrock" / "Outputs" / "knowledge-index.json"
+    index_json = repo / "bedrock" / "Views" / "graph" / "knowledge-index.json"
     data = json.loads(index_json.read_text())
     notes = data["notes"]
 
@@ -471,7 +422,7 @@ def test_index_marks_outputs_non_canonical(tmp_path: Path):
     _run("init", "--repo", str(repo), "--knowledge-home", str(kh))
     _run("sync", "--project", str(repo))
 
-    index_json = repo / "bedrock" / "Outputs" / "knowledge-index.json"
+    index_json = repo / "bedrock" / "Views" / "graph" / "knowledge-index.json"
     data = json.loads(index_json.read_text())
 
     for note in data["notes"]:

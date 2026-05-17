@@ -1,7 +1,7 @@
 ---
 note_type: durable-branch
 area: architecture
-updated: 2026-05-16
+updated: 2026-05-17
 tags:
   - agent-knowledge
   - memory
@@ -24,8 +24,8 @@ Core design: path resolution, runtime modules, project config, integrations, kno
 | `paths.py` | Asset directory resolution (installed vs dev checkout) |
 | `shell.py` | `run_bash_script()` / `run_python_script()` subprocess wrappers |
 | `integrations.py` | Multi-tool detection and bridge file installation |
-| `sync.py` | `bedrock sync` implementation (memory, sessions, git, capture, index) |
-| `capture.py` | Automatic capture layer (Evidence/captures/ YAML files) + clean-import |
+| `sync.py` | `bedrock sync` implementation (memory, git evidence, history, compact index) |
+| `capture.py` | Clean web import helpers and legacy capture-file utilities |
 | `index.py` | Knowledge index generation (knowledge-index.json/md) + search |
 | `site.py` | Static HTML site export with interactive graph view |
 | `refresh.py` | System refresh: updates integration files to current framework version |
@@ -60,8 +60,8 @@ flowchart TD
     V --> M["Memory/\n✅ what the project knows"]
     V --> W["Work/\n✅ what matters now"]
     V --> VW["Views/\n⚠️ generated human inspection views"]
-    V --> E["Evidence/\ncompat raw imports, captures"]
-    V --> O["Outputs/\ncompat generated artifacts"]
+    V --> E["Evidence/\ncompat raw/imported reference material"]
+    V --> O["Outputs/\ncompat generated artifacts only"]
     V --> H["History/\ncompat diary"]
 ```
 
@@ -72,7 +72,7 @@ The runtime now prefers `Memory/PROJECT.md` as the public memory root, `Memory/d
 - `runtime/paths.py` → `get_assets_dir()` with dual-mode:
   1. Installed: `assets/` sibling of `runtime/` in site-packages
   2. Dev: `repo_root/assets/` (4 parents up from `paths.py`)
-- Also resolves preferred-vs-legacy cockpit paths: `PROJECT.md` vs `MEMORY.md`, flat `decisions.md` vs `decisions/decisions.md`, `Views/site` vs `Outputs/site`, and `Views/graph` vs `Outputs/graph`
+- Also resolves preferred-vs-legacy cockpit paths: `PROJECT.md` vs `MEMORY.md`, flat `decisions.md` vs `decisions/decisions.md`, `Views/site` vs `Outputs/site`, `Views/graph` vs `Outputs/graph`, and `Views/graph/knowledge-index.*` vs `Outputs/knowledge-index.*`
 - Marker file for validation: `scripts/lib/knowledge-common.sh`
 - Result cached in `_cached_assets_dir` for the process lifetime
 
@@ -112,13 +112,14 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - `History/timeline/` — sparse milestone notes (init, backfill, releases only)
 - Dedup: releases once-per-tag, backfill once-per-month, project_start once-ever
 - Auto-created by `init`, refreshable with `backfill-history`
+- During the 2026-05-17 cleanup, older timeline notes from the legacy `agent-knowledge/` vault were copied into the active `bedrock/` history so past project context stays in one place
 
 ## ⚙️ Project Config (`.agent-project.yaml`)
 
 - Version 4, `ontology_model: 2`, `framework_version` field
 - `knowledge.vault_mode: local|external` — set by `init --local` or `migrate-to-local`
 - `onboarding: status: pending|complete` in STATUS.md
-- No `root_index` — entry points are STATUS.md + Memory/MEMORY.md
+- `root_index` now points at `Memory/PROJECT.md`; public entry points are STATUS.md + `Memory/PROJECT.md` + `Work/NOW.md`
 - Hooks reference `bedrock update --project .`
 
 ## 🔁 System Refresh (`runtime/refresh.py`)
@@ -128,16 +129,16 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - Idempotent: skips files already at current version
 - `is_stale()` used by `doctor` command for staleness warning
 
-## 📸 Capture Layer
+## 📸 Capture Helpers
 
-- `Evidence/captures/` — YAML event files (timestamp, source_tool, event_type, touched_branches)
-- Idempotent within same UTC minute
-- Sources: sync, init, refresh, graph sync, import, ship
+- `runtime/capture.py` remains for file-based evidence capture utilities and `clean-import`
+- `bedrock sync` no longer writes per-sync `Evidence/captures/*.yaml` files by default
+- Legacy capture folders still read as non-canonical evidence if they exist in older projects
 
 ## 🔍 Knowledge Index
 
-- `Outputs/knowledge-index.json` — structured catalog for programmatic retrieval
-- `Outputs/knowledge-index.md` — human-readable version
+- `Views/graph/knowledge-index.json` — structured catalog for programmatic retrieval
+- `Views/graph/knowledge-index.md` — human-readable version
 - Search: Memory-first, Evidence/Outputs clearly marked non-canonical
 - Used by `bedrock search <query>`
 
@@ -157,6 +158,7 @@ Wikilink edges: `build_graph_data()` extracts `[[wikilinks]]` from each note's r
 - 2026-04-28: Graph layout spread tuned — `SIM_REPULSION 18000`, `SIM_REST 220`, `SIM_GRAVITY 0.008` for a readable layout.
 - 2026-04-28: Staleness detection added to `doctor` via `check_stale_notes()` in `refresh.py`.
 - 2026-05-16: Bedrock vNext session 1 introduced the simplified public cockpit (`Memory / Work / Views`) with compatibility resolvers for legacy roots and export paths.
+- 2026-05-17: Active-vault cleanup stopped per-sync capture files, moved the compact index default to `Views/graph/`, and consolidated older timeline notes/imported evidence from the legacy `agent-knowledge/` vault into `bedrock/`.
 
 ## 🔗 See Also
 

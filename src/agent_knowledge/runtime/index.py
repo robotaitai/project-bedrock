@@ -5,7 +5,7 @@ Three-layer retrieval model:
   Layer 2 -- search / shortlist (query against index, return relevant paths)
   Layer 3 -- full note contents (load only chosen notes on demand)
 
-The index is written to Outputs/ and is never canonical.
+The index is written to Views/graph/ by default and is never canonical.
 Memory/ and Work/ notes are ranked above Evidence/ and Outputs/ in search
 results.
 """
@@ -18,7 +18,7 @@ import re
 from pathlib import Path
 from typing import Any, Sequence
 
-from .paths import is_memory_root_relpath
+from .paths import is_memory_root_relpath, resolve_index_output_paths
 
 # Folders in priority order for retrieval.
 _FOLDER_ORDER = ["Memory", "Work", "Evidence", "Outputs"]
@@ -126,17 +126,17 @@ def build_index(vault_dir: Path) -> dict[str, Any]:
 def write_index(vault_dir: Path, *, dry_run: bool = False) -> list[str]:
     """Generate the knowledge index. Returns action strings."""
     index = build_index(vault_dir)
-    outputs_dir = vault_dir / "Outputs"
-    json_dst = outputs_dir / "knowledge-index.json"
-    md_dst = outputs_dir / "knowledge-index.md"
+    json_dst, md_dst = resolve_index_output_paths(vault_dir)
+    rel_json = json_dst.relative_to(vault_dir).as_posix()
+    rel_md = md_dst.relative_to(vault_dir).as_posix()
 
     if dry_run:
         return [
-            f"  [dry-run] would write: Outputs/knowledge-index.json ({index['note_count']} notes)",
-            "  [dry-run] would write: Outputs/knowledge-index.md",
+            f"  [dry-run] would write: {rel_json} ({index['note_count']} notes)",
+            f"  [dry-run] would write: {rel_md}",
         ]
 
-    outputs_dir.mkdir(parents=True, exist_ok=True)
+    json_dst.parent.mkdir(parents=True, exist_ok=True)
     json_dst.write_text(json.dumps(index, indent=2), encoding="utf-8")
 
     # Compact markdown catalog for agents and humans.
@@ -177,8 +177,8 @@ def write_index(vault_dir: Path, *, dry_run: bool = False) -> list[str]:
     md_dst.write_text("".join(md_lines), encoding="utf-8")
 
     return [
-        f"  wrote: Outputs/knowledge-index.json ({index['note_count']} notes)",
-        "  wrote: Outputs/knowledge-index.md",
+        f"  wrote: {rel_json} ({index['note_count']} notes)",
+        f"  wrote: {rel_md}",
     ]
 
 
@@ -195,7 +195,7 @@ def search(
     Memory/ notes are scored higher than Evidence/ and Outputs/.
     Branch entry notes are preferred over leaf notes within each folder.
     """
-    index_path = vault_dir / "Outputs" / "knowledge-index.json"
+    index_path, _index_md_path = resolve_index_output_paths(vault_dir)
     if index_path.is_file():
         try:
             notes: list[dict] = json.loads(index_path.read_text(encoding="utf-8")).get("notes", [])

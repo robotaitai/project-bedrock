@@ -42,12 +42,10 @@ _LOCAL_GITIGNORE_BLOCK = """\
 # bedrock: noisy auto-generated content excluded from git
 # Curated knowledge (Memory/, Work/, History/, Evidence/imports/) IS tracked.
 bedrock/Evidence/raw/
-bedrock/Evidence/captures/
 bedrock/Views/site/
-bedrock/Views/graph/
-bedrock/Outputs/graph.json
-bedrock/Outputs/knowledge-index.json
-bedrock/Outputs/knowledge-index.md
+bedrock/Views/graph/*.json
+bedrock/Views/graph/*.md
+bedrock/Views/graph/*.canvas
 bedrock/Outputs/absorb-manifest.md
 bedrock/.obsidian/workspace
 bedrock/.obsidian/workspace.json
@@ -566,7 +564,7 @@ def search(query: str, project: str, limit: int, include_all: bool, json_mode: b
     """Search the knowledge index. Prefers Memory/ over Evidence/Outputs.
 
     \b
-    Layer 1: loads the compact index (Outputs/knowledge-index.json).
+    Layer 1: loads the compact index (Views/graph/knowledge-index.json).
     Layer 2: returns a ranked shortlist of relevant notes.
     Layer 3: use --full or read the note files directly for full content.
     """
@@ -611,11 +609,12 @@ def search(query: str, project: str, limit: int, include_all: bool, json_mode: b
 @click.option("--dry-run", is_flag=True, help="Preview changes without writing.")
 @click.option("--json", "json_mode", is_flag=True, help="Output JSON only.")
 def index_cmd(project: str, dry_run: bool, json_mode: bool) -> None:
-    """Regenerate the knowledge index in Outputs/.
+    """Regenerate the compact knowledge index.
 
-    Produces Outputs/knowledge-index.json (machine-readable) and
-    Outputs/knowledge-index.md (compact human/agent catalog).
-    The index is non-canonical output -- not curated memory.
+    Produces Views/graph/knowledge-index.json (machine-readable) and
+    Views/graph/knowledge-index.md (compact human/agent catalog) by default,
+    with legacy Outputs/ fallback for older projects. The index is generated
+    output -- not curated memory.
     """
     import json as json_mod
 

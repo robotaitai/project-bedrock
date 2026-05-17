@@ -14,6 +14,14 @@ _DECISIONS_LOG_CANDIDATES = (
     Path("Memory") / "decisions.md",
     Path("Memory") / "decisions" / "decisions.md",
 )
+_INDEX_JSON_CANDIDATES = (
+    Path("Views") / "graph" / "knowledge-index.json",
+    Path("Outputs") / "knowledge-index.json",
+)
+_INDEX_MD_CANDIDATES = (
+    Path("Views") / "graph" / "knowledge-index.md",
+    Path("Outputs") / "knowledge-index.md",
+)
 
 
 def get_assets_dir() -> Path:
@@ -94,3 +102,16 @@ def resolve_graph_output_dir(vault_dir: Path) -> Path:
     if preferred.exists() or not legacy.exists():
         return preferred
     return legacy
+
+
+def resolve_index_output_paths(vault_dir: Path) -> tuple[Path, Path]:
+    """Prefer Views/graph for the compact index, with legacy Outputs/ fallback."""
+    preferred_json = vault_dir / _INDEX_JSON_CANDIDATES[0]
+    preferred_md = vault_dir / _INDEX_MD_CANDIDATES[0]
+    legacy_json = vault_dir / _INDEX_JSON_CANDIDATES[1]
+    legacy_md = vault_dir / _INDEX_MD_CANDIDATES[1]
+
+    if preferred_json.exists() or preferred_md.exists() or not legacy_json.exists():
+        return preferred_json, preferred_md
+
+    return legacy_json, legacy_md
